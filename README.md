@@ -1,5 +1,5 @@
 # TB-twist-bilayer
-To my best knowledge there is no TB code publicly available for bi-layer and 2d materials. 
+To my best knowledge there is no TB code publicly available for twisted bilayer and 2d materials. 
 I would like to publish this library at some point and get citations, please keep it private for now.
 
 This code has potential to turn into a smarter tool, for others who just want to input any desired input structre for twisted bi-layer, like XYZ and get the levels output...  without worryng about the indeces of atoms, orientations, local normal vercor (to be developed).
