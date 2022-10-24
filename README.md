@@ -4,7 +4,7 @@ I would like to publish this library at some point and get citations, please kee
 
 This code has potential to turn into a smarter tool, for others who just want to input any desired input structre for twisted bi-layer, like XYZ and get the levels output...  without worryng about the indeces of atoms, orientations, local normal vercor (to be developed).
 
-Moreover, if we combine with Jin's code -the one makes bilayer-. We can make something for absolute idiot people, who don't want to do any effort but just entering any misfit angle.
+Moreover, if we combine with Jin's code -the one makes bilayer-. We can make something for absolute idiot people, who don't want to do any effort but just entering any desired misfit angle and get a picture.
 
 As the state of the code untill now -24/10-
 please just read and run it for yourself, aviod commiting, still there are some crucial fixes and ideas I have which I can make it much times faster. 
