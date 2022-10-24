@@ -9,3 +9,7 @@ Moreover, if we combine with Jin's code -the one makes bilayer-. We can make som
 As the state of the code untill now -24/10-
 please just read and run it for yourself, aviod commiting, still there are some crucial fixes and ideas I have which can make it much faster. 
 right now, 50 K-point of misfit=1.05 takes around 40 minutes... I believe that can get reduced to ~20 minutes.
+
+You can run the code like:
+
+python TB.py unrelax_105.data
