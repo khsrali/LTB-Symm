@@ -1,6 +1,11 @@
 import numpy as np
 import sys
-from lammps import lammps
+import scipy.sparse as sp
+
+try: 
+    from lammps import lammps
+except ModuleNotFoundError:
+    pass
 
 '''
 I am sure this code has no bug!
@@ -44,19 +49,66 @@ class play_with_lammps:
         ### get coordinates and bonds info
         self.coords = np.loadtxt(file_name, skiprows =skiplines, max_rows= self.tot_number)[:,4:7]
     
+    
+    def vector_connection(self, cutoff):
+        
+        self.dist_matrix = sp.lil_matrix((self.tot_number, self.tot_number, 3), dtype='float')
+        
+        for ii in range(self.tot_number):
+            neighs = self.nl[ii][~(np.isnan(self.nl[ii]))].astype('int') # number of neighbors are not known, so you put this super 
+            for jj in neighs:
+                
+                dist_ = self.coords[jj] - self.coords[ii]
+        
+                ## for debugging
+                shit_0 = shit_1 = shit_2 = shit_3 =0
+                old_dist_size = np.linalg.norm(dist_)
+                ## 
+                
+                if dist_[1] > self.ylen_half:
+                    dist_[1] -= self.ylen
+                    dist_[0] -= self.xy
+                    shit_0 =1
+                elif -1*dist_[1] > self.ylen_half:
+                    dist_[1] += self.ylen
+                    dist_[0] += self.xy
+                    shit_1 =1
+                        
+                if dist_[0] > self.xlen_half:
+                    dist_[0] -= self.xlen
+                    shit_2 =1
+                elif -1*dist_[0] > self.xlen_half:
+                    dist_[0] += self.xlen
+                    shit_3 =1
+                
+                ## for debugging
+                dist_size = np.linalg.norm(dist_)
+                if dist_size > 1.01*cutoff:
+                    print('something is wrong with PBC')
+                    print('POS_ii, POS_jj\n', self.coords[ii],'\n', self.coords[jj])
+                    print('New dist =',dist_size)
+                    print('Old dist=',old_dist_size)
+                    print(shit_0,shit_1,shit_2,shit_3)
+                    exit(1)
+                    
+                self.dist_matrix[ii, jj] = dist_
+    
+    
     def neigh_list_me_smart(self, cutoff, l_width = 100, load_=True, version_=None):
         
         ''' returns **full** neigh_list '''
+        if load_ == True:
+            try:
+                data_ = np.load('neigh_list_{0}.npz'.format(version_))
+                np_nl     = data_['np_nl']
+                tot_neigh = data_['tot_neigh']
+                ave_neigh = data_['ave_neigh']
+                print('\nPlease be aware! neigh_list is loaded from the existing file: \n', 'neigh_list_{0}.npz'.format(version_))
+                print("if you prefer to rebuild the neigh_list, please use: ", 'neigh_list_me_smart(..., load_=False)\n')
+            except FileNotFoundError:   load_ = False
         
-        try:
-            data_ = np.load('neigh_list_{0}.npz'.format(version_))
-            np_nl     = data_['np_nl']
-            tot_neigh = data_['tot_neigh']
-            ave_neigh = data_['ave_neigh']
-            print('\nPlease be aware! neigh_list is loaded from the existing file: ', 'neigh_list_rcut_{0}.npz'.format(cutoff))
-            print("if you prefer to rebuild the neigh_list, please use: ", 'neigh_list_me_smart(..., load_=False)\n')
-        except FileNotFoundError: 
-        
+        if load_ == False:
+            
             np_nl = np.full((self.tot_number, l_width), np.nan) 
             dd = self.coords+np.array([+self.xlen,0,0])
             coords_9x = np.concatenate((self.coords,

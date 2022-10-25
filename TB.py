@@ -104,22 +104,23 @@ def log_out(str_s): # for logging purposes, I will use it once the code is polis
 ''' apparrantly he made a mistake to use 1.3978 as average C-C distance in rebo potential, 
 while the true value according to Jin is  1.42039011 '''
 ez = np.array([0,0,1])
-d0 = 3.4 #3.4331151895378 #from Jin's data point #3.444 Mattia  # 3.4 #AB
+d0 = 3.4  #3.4331151895378 #from Jin's data point #3.444 Mattia  # 3.4 #AB
 a0 = 1.42 #1.42039011  #1.42039011 #Jin #1.3978 Mattia    # 1.42 # AB
 aa = a0 * np.sqrt(3)
-r0 = 0.3187*a0 #  0.3187*a0 and -2.8 ev
+r0 = 0.184*aa #  0.3187*a0 and -2.8 ev
 V0_sigam = +0.48 #ev
-V0_pi    = -2.7#-2.8 #ev
+V0_pi    = -2.8#-2.8 #ev
+onsite_ = 0
 cut_fac = 4.1
 r_cut = cut_fac*a0 # cutoff for interlayer hopings
-
+sigma_shift = np.abs(V0_pi-V0_sigam)/2 
 ## other arguments
 file_name = sys.argv[1]
 version_ = file_name[:-5] +'_cut_' + str(cut_fac) #'v_0' #
-phi_ = 1.050120879794409/2  #1.08455/2 # from Jin
+phi_ = 2.1339/2 #1.050120879794409/2  #1.08455/2 # from Jin
 
-n_k_points = 50 # number of K-points in the given path
-n_eigns = 50 # number of eigen values to calculate
+n_k_points = 20 # number of K-points in the given path
+n_eigns = 100 # number of eigen values to calculate
 
 
 
@@ -154,8 +155,8 @@ n_eigns = 50 # number of eigen values to calculate
 gamma = np.array([0,0,0])
 alpha_ = 4*np.pi*np.sin(np.deg2rad(phi_)) / (np.sqrt(3)*aa) 
 M = -0.5*alpha_*np.array([1, np.sqrt(3), 0])
-K1 = alpha_*np.array([0, -2/np.sqrt(3), 0])
-K2 = -alpha_*np.array([1, 1/np.sqrt(3), 0])
+K1 =  alpha_*np.array([0, -2/np.sqrt(3), 0])
+K2 = -alpha_*np.array([1,  1/np.sqrt(3), 0])
 
 
 rot_angle = np.deg2rad(90)
@@ -168,7 +169,8 @@ K2 = np.dot(rot, K2)
 #symm_label = ['K1','gamma','M','K2']
 symm_points = np.array([gamma, K1, K2, gamma])
 symm_label = ['gamma','K1', 'K2', 'gamma']
-
+#symm_points = np.array([gamma, K1])
+#symm_label = ['gamma','K1']
 #### works for AB!! for this _-_ shape of graphene
 #M_mono = 2*np.pi/(2*np.sqrt(3)*aa*50) * np.array([np.sqrt(3), -1, 0])
 #K_mono = 4*np.pi/(3*np.sqrt(3)*aa*50) * np.array([np.sqrt(3),  0, 0])
@@ -183,7 +185,7 @@ symm_label = ['gamma','K1', 'K2', 'gamma']
 
 
 K_points, step_list = highsymm_path(symm_points, n_k_points)
-n_k_points = K_points.shape[0]
+n_k_points = K_points.shape[0] 
 Eigns = np.zeros([n_k_points, n_eigns])
 
 ##
@@ -224,33 +226,43 @@ for k_ in K_points:
     
     ### all atoms at once!
     for i in range(N):
-        neighs = neighbors_list[i][~(np.isnan(neighbors_list[i]))].astype('int')
+        neighs = neighbors_list[i][~(np.isnan(neighbors_list[i]))].astype('int') # number of neighbors are not known, so you put this super complex thing here to filter out
+        if onsite_ !=0 : 
+            H[i, i] = onsite_ if nl_type == 'full' else onsite_/2
         for j in neighs:
             #print('i,j', i,j)
             value_   = T_all(k_, pos_[i], pos_[j]) 
-            H[i, j] = value_
+            H[i, j]  = value_ 
     
-    if nl_type == 'half':
+   
+    if nl_type == 'half': # in case you are getting neigh_list_lammps, you might have only half of the bonds! 
         H_copy = H.copy()
         H_trans = sp.lil_matrix.transpose(H, copy=True)
         H_dagger = sp.lil_matrix.conjugate(H_trans, copy=True)
         H = sp.lil_matrix(H_dagger + H_copy)
+        
+    # H.C.
+    H_copy = H.copy()
+    H_trans = sp.lil_matrix.transpose(H, copy=True)
+    H_dagger = sp.lil_matrix.conjugate(H_trans, copy=True)
+    H = sp.lil_matrix(H_dagger + H_copy)
     
     ## just for a check
     if kk == 0:        
         row_,col_ = H.nonzero()
         print('tot_non_zero_elements=',row_.shape[0],"\n")
-        for iii in range(N):
-            if H[i, i] != 0:
-                print('H[{0}, {0}] is not zero! but= {1}'.format(i,H[i, i] ))
-    ##
+        #for iii in range(N):
+            #if H[i, i] != 0:
+                #print('H[{0}, {0}] is not zero! but= {1}'.format(i,H[i, i] ))
+    ###
     
     ######## Engine to find eigenvalues
     #print("eigsh starting..., time: {:.2f} seconds         \r".format(time.time() - t_start))
     log_out(["eigsh starting..., time: {:.2f} seconds\n".format(time.time() - t_start)])
     # eigvals= eigsh(H, k=n_eigns, which='SM', return_eigenvectors=False, mode='normal')
-    eigvals = eigsh(H, k=n_eigns, sigma=0.8, which='LM', return_eigenvectors=False, mode='normal')  ## note: largest eigen values around sigma=0 is crazy faster than smallest eigenvalues!!! I checked they are exact same results. This well known by others as efficency of the algorithem. 
+    eigvals = eigsh(H, k=n_eigns, sigma=sigma_shift, which='LM', return_eigenvectors=False, mode='normal')  ## note: largest eigen values around sigma=0 is crazy faster than smallest eigenvalues!!! I checked they are exact same results. This well known by others as efficency of the algorithem. 
     Eigns[kk] = np.real(eigvals)
+    #print(np.min(eigvals.imag))
     ###
     
     ## 
@@ -280,7 +292,7 @@ xpos_ = [0]
 plt.axvline(jj, color='black')
 for shit_ in Jins_dick:
     jj += shit_
-    plt.axvline(jj, color='black')
+    plt.axvline(jj, color='gray')
     xpos_.append(jj)
     
 plt.xticks(xpos_, symm_label,fontsize=14)
