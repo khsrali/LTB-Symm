@@ -79,14 +79,14 @@ def T_bone_sp(vc_mat, ez=np.array([0,0,1])):
 def T_meat_sp(K_, T_0, vc_mat):
     
     modulation_matrix = sp.lil_matrix((N, N), dtype='complex')
-    print('making modulation_matrix..')
+    #print('making modulation_matrix..')
     for ii in range(N):
         neighs = rd_.nl[ii][~(np.isnan(rd_.nl[ii]))].astype('int')
         for jj in neighs:
             
             v_c = np.array([ vc_mat[0][ii,jj],  vc_mat[1][ii,jj],  vc_mat[2][ii,jj] ])
             modulation_matrix[ii,jj] = np.exp(-1j * np.dot(v_c, K_))
-    print('multipling modulation_matrix')
+    #print('multipling modulation_matrix')
     return T_0.multiply(modulation_matrix)
 
 
@@ -97,7 +97,7 @@ def T_bone(vc_mat, ez=np.array([0,0,1]) ):
     please provid ez, only in dimention of (N,3)
     '''
     if sparse_flag:
-        return_ = T_bone_sp(vc_mat, ez=np.array([0,0,1]) )
+        return_ = T_bone_sp(vc_mat, ez=ez )
        
     else:
         dd_mat = np.linalg.norm(vc_mat, axis=2)
@@ -114,22 +114,24 @@ def T_bone(vc_mat, ez=np.array([0,0,1]) ):
             print('Wrong ez!! please provide only in shape (N,3)')
             exit(1)
         ##
-        
-        dd_mat_1 = dd_mat.copy()
-        dd_mat_2 = dd_mat.copy()
-        dd_mat.flags["WRITEABLE"] = False
-        
-        dd_mat_1[dd_mat!=0] -= d0
-        dd_mat_2[dd_mat!=0] -= a0
+        ##
+        dd_mat_mask = np.zeros(dd_mat.shape, dtype='int')
+        dd_mat_mask[dd_mat!=0] = 1
 
-        V_sigam_mat = scaling_factor * V0_sigam * np.exp(-dd_mat_1 / r0 ) # the factor of two is from H.C
-        V_pi_mat    = scaling_factor * V0_pi    * np.exp(-dd_mat_2 / r0 )
+        V_sigam_mat = scaling_factor * V0_sigam * np.exp(-(dd_mat - d0*dd_mat_mask) / r0 ) # the factor of two is from H.C
+        V_pi_mat    = scaling_factor * V0_pi    * np.exp(-(dd_mat - a0*dd_mat_mask) / r0 )
+
+        ##
+        del dd_mat
+
 
         return_ = V_sigam_mat * tilt_mat + V_pi_mat * (1-tilt_mat) ## will not work for a sparse matrix
+        return_[dd_mat_mask==0] = 0.0
         np.nan_to_num(return_, copy=False, nan=0.0, posinf=0.0, neginf=0.0)
-        
-        del dd_mat_1
-        del dd_mat_2
+
+        del V_pi_mat
+        del V_sigam_mat
+        del tilt_mat
         
         ## H.C
         return_ = return_ + return_.transpose()
@@ -146,7 +148,8 @@ def T_meat(K_, T_0, vc_mat):
     else:    
         modulation_matrix = np.exp(-1j * np.dot(vc_mat, K_))
         return_ = T_0 * modulation_matrix
-    
+        del modulation_matrix
+        
     return return_
 
 
@@ -163,43 +166,57 @@ V0_pi    = -2.7#-2.8 #ev
 onsite_ = 0
 cut_fac = 4.01
 r_cut = cut_fac*a0 # cutoff for interlayer hopings
-scaling_factor = 0.5 # the famous factor of 2, to be there or not!
-sigma_shift = scaling_factor*2*np.abs(V0_pi-V0_sigam)/4 
-phi_ = 1.08455/2  #2.1339/2 #1.050120879794409/2  #1.08455/2 # from Jin
+scaling_factor = 0.5 # the famous factor of 2, to be or not to be there!
+sigma_shift = scaling_factor*np.abs(V0_pi-V0_sigam)/2 
+phi_ = 2.1339/2#1.08455/2  #2.1339/2 #1.050120879794409/2  #1.08455/2 # from Jin
 
 ## other arguments
 file_name = sys.argv[1]
 version_ = file_name[:-5] +'_cut_' + str(cut_fac) #'v_0' #
-sparse_flag = False
+sparse_flag = True
+#sparse_flag = False
 n_k_points = 10 # number of K-points in the given path
-n_eigns = 20 # number of eigen values to calculate
+n_eigns = 100 # number of eigen values to calculate
 
 
-
-gamma = np.array([0,0,0])
+## Attemps to use G1 and G2, making it easier for multi-moire, no rotation is required..
+N_b1 = 1
+N_b2 = 1
 alpha_ = 4*np.pi*np.sin(np.deg2rad(phi_)) / (np.sqrt(3)*aa) 
-M = -0.5*alpha_*np.array([1, np.sqrt(3), 0])
-K1 =  alpha_*np.array([0, -2/np.sqrt(3), 0])
-K2 = -alpha_*np.array([1,  1/np.sqrt(3), 0])
+G1 = alpha_ * np.array([np.sqrt(3), -1, 0]) * (1/N_b1)
+G2 = alpha_ * np.array([0, 2, 0]) * (1/N_b2)
+gamma = np.array([0,0,0])
+M = G2 / 2
+K1 = (G2 - G1) /3
+K2 = (2*G2 + G1) / 3
+### The working one
+#gamma = np.array([0,0,0])
+#alpha_ = 4*np.pi*np.sin(np.deg2rad(phi_)) / (np.sqrt(3)*aa) 
+#M = -0.5*alpha_*np.array([1, np.sqrt(3), 0])
+#K1 =  alpha_*np.array([0, -2/np.sqrt(3), 0])
+#K2 = -alpha_*np.array([1,  1/np.sqrt(3), 0])
 
+#rot_angle = np.deg2rad(90)
+#rot = np.array([[np.cos(rot_angle), -np.sin(rot_angle), 0], [np.sin(rot_angle), np.cos(rot_angle), 0], [0,0,1]])
 
-rot_angle = np.deg2rad(90)
-rot = np.array([[np.cos(rot_angle), -np.sin(rot_angle), 0], [np.sin(rot_angle), np.cos(rot_angle), 0], [0,0,1]])
-
-K1 = np.dot(rot, K1)
-M  = np.dot(rot, M)
-K2 = np.dot(rot, K2)
+#K1 = np.dot(rot, K1)
+#M  = np.dot(rot, M)
+#K2 = np.dot(rot, K2)
 #symm_points = np.array([K1,gamma,M,K2])
 #symm_label = ['K1','gamma','M','K2']
+symm_points = np.array([gamma, M])
+symm_label = ['gamma', 'M']
 
-symm_points = np.array([gamma,M])
-symm_label = ['gamma','M']
 
 
+
+
+## useful for unrelax to compare with Mattia, it seems he has an extra factor of 2!
 #symm_points = np.array([gamma, K1, K2, gamma])
 #symm_label = ['gamma','K1', 'K2', 'gamma']
 #symm_points = np.array([gamma, K1])
 #symm_label = ['gamma','K1']
+
 #### works for AB!! for this _-_ shape of graphene
 #M_mono = 2*np.pi/(2*np.sqrt(3)*aa*50) * np.array([np.sqrt(3), -1, 0])
 #K_mono = 4*np.pi/(3*np.sqrt(3)*aa*50) * np.array([np.sqrt(3),  0, 0])
@@ -274,14 +291,14 @@ for k_ in K_points:
 
     
     ######## Engine to find eigenvalues
-    print('solving..')
+    #print('solving..')
     eigvals = eigsh(H, k=n_eigns, sigma=sigma_shift, which='LM', return_eigenvectors=False, mode='normal')  ## note: largest eigen values around sigma=0 is crazy faster than smallest eigenvalues!!! I checked they are exact same results. This well known by others as efficency of the algorithem. 
-    print('solved..')
+    #print('solved..')
     Eigns[kk] = np.real(eigvals)
     ###
     
     kk += 1
-    print("{:.2f} percent completed, {:.2f}s per K-point, ETR: {:.2f}s".format(100*kk/n_k_points, (time.time() - t_loop), (n_k_points-kk)*(time.time() - t_start)/kk )) #, end = "\r")
+    print("{:.2f} percent completed, {:.2f}s per K-point, ETR: {:.2f}s".format(100*kk/n_k_points, (time.time() - t_loop), (n_k_points-kk)*(time.time() - t_start)/kk ), end = "\r")
     
 
 ## done! , saveing ...
