@@ -166,29 +166,40 @@ V0_pi    = -2.7#-2.8 #ev
 onsite_ = 0
 cut_fac = 4.01
 r_cut = cut_fac*a0 # cutoff for interlayer hopings
-scaling_factor = 0.5 # the famous factor of 2, to be or not to be there!
+scaling_factor = 1#0.5 # the famous factor of 2, to be or not to be there!
 sigma_shift = scaling_factor*np.abs(V0_pi-V0_sigam)/2 
-phi_ = 2.1339/2#1.08455/2  #2.1339/2 #1.050120879794409/2  #1.08455/2 # from Jin
+phi_ = 1.08455/2  #2.1339/2 #1.050120879794409/2  #1.08455/2 # from Jin
 
 ## other arguments
 file_name = sys.argv[1]
 version_ = file_name[:-5] +'_cut_' + str(cut_fac) #'v_0' #
 sparse_flag = True
 #sparse_flag = False
-n_k_points = 10 # number of K-points in the given path
-n_eigns = 100 # number of eigen values to calculate
+n_k_points = 80 # number of K-points in the given path
+n_eigns = 50 # number of eigen values to calculate
 
-
-## Attemps to use G1 and G2, making it easier for multi-moire, no rotation is required..
-N_b1 = 1
-N_b2 = 1
+## Extended BZ
 alpha_ = 4*np.pi*np.sin(np.deg2rad(phi_)) / (np.sqrt(3)*aa) 
-G1 = alpha_ * np.array([np.sqrt(3), -1, 0]) * (1/N_b1)
-G2 = alpha_ * np.array([0, 2, 0]) * (1/N_b2)
+G1 = alpha_ * np.array([-np.sqrt(3), +1, 0]) 
+G2 = alpha_ * np.array([0, 2, 0]) 
 gamma = np.array([0,0,0])
-M = G2 / 2
-K1 = (G2 - G1) /3
-K2 = (2*G2 + G1) / 3
+X = (2*G1 - G2) / 4
+W = G1 / 2
+Y = G2 / 4
+symm_points = np.array([gamma, X, W, Y, gamma, W])
+symm_label = ['gamma', 'X', 'W', 'Y', 'gamma', 'W']
+
+## Please use G1 and G2, making it easier for multi-moire, no rotation is required..
+#N_b1 = 1
+#N_b2 = 1
+#alpha_ = 4*np.pi*np.sin(np.deg2rad(phi_)) / (np.sqrt(3)*aa) 
+#G1 = alpha_ * np.array([np.sqrt(3), -1, 0]) * (1/N_b1)
+#G2 = alpha_ * np.array([0, 2, 0]) * (1/N_b2)
+#gamma = np.array([0,0,0])
+#M = G2 / 2
+#K1 = (G2 - G1) /3
+#K2 = (2*G2 + G1) / 3
+
 ### The working one
 #gamma = np.array([0,0,0])
 #alpha_ = 4*np.pi*np.sin(np.deg2rad(phi_)) / (np.sqrt(3)*aa) 
@@ -204,8 +215,8 @@ K2 = (2*G2 + G1) / 3
 #K2 = np.dot(rot, K2)
 #symm_points = np.array([K1,gamma,M,K2])
 #symm_label = ['K1','gamma','M','K2']
-symm_points = np.array([gamma, M])
-symm_label = ['gamma', 'M']
+#symm_points = np.array([gamma, M])
+#symm_label = ['gamma', 'M']
 
 
 
@@ -217,13 +228,13 @@ symm_label = ['gamma', 'M']
 #symm_points = np.array([gamma, K1])
 #symm_label = ['gamma','K1']
 
-#### works for AB!! for this _-_ shape of graphene
-#M_mono = 2*np.pi/(2*np.sqrt(3)*aa*50) * np.array([np.sqrt(3), -1, 0])
-#K_mono = 4*np.pi/(3*np.sqrt(3)*aa*50) * np.array([np.sqrt(3),  0, 0])
+### works for AB!! for this _-_ shape of graphene
+#M_mono = 2*np.pi/(2*np.sqrt(3)*aa*5*1) * np.array([np.sqrt(3), -1, 0])
+#K_mono = 4*np.pi/(3*np.sqrt(3)*aa*5*1) * np.array([np.sqrt(3),  0, 0])
 #gamma = np.array([0,0,0])
 
-##symm_points = np.array([gamma,M_mono,K_mono,gamma])
-##symm_label = ['gamma','M', 'K', 'gamma']
+#symm_points = np.array([gamma,M_mono,K_mono,gamma])
+#symm_label = ['gamma','M', 'K', 'gamma']
 #symm_points = np.array([K_mono,gamma])
 #symm_label = ['K', 'gamma']
 ####
@@ -329,7 +340,7 @@ plt.title(title_)
 plt.grid(axis='y')
 plt.grid(axis='x')
 plt.savefig(save_name + ".png")
-plt.show()
+#plt.show()
  
 exit()
 
