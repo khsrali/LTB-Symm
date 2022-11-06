@@ -1,6 +1,7 @@
 Update 6/11/22: finnally Version 2.0 is out!
-Check out on branch Version_2.0. 
 I tried to make it more like a package. More of methods and object oriented.
+
+Check out on the main branch. I moved the other one branch: TB+read_data, I will keep that for a while just in case!
 
 Now, you may run like this:
 python input_script.py
