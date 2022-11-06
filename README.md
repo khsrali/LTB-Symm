@@ -1,6 +1,9 @@
 Update 6/11/22: finnally Version 2.0 is out!
 Check out on branch Version_2.0. 
 I tried to make it more like a package. More of methods and object oriented.
+
+Now, you may run like this:
+python input_script.py
 ##########
 
 # TB-twist-bilayer
