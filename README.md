@@ -1,3 +1,8 @@
+Update 6/11/22: finnally Version 2.0 is out!
+Check out on branch Version_2.0. 
+I tried to make it more like a package. More of methods and object oriented.
+##########
+
 # TB-twist-bilayer
 To my best knowledge there is no TB code publicly available for twisted bilayer and 2d materials. 
 I would like to publish this library at some point and get citations, please keep it private for now.
