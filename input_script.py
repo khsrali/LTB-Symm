@@ -3,7 +3,7 @@ from TightBonding import TB
 
 mytb = TB()
 
-mytb.set_configuration(file_name = sys.argv[1], phi_ = 1.08455, sparse_flag = True)
+mytb.set_configuration('1.08_1AA.data', phi_ = 1.08455, sparse_flag = False)
 
 mytb.set_parameters(a0 = 1.42039011, d0 = 3.344, V0_sigam = +0.48, V0_pi = -2.7, cut_fac = 4.01)
 
