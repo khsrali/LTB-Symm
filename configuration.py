@@ -8,7 +8,9 @@ I am sure this code has no bug!
 
 class pwl:
 
-    def __init__(self, file_name, sparse_flag):
+    def __init__(self, folder_name, file_name, sparse_flag):
+        
+        self.folder_name = folder_name
         file_ = open(file_name)           
         l_ = file_.readlines()
         self.sparse_flag = sparse_flag
@@ -41,7 +43,6 @@ class pwl:
         self.xlen_half = self.xlen/2
         
         file_.close()
-
         ### get coordinates and bonds info
         self.coords = np.loadtxt(file_name, skiprows =skiplines, max_rows= self.tot_number)[:,4:7]
     
@@ -159,7 +160,7 @@ class pwl:
         if load_ == True:
             try:
                 #print('trying to load=','neigh_list_{0}.npz'.format(version_))
-                data_ = np.load('neigh_list_{0}.npz'.format(version_))
+                data_ = np.load(self.folder_name + 'neigh_list_{0}.npz'.format(version_))
                 np_nl     = data_['np_nl']
                 tot_neigh = data_['tot_neigh']
                 ave_neigh = data_['ave_neigh']
@@ -203,7 +204,7 @@ class pwl:
             
             del coords_9x
             ave_neigh= tot_neigh/self.tot_number
-            np.savez('neigh_list_{0}'.format(version_), np_nl=np_nl, tot_neigh=tot_neigh, ave_neigh=ave_neigh ) 
+            np.savez(self.folder_name + 'neigh_list_{0}'.format(version_), np_nl=np_nl, tot_neigh=tot_neigh, ave_neigh=ave_neigh ) 
 
             
         self.nl = np_nl
