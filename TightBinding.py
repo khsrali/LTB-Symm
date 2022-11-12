@@ -1,22 +1,36 @@
+import time, os, sys, logging
 from configuration import pwl
-import numpy as np
 import matplotlib.pyplot as plt
-import time
+import matplotlib as mpl
+import numpy as np
 import scipy.sparse as sp
 from scipy.sparse.linalg import eigsh
-import sys
-import matplotlib as mpl
-import os
+
 #from mpi4py import MPI
 #comm = MPI.COMM_WORLD
 #rank = comm.Get_rank()
 
 
 class TB:
-    def __init__(self):
-        pass # we can move some essentials here, if needed
+    def __init__(self, log_propagate=True, debug=False):
+        name = 'TB'
+        self.debug = debug
+        # -------- SET UP LOGGER -------------
+        self.log_out = logging.getLogger(name) # Set name identifying the logger.
+        # Adopted format: level - current function name - message. Width is fixed as visual aid.
+        logging.basicConfig(format='[%(levelname)7s - %(name)5s: %(funcName)20s] %(message)s')
+        self.log_out.setLevel(logging.INFO)
+        if debug: self.log_out.setLevel(logging.DEBUG)
+        self.log_out.debug('Created TB object')
+        #pass # we can move some essentials here, if needed
 
-    def calculate(self, n_eigns, local_normal_flag=True, load_neigh = True):
+    def progress_bar(self, message, frac=None, width=50, out=sys.stderr):
+        # No bar, just message
+        if frac == None: print('\r', message, file=out, end='')
+        # Update progress bar with given fraction
+        else: print('\r', '['+'='*int(frac*width)+' '*int((1-frac)*width)+']', message, file=out, end='')
+
+    def calculate(self, n_eigns, local_normal_flag=True, load_neigh=True):
         self.n_eigns = n_eigns # number of eigen values to calculate
         self.Eigns = np.zeros([self.n_k_points, self.n_eigns])
         # build neigh_list
@@ -32,9 +46,10 @@ class TB:
             T0 = self.T_bone_sp()
         else:
             T0 = self.T_bone()
-        self.log_out('T_bone is constructed..')
+        self.log_out.info('T_bone is constructed..')
 
         # make and solve T_meat for each k point
+        self.log_out.info('Start loop on %i K-points' % self.n_k_points)
         t_start = time.time()
         for kk in range(self.n_k_points):
             t_loop = time.time()
@@ -49,12 +64,13 @@ class TB:
 
             #print(str_s, end = "\r")
             ETR = (self.n_k_points-(kk+1))*(time.time() - t_start)/(kk+1) # seconds
-            self.log_out("{:.2f} percent completed, {:.2f}s per K-point, ETR: {:.0f}h:{:.0f}m".format(100*(kk+1)/self.n_k_points, (time.time() - t_loop), ETR//3600, (ETR%3600) //60 ), "\r")
-
-        self.log_out("Total time: {:.2f} seconds\n".format(time.time() - t_start))
-
-
-
+            self.progress_bar("{:6.2f} %, {:.2f}s per K-point, ETR: {:.0f}h:{:.0f}m".format(100*(kk+1)/self.n_k_points,
+                                                                                            (time.time() - t_loop),
+                                                                                            ETR//3600, (ETR%3600) //60 ),
+                              frac=kk/self.n_k_points, out=sys.stderr)
+        #----- OUT OF THE LOOP -----
+        print('\nLoop on K-points finished', file=sys.stderr) # leave the completed progress bar on screen
+        self.log_out.info("Total time: {:.2f} seconds".format(time.time() - t_start))
 
     def set_configuration(self, file_and_folder, phi_, orientation, sparse_flag=True):
         '''
@@ -83,25 +99,22 @@ class TB:
         #phi_ = np.nan # 1.08455/2  #2.1339/2 #1.050120879794409/2  #1.08455/2 # from Jin
         self.conf_ = pwl(self.folder_name, self.file_name, self.sparse_flag)
 
-        ##
-        self.log_file_name = self.folder_name+'log.tightbonding'
-        log_file = open(self.log_file_name, mode='w')#, mode='a')
-        log_file.close()
 
+        ## AS: If you want a logfile, define another handler for the logger object (see init)
+        #self.log_file_name = self.folder_name+'log.tightbonding'
+        #log_file = open(self.log_file_name, mode='w')#, mode='a')
+        #log_file.close()
 
-
-
-
-    def log_out(self, str_s, end_="\n"):
-        log_file = open(self.log_file_name, mode='a')
-        #for str_ in str_s:
-            #str__ = str_ if type(str_) == str else str(str_)
-            #log_file.write(str__)
-            #log_file.write('\n')
-        log_file.write(str_s)
-        log_file.write('\n')
-        log_file.close()
-        print(str_s, end = end_)
+    #def log_out(self, str_s, end_="\n"):
+    #    log_file = open(self.log_file_name, mode='a')
+    #    #for str_ in str_s:
+    #        #str__ = str_ if type(str_) == str else str(str_)
+    #        #log_file.write(str__)
+    #        #log_file.write('\n')
+    #    log_file.write(str_s)
+    #    log_file.write('\n')
+    #    log_file.close()
+    #    print(str_s, end = end_)
 
 
     def MBZ(self):
@@ -164,8 +177,9 @@ class TB:
             self.MBZ_K2 = 4*np.pi/(3*np.sqrt(3)*aa*scale*1) * np.array([np.sqrt(3)/2,  -3/2, 0])
             self.MBZ_gamma = np.array([0,0,0])
         else:
-            self.log_out('Invalid orientation')
-            exit(1)
+            raise ValueError('Invalid orientation "%s"' % self.orientation)
+            #self.log_out('Invalid orientation')
+            #exit(1)
 
     def set_symmetry_path(self, highsymm_points, N):
 
@@ -197,8 +211,9 @@ class TB:
             elif label_ == 'W':
                 self.symm_coords[ii] = self.MBZ_W
             else:
-                self.log_out('unrecognised symmetry point')
-                exit(1)
+                raise ValueError('unrecognised symmetry point "%s"' % label_)
+                #self.log_out('unrecognised symmetry point')
+                #exit(1)
 
             ii +=1
 
@@ -220,9 +235,9 @@ class TB:
             for jj in range(steps):
                 self.K_path = np.append(self.K_path,[self.K_path[-1] + diff_symm_points[ii] * 1.0 / steps], axis=0)
 
-        self.log_out("requested n_k_points={0}".format(N))
+        self.log_out.info("requested n_k_points={0}".format(N))
         self.n_k_points = self.K_path.shape[0]
-        self.log_out("actual n_k_points={0}".format(self.n_k_points))
+        self.log_out.info("actual n_k_points={0}".format(self.n_k_points))
 
         self.K_path_Highsymm_indices = step_list
 
@@ -308,8 +323,9 @@ class TB:
         elif ez.shape == (self.conf_.tot_number,3):
             flag_ez = True
         else:
-            self.log_out('Wrong ez!! there is a bug, please report code: bone_sp')
-            exit(1)
+            raise RuntimeError('Wrong ez!! there is a bug, please report code: bone_sp')
+            #self.log_out('Wrong ez!! there is a bug, please report code: bone_sp')
+            #exit(1)
 
         for ii in range(self.conf_.tot_number):
             neighs = self.conf_.nl[ii][~(np.isnan(self.conf_.nl[ii]))].astype('int')
@@ -378,8 +394,9 @@ class TB:
             for ii in range(self.conf_.tot_number):
                 tilt_mat[ii] = np.power(np.dot(vc_mat[ii], ez[ii])/ dd_mat[ii], 2)
         else:
-            self.log_out('Wrong ez!! there is a bug, please report code: bone_full')
-            exit(1)
+            raise RuntimeError('Wrong ez!! there is a bug, please report code: bone_full')
+            #self.log_out('Wrong ez!! there is a bug, please report code: bone_full')
+            #exit(1)
         ##
         ##
         dd_mat_mask = np.zeros(dd_mat.shape, dtype='int')
@@ -443,7 +460,7 @@ class TB:
             if self.orientation != 'test_ML':
                 N_flat = np.all([y_low<eigs_now, eigs_now<y_high],axis=0).sum()
                 if N_flat_old != N_flat and k_>0:
-                    print("there might be a bug!!")
+                    self.log_out.warning("there might be a bug!!")
                     exit() # AS: Is this really an error? Or you are looking in the wrong place?
                     N_flat_old = N_flat
 
@@ -451,12 +468,13 @@ class TB:
 
         # find zero
         if N_flat == 8:
+        #if N_flat == 0: # ML test
             try:
                 idx = np.where(self.symm_label=='K2')[0][0]
                 shift_tozero = np.average( self.Eigns[int(xpos_[idx]), 2:N_flat-2]  )
-                print("I'm shifting to zero")
+                self.log_out.info("I'm shifting to zero")
             except IndexError:
-                print("Cannot find the Right value to shift_tozero, so I'm not shifting")
+                self.log_out.error("Cannot find the Right value to shift_tozero, so I'm not shifting")
                 shift_tozero = 0
 
         else:

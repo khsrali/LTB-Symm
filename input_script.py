@@ -6,7 +6,8 @@ import sys
 
 
 # === TB SETUP ===
-mytb = TB()
+mytb = TB(debug=True)
+
 # --- Real sys ---
 #mytb.set_configuration('1.08_1AA.data', phi_ = 1.08455, orientation = '1_fold' , sparse_flag = False)
 #mytb.set_parameters(a0 = 1.42039011, d0 = 3.344, V0_sigam = +0.48, V0_pi = -2.7, cut_fac = 4.01)
@@ -20,7 +21,7 @@ mytb.set_configuration('mono_0_twist_50.data', phi_ = 0, orientation = 'test_ML'
 mytb.set_parameters(a0 = 1.42039011, d0 = 3.344, V0_sigam = +0.48, V0_pi = -2.7, cut_fac = 1.)
 
 mytb.set_symmetry_path(['K1','gamma','M','K2'] , N=150)
-mytb.calculate(n_eigns = 48)
+mytb.calculate(n_eigns = 48, load_neigh=False)
 mytb.save('')
 
 # === PLOTTING ===
