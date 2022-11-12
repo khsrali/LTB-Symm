@@ -1,22 +1,53 @@
+#!/usr/bin/env python3
 from TightBinding import TB
+import matplotlib
+import matplotlib.pyplot as plt
 import sys
 
 
-mytb = TB()
-mytb.set_configuration('1.08_1AA.data', phi_ = 1.08455, orientation = '1_fold' , sparse_flag = False)
-mytb.set_parameters(a0 = 1.42039011, d0 = 3.344, V0_sigam = +0.48, V0_pi = -2.7, cut_fac = 4.01)
+# === TB SETUP ===
+mytb = TB(debug=True)
 
-mytb.set_symmetry_path(['K1','gamma','M','K2'] , N=1) #[]
-mytb.calculate(n_eigns = 20)
+# --- Real sys ---
+#mytb.set_configuration('1.08_1AA.data', phi_ = 1.08455, orientation = '1_fold' , sparse_flag = False)
+#mytb.set_parameters(a0 = 1.42039011, d0 = 3.344, V0_sigam = +0.48, V0_pi = -2.7, cut_fac = 4.01)
+#
+#mytb.set_symmetry_path(['K1','gamma','M','K2'] , N=1) #[]
+#mytb.calculate(n_eigns = 20)
+#mytb.save('')
+
+# --- Graphene 5x5 ML test ---
+mytb.set_configuration('mono_0_twist_50.data', phi_ = 0, orientation = 'test_ML', sparse_flag = False)
+mytb.set_parameters(a0 = 1.42039011, d0 = 3.344, V0_sigam = +0.48, V0_pi = -2.7, cut_fac = 1.)
+
+mytb.set_symmetry_path(['K1','gamma','M','K2'] , N=150)
+mytb.calculate(n_eigns = 48, load_neigh=False)
 mytb.save('')
 
+# === PLOTTING ===
+font = {'pdf.fonttype' : 42,
+        'font.size' : 20,
+        'font.family' : 'Helvetica'}
+plt.rcParams.update(font)
+
+# --- PLOT BZ ---
+fig, ax = plt.subplots(1,1)#, figsize=(5,10))
+mytb.plot_BZ(ax)
+plt.tight_layout()
+plt.show()
+
+# --- PLOT BANDS ---
+fig, ax = plt.subplots(1,1)#, figsize=(5,10))
+plot = mytb.plotter(ax)
+save_flag = False
+plt.tight_layout()
+if save_flag:
+    plt.savefig(mytb.folder_name+'Bands_'+mytb.save_name +'_all'+ ".png", dpi=300)
+else:
+    plt.show()
 
 
-plot = mytb.plotter()
-#plot.show()
-
-
-
+#=====================
 
 ## note:
 #angles: #1.08455  #2.1339 #1.050120879794409 # from Jin
