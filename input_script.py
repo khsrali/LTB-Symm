@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
+import sys
+import numpy as np
 from TightBinding import TB
 import matplotlib
 import matplotlib.pyplot as plt
-import sys
 
 
 # === TB SETUP ===
 mytb = TB(debug=True)
-
+#
 # --- Real sys ---
 #mytb.set_configuration('1.08_1AA.data', phi_ = 1.08455, orientation = '1_fold' , sparse_flag = False)
 #mytb.set_parameters(a0 = 1.42039011, d0 = 3.344, V0_sigam = +0.48, V0_pi = -2.7, cut_fac = 4.01)
@@ -20,6 +21,11 @@ mytb = TB(debug=True)
 mytb.set_configuration('mono_0_twist_50.data', phi_ = 0, orientation = 'test_ML', sparse_flag = False)
 mytb.set_parameters(a0 = 1.42039011, d0 = 3.344, V0_sigam = +0.48, V0_pi = -2.7, cut_fac = 1.)
 
+#mytb.r_cut = 1.42039011 * np.sqrt(3)*0.9 # just shy of second neighbours
+#print('rcut', mytb.r_cut)
+#mytb.conf_.neigh_list_AS(mytb.r_cut, load_=False)
+#mytb.conf_.neigh_list_me_smart(mytb.r_cut, load_=False)
+#exit(0)
 mytb.set_symmetry_path(['K1','gamma','M','K2'] , N=150)
 mytb.calculate(n_eigns = 48, load_neigh=False)
 mytb.save('')
