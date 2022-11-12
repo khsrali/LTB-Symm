@@ -18,13 +18,13 @@ class TB:
         # -------- SET UP LOGGER -------------
         self.log_out = logging.getLogger(name) # Set name identifying the logger.
         # Adopted format: level - current function name - message. Width is fixed as visual aid.
-        logging.basicConfig(format='[%(levelname)7s - %(name)5s: %(funcName)20s] %(message)s')
+        logging.basicConfig(format='[%(levelname)7s - %(name)10s: %(funcName)20s] %(message)s')
         self.log_out.setLevel(logging.INFO)
         if debug: self.log_out.setLevel(logging.DEBUG)
         self.log_out.debug('Created TB object')
         #pass # we can move some essentials here, if needed
 
-    def progress_bar(self, message, frac=None, width=50, out=sys.stderr):
+    def progress_bar(self, message, frac=None, width=43, out=sys.stderr):
         # No bar, just message
         if frac == None: print('\r', message, file=out, end='')
         # Update progress bar with given fraction
@@ -35,7 +35,10 @@ class TB:
         self.Eigns = np.zeros([self.n_k_points, self.n_eigns])
         # build neigh_list
         version_ = self.file_name[:-5] +'_cut_' + str(self.cut_fac)
-        self.conf_.neigh_list_me_smart(cutoff=self.r_cut, l_width=200, load_ = load_neigh, version_ = version_ )
+        # AK 9x9 implementation
+        #self.conf_.neigh_list_me_smart(cutoff=self.r_cut, l_width=200, load_ = load_neigh, version_ = version_ )
+        # AS reduce space implementation
+        self.conf_.neigh_list_AS(cutoff=self.r_cut, l_width=200, load_ = load_neigh, version_ = version_ )
         # build distance matrix
         self.conf_.vector_connection_matrix()
         # build normal vectors
@@ -305,10 +308,6 @@ class TB:
         self.r0 = 0.184* a0 * np.sqrt(3) #  0.3187*a0 and -2.8 ev
         self.sigma_shift = self.scaling_factor*np.abs(V0_pi-V0_sigam)/2
 
-
-
-
-
 ############ functions
 
     def T_bone_sp(self):
@@ -421,9 +420,6 @@ class TB:
         return_ = return_ + return_.transpose()
 
         return return_
-
-
-
 
     ## plot
     def plot_BZ(self, ax, ws_params={'ls': '--', 'color': 'tab:gray', 'lw': 1, 'fill': False}):
