@@ -1,0 +1,34 @@
+
+
+1) ordering flatbands should not be in plotter
+1) save&load get read of all parameters?
+5) input style: I don't like many exceptions if 'exact' in filename, etc..
+0) better MBZ func
+3) save 7 GB?
+0) put if rank ==0 for non parallel staff
+0) fix 3D bugs
+0) save & load why lammps file is loaded everytime? - no need. 
+0) configuration save is needed!
+0) reduce savenames..
+
+____ done:
+K points, a desicion to continues or discrete
+to choose the solver
+choose the Hamiltoniann
+
+
+Write documentaion using !!sphinx!! it can be host on github :)
+
+Auto generative like:
+"""
+    Get the mean temperature
+
+    Args:
+        data (pandas.DataFrame): A pandas dataframe with air temperature measurements.
+
+    Returns:
+        The
+"""
+
+
+publish a short paper and get citations!
