@@ -1,3 +1,9 @@
+logo test:
+![alt text](https://github.com/khsrali/LTB-Symm/blob/main/logo_V_0.1.png?raw=true)
+
+
+#### needs to be re-written
+
 Update 6/11/22: finnally Version 2.0 is out!
 I tried to make it more like a package. More of methods and object oriented.
 
