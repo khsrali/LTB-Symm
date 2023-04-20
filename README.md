@@ -1,5 +1,5 @@
 logo test:
-![alt text](https://github.com/khsrali/LTB-Symm/main/logo_V_0.1-01.png?raw=true)
+![alt text](https://www.simplilearn.com/ice9/free_resources_article_thumb/what_is_image_Processing.jpg?raw=true)
 
 
 #### needs to be re-written
