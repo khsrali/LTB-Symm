@@ -1,5 +1,5 @@
 logo test:
-![alt text](https://github.com/khsrali/LTB-Symm/blob/main/logo_V_0.1-01.png?raw=true)
+![alt text](https://github.com/khsrali/LTB-Symm/blob/main/logo_V_0.1.png?raw=true)
 
 
 #### needs to be re-written
