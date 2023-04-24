@@ -7,7 +7,7 @@ import scipy.sparse as sp
 #from scipy.sparse.linalg import eigsh
 from scipy.sparse.linalg import eigs
 from mpi4py import MPI
-from misc import get_brillouin_zone_2d, plot_BZ2d, get_uc_patch2D
+from misc import get_brillouin_zone_2d, plot_BZ2d#, get_uc_patch2D
 import spglib
 from tqdm import tqdm
 from scipy.optimize import curve_fit
@@ -30,14 +30,32 @@ class TB:
         print('Created TB object')
 
 
-    def build_up(self, H_style, local_normal_flag=True, load_neigh=True, nl_method='Andrea', ver_ = ''):
-        '''
-        Build up the bone matrix
-        :param str nl_method: method to build neghibour list 'Andrea' or 'Ali'
-        :param H_style: 'ave' or '9X'
-        '''
+    def build_up(self, H_style, local_normal=True, load_neigh=True, nl_method='Andrea'):
+        """
+            Build up some basic requirments: normal vectors, neighborlist, and the bone matrix
+
+            Args:
+                H_style: str
+                    type of the Hamiltonian, 'ave' or '9X'
+                local_normal: boolean
+                    To use local_normal to orbital direction(True) or consider them all aligned in Z direction (False). (default = True)
+                load_neigh: boolean
+                    load a previously created neighborlist. (default = True)
+                nl_method: str
+                    which method to use for creating neighborlist. 'Andrea' (faster but might have a bug in rhombic cells, to be investigated) or 'Ali'(slower, bug free) (default = 'Andrea')
+            Returns: None
+        """
+        
+        # check input args
+        try:
+            assert H_style == 'ave' or dtype == '9X'
+        except AssertionError: raise TypeError('Only ave(averaged) or 9X(full 9-term Hamiltonian) is supported')
+        try:
+            assert nl_method == 'Ali' or dtype == 'Andrea'
+        except AssertionError: raise TypeError('Wrong nl_method. Only Ali or Andrea')
+            
         # build neigh_list
-        version_ = self.file_name[:-5] +'_cut_' + str(self.cut_fac) + ver_
+        version_ = self.file_name[:-5] +'_cut_' + str(self.cut_fac)
         
         if self.rank == 0:
             # calculate neigh_list
@@ -47,8 +65,6 @@ class TB:
             elif nl_method == 'Andrea':
                 # AS reduce space implementation
                 self.conf_.neigh_list_AS(cutoff=self.r_cut, l_width=300, load_ = load_neigh, version_ = version_ )
-            else:
-                raise RuntimeError("wrong nl_method method.")
 
             signal_ = True
             for ii in range(1,self.size):
@@ -64,14 +80,14 @@ class TB:
         # build distance matrix
         self.conf_.vector_connection_matrix()
         # build normal vectors
-        self.conf_.normal_vec(local_normal_flag)
+        self.conf_.normal_vec(local_normal)
 
-        ## build the 'Bone' matrix
-        #if self.sparse_flag:
-            #self.T0 = self.T_bone_sp(H_style)
-        #else:
-            #self.T0 = self.T_bone(H_style)
-        #print('T_bone is constructed..')
+        # build the 'Bone' matrix
+        if self.sparse_flag:
+            self.T0 = self.T_bone_sp(H_style)
+        else:
+            self.T0 = self.T_bone(H_style)
+        print('T_bone is constructed..')
         
 
     def engine_mpi(self, kpoints, n_eigns, solver='primme', return_eigenvectors=False):
@@ -222,7 +238,7 @@ class TB:
         
         try:
             assert dtype == 'float' or dtype == 'double'
-        except: raise TypeError('Only float(default) or double is supported for dtype')
+        except AssertionError: raise TypeError('Only float(default) or double is supported for dtype')
     
         self.sparse_flag=sparse_flag
         self.dtypeR = dtype
@@ -240,26 +256,33 @@ class TB:
 
 
     def set_parameters(self, d0, a0, V0_sigam, V0_pi, cut_fac):
+        """
+            Set some parameters of the twisted-bilayer-model
+            Args:
+                d0: float
+                    Distance between two layers. Notice d0 <= than minimum interlayer distance, otherwise you are exponentially increasing interaction!
+                a0: float
+                    Equilibrium distance between two neghibouring cites.
+                V0_sigam: float
+                    ... 
+                V0_pi: float
+                    ...
+                cut_fac: float
+                    Neighboring cutoff in unit a0. Circular based neighbor detecting method.
+                    larger value includes more neighbor for each cite.
+            Returns: None
+        """
         self.d0 = d0
         self.a0 = a0
         self.V0_sigam = V0_sigam
         self.V0_pi = V0_pi
         self.cut_fac = cut_fac
 
-        ''' apparrantly he made a mistake to use 1.3978 as average C-C distance in rebo potential,
-        while the true value according to Jin is  1.42039011 '''
-        #d0 = np.nan #3.344 #3.4331151895378   #3.4331151895378 #from Jin's data point d_ave #3.344 Mattia  # 3.4 AB  ## Mattia 105: 3.50168 ## Mattia 1.08: 3.50133635
-        # d0 must be <= than minimum interlayer distance! no one explained this, it was hard find  :(
-        #a0 = np.nan  #1.42039011 #Jin #1.3978 Mattia    # 1.42 AB  ## Matia 105: 1.42353  ## Mattia 1.08: 1.43919
-        #V0_sigam = np.nan #+0.48 #ev
-        #V0_pi    = np.nan #-2.7#-2.8 #ev
-        #cut_fac = np.nan #4.01
-
-        onsite_ = 0
-        self.scaling_factor = 1#0.5 # the famous factor of 2, to be or not to be there!
-        self.r_cut = cut_fac*a0 # cutoff for interlayer hopings
+        onsite_ = 0 # for later development, right now always 0
+        self.r_cut = cut_fac*a0 
         self.r0 = 0.184* a0 * np.sqrt(3) #  0.3187*a0 and -2.8 ev
-        self.sigma_shift = self.scaling_factor*np.abs(V0_pi-V0_sigam)/2
+        # approximate guess for sigma value in the eignvalue problem.
+        self.sigma_shift = np.abs(V0_pi-V0_sigam)/2
 
 
 
@@ -1898,8 +1921,8 @@ class TB:
                     ##ez_ = (ez[ii] + ez[jj])/2
 
                 #tilt = np.power(np.dot(v_c, ez_)/ dd, 2)
-                V_sigam = self.scaling_factor *self.V0_sigam * np.exp(-(dd-self.d0) / self.r0 )
-                V_pi    = self.scaling_factor *self.V0_pi    * np.exp(-(dd-self.a0) / self.r0 )
+                V_sigam = self.V0_sigam * np.exp(-(dd-self.d0) / self.r0 )
+                V_pi    = self.V0_pi    * np.exp(-(dd-self.a0) / self.r0 )
                 #t_d =  V_sigam * tilt + V_pi * (1-tilt)
                 
                 ## new efforts 
@@ -1997,8 +2020,8 @@ class TB:
         dd_mat_mask = np.zeros(dd_mat.shape, dtype='int')
         dd_mat_mask[dd_mat!=0] = 1
 
-        V_sigam_mat = self.scaling_factor * self.V0_sigam * np.exp(-(dd_mat - self.d0*dd_mat_mask) / self.r0 ) # scaling_factor is an stupid thing to handle the factor of 2 of H.C
-        V_pi_mat    = self.scaling_factor * self.V0_pi    * np.exp(-(dd_mat - self.a0*dd_mat_mask) / self.r0 )
+        V_sigam_mat = self.V0_sigam * np.exp(-(dd_mat - self.d0*dd_mat_mask) / self.r0 ) 
+        V_pi_mat    = self.V0_pi    * np.exp(-(dd_mat - self.a0*dd_mat_mask) / self.r0 )
 
         ##
         del dd_mat
@@ -2238,8 +2261,8 @@ class TB:
                         'ec' : "black",
                         'ls': "--",
                         'lw': 0.4}
-            uc_patch = get_uc_patch2D(u_rec, shift=-(u_rec[0]+u_rec[1])[:2]/2, plt_arg=uc_style)
-            ax.add_patch(uc_patch)
+            #uc_patch = get_uc_patch2D(u_rec, shift=-(u_rec[0]+u_rec[1])[:2]/2, plt_arg=uc_style)
+            #ax.add_patch(uc_patch)
 
         BZ_2d = get_brillouin_zone_2d(np.array([self.g1[:2], self.g2[:2]]))
         plot_BZ2d(ax, BZ_2d, ws_params)

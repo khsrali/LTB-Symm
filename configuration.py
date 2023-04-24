@@ -104,6 +104,13 @@ class pwl:
     
 
     def vector_connection_matrix(self, fnn_cutoff=1.55):
+        """
+            Create geometrical vectros connecting each two neighbors
+            Args:
+                fnn_cutoff: float 
+                    Maximum cut off to detect first nearest neghbours (default =1.55)
+            Returns: None
+        """
         print('creating vector_connection_matrix...')
 
         if self.sparse_flag:
@@ -128,34 +135,26 @@ class pwl:
 
                 dist_ = self.coords[jj] - self.coords[ii]
 
-                ## for debugging
-                #shit_0 = shit_1 = shit_2 = shit_3 =0
                 yout =0
                 xout =0
                 old_dist_size = np.linalg.norm(dist_)
-                ##
 
                 if dist_[1] > self.ylen_half:
                     dist_[1] -= self.ylen
                     dist_[0] -= self.xy
-                    #shit_0 =1
                     yout = -1
                 elif -1*dist_[1] > self.ylen_half:
                     dist_[1] += self.ylen
                     dist_[0] += self.xy
-                    #shit_1 =1
                     yout = +1
 
                 if dist_[0] > self.xlen_half:
                     dist_[0] -= self.xlen
-                    #shit_2 =1
                     xout = -1
                 elif -1*dist_[0] > self.xlen_half:
                     dist_[0] += self.xlen
-                    #shit_3 =1
                     xout = +1
                 
-
                 dist_size = np.linalg.norm(dist_)
                 if dist_size < fnn_cutoff:
                     self.fnn_vec[ii, zz] = dist_
@@ -164,13 +163,10 @@ class pwl:
 
                 ## for debugging
                 if dist_size > 1.01*self.cutoff:
-                    # AS: don't know exactly what types these are, so I brute force string convert
-                    print('POS_ii, POS_jj\n %s \n %s' % (str(self.coords[ii]), str(self.coords[jj])))
-                    print('New dist = %s' % str(dist_size))
-                    print('Old dist = %s' % str(old_dist_size))
-                    print('shits: %i %i %i %i' % (shit_0,shit_1,shit_2,shit_3))
-                    err_msg = 'something is wrong with PBC'
-                    raise RuntimeError(err_msg)
+                    print('POS_ii, POS_jj\n {0} \n {1}'.format(self.coords[ii], self.coords[jj]))
+                    print('New dist = {0}'.format(dist_size))
+                    print('Old dist = {0}'.format(old_dist_size))
+                    raise RuntimeError('something is wrong with PBC')
 
                 if self.sparse_flag:
                     self.dist_matrix[0][ii, jj] = dist_[0]
@@ -183,69 +179,9 @@ class pwl:
                 else:
                     self.dist_matrix[ii, jj] = dist_
 
-
             if zz!=3:
                 raise RuntimeError("there is an error in finding first nearest neighbors:  please tune *fnn_cutoff*")
-        #if not self.sparse_flag:
-            #self.dist_matrix_norm = np.linalg.norm(self.dist_matrix, axis=2)
-    
-    
-    def build_perfect(self, a0, convention = 'exact'):
-        coords = np.copy(self.coords)
-        #base_coord = coords[self.sub_type==base_type]
-        n_each_tp = int(self.tot_number/4)
-        coords_new = np.zeros((self.tot_number, 3))
-        type_new = np.zeros((self.tot_number, 1))
-        z_mean = np.mean(coords[:, 2])
-        z_max = np.max(coords[:, 2])
-        z_min = np.min(coords[:, 2])
-        print('zbefore',z_mean,z_max,z_min)
-        # 'I'
-        type_new[0:n_each_tp, 0] = 1 
-        coords_new[0:n_each_tp, 0] = coords[self.sub_type==10, 0]
-        coords_new[0:n_each_tp, 1] = coords[self.sub_type==10, 1]
-        coords_new[0:n_each_tp, 2] = coords[self.sub_type==10, 2] -z_mean
-        #'C2x':
-        type_new[n_each_tp*1:n_each_tp*2, 0] = 4
-        coords_new[n_each_tp*1:n_each_tp*2, 0] = coords[self.sub_type==10, 0] + 1/2 * self.xlen
-        coords_new[n_each_tp*1:n_each_tp*2, 1] = coords[self.sub_type==10, 1]*(-1)
-        coords_new[n_each_tp*1:n_each_tp*2, 2] = (coords[self.sub_type==10, 2]-z_mean)*(-1)
-        #'C2y':
-        type_new[n_each_tp*2:n_each_tp*3, 0] = 3
-        if convention=='exact':
-            fucktor = a0 if '2y_rectangular' not in self.data_file_name else  2*a0
-        elif convention=='zxact':
-            fucktor = 0
-        
-        coords_new[n_each_tp*2:n_each_tp*3, 0] = coords[self.sub_type==10, 0]*(-1) - fucktor
-        coords_new[n_each_tp*2:n_each_tp*3, 1] = coords[self.sub_type==10, 1] + 1/2 * self.ylen
-        coords_new[n_each_tp*2:n_each_tp*3, 2] = (coords[self.sub_type==10, 2]-z_mean)*(-1)
-        #'C2z':
-        type_new[n_each_tp*3:n_each_tp*4, 0] = 2
-        coords_new[n_each_tp*3:n_each_tp*4, 0] = coords[self.sub_type==10, 0]*(-1) + 1/2 * self.xlen - fucktor
-        coords_new[n_each_tp*3:n_each_tp*4, 1] = coords[self.sub_type==10, 1]*(-1) + 1/2 * self.ylen
-        coords_new[n_each_tp*3:n_each_tp*4, 2] = (coords[self.sub_type==10, 2]-z_mean)*(+1) 
-        # translate to cell(0,0) 
-        coords_new[:, 0] -=  (coords_new[:, 0]//self.xlen)*self.xlen
-        coords_new[:, 1] -=  (coords_new[:, 1]//self.ylen)*self.ylen
-        
-        z_mean = np.mean(coords_new[:, 2])
-        z_max = np.max(coords_new[:, 2])
-        z_min = np.min(coords_new[:, 2])
-        print('zafter',z_mean,z_max,z_min)
 
-        fname = self.folder_name + self.data_file_name+ '_' + convention
-        print('fname::',fname)
-        
-        fmt_ = ['%.0f']*4 + ['%.12f']*(3)
-
-        #XX = np.concatenate((self.atomsAllinfo[:,np.r_[0,1]],  np.expand_dims(self.sub_type/10, axis=1), self.atomsAllinfo[:,np.r_[3]], coords,), axis = 1)
-        XX = np.concatenate((self.atomsAllinfo[:,np.r_[0,1]],  type_new, self.atomsAllinfo[:,np.r_[3]], coords_new,), axis = 1)
-
-
-        np.savetxt(fname, XX ,header=self.header_.replace('2 atom types','4 atom types'), comments='', fmt=fmt_) #fmt='%.18e'  
-        
-            
     
         
     def sublattice_detector(self):
