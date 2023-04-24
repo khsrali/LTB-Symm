@@ -83,9 +83,9 @@ class TB:
         '''
         assert solver == 'primme' or solver == 'scipy'
         npoints = kpoints.shape[0]
-        Eigns = np.zeros([npoints, n_eigns], dtype= 'f' if self.dtype==None else self.dtype)
+        Eigns = np.zeros([npoints, n_eigns], dtype=self.dtypeR)
         if return_eigenvectors:
-            Eignvecs = np.zeros([npoints, self.conf_.tot_number, n_eigns], dtype='complex' if self.dtype==None else 'c'+self.dtype)
+            Eignvecs = np.zeros([npoints, self.conf_.tot_number, n_eigns], dtype=self.dtypeC)
             
         
         
@@ -150,9 +150,9 @@ class TB:
         sendbuf = Eigns
         recvbuf = None
         if self.rank == 0:
-            recvbuf    = np.zeros([self.size, npoints, n_eigns], dtype= 'f' if self.dtype==None else self.dtype)
+            recvbuf    = np.zeros([self.size, npoints, n_eigns], dtype=self.dtypeR)
             if return_eigenvectors:
-                recvbufVec = np.zeros([self.size, npoints, self.conf_.tot_number, n_eigns], dtype='complex' if self.dtype==None else 'c'+self.dtype)
+                recvbufVec = np.zeros([self.size, npoints, self.conf_.tot_number, n_eigns], dtype=self.dtypeC)
 
         self.comm.Gather(sendbuf, recvbuf, root=0)
         if return_eigenvectors:
@@ -189,7 +189,7 @@ class TB:
                
         ## modifed GSch
         n_vec = A.shape[1]
-        Q = np.zeros(A.shape, dtype='complex' if self.dtype==None else 'c'+self.dtype)
+        Q = np.zeros(A.shape, dtype=self.dtypeC)
         for k in range(n_vec):
             q = A[:, k]
             for j in range(k):
@@ -201,28 +201,42 @@ class TB:
         return Q
 
 
-    def set_configuration(self, file_and_folder, phi_, orientation, ver_='' , sparse_flag=True, dtype=None):
-        '''
-        phi_ is the full twist angle
-        '''
-        
-        self.dtype = dtype
-        self.phi_ = phi_/2
-        self.sparse_flag=sparse_flag
-        self.orientation = orientation
+    def set_configuration(self, file_and_folder, sparse_flag=True, dtype='float', version=''):
+        """
+            Set the basic configuration
 
-        # Creating new folder:
+            Args:
+                file_and_folder: str
+                    address to a txt file containing coordinates and cell info. 
+                    This file should be in one of these formats: lammpstrj, XYZ
+                sparse_flag: boolean, optional
+                    To use sparse matrix. (default = True)
+                    Calculation are faster with non-sparse, but eager on ram size. 
+                dtype: str, optional
+                    precision of Calculation. float(default) or double is supported. 
+                version: str, optional
+                    Postfix to name the output folder in format of 'calculation_'+filename(directory excluded)+version
+                    
+            Returns: None
+        """
+        
+        try:
+            assert dtype == 'float' or dtype == 'double'
+        except: raise TypeError('Only float(default) or double is supported for dtype')
+    
+        self.sparse_flag=sparse_flag
+        self.dtypeR = dtype
+        self.dtypeC = 'c'+dtype
         self.file_name = file_and_folder.split('/')[-1]
         self.folder_name = '/'.join(file_and_folder.split('/')[:-1]) #+ '/'
 
-        new_folder = 'calculation_' + self.file_name +ver_+ '/'
+        # Creating new folder:
+        new_folder = 'calculation_' + self.file_name +version+ '/'
         self.folder_name += new_folder
-
-        if self.rank == 0:
-            os.makedirs(self.folder_name, exist_ok=True)
-
-        self.conf_ = pwl(self.folder_name, self.file_name, self.sparse_flag, dtype=dtype)
-
+        if self.rank == 0:  os.makedirs(self.folder_name, exist_ok=True)
+        
+        # Call on configuration.py
+        self.conf_ = pwl(self.folder_name, self.file_name, self.sparse_flag, self.dtypeR)
 
 
     def set_parameters(self, d0, a0, V0_sigam, V0_pi, cut_fac):
@@ -818,7 +832,7 @@ class TB:
         all_X = np.copy(self.conf_.atomsAllinfo[ : , 4])
         all_Y = np.copy(self.conf_.atomsAllinfo[ : , 5])
         all_Z = np.copy(self.conf_.atomsAllinfo[ : , 6])
-        wave_info = np.zeros((self.conf_.tot_number, 3), dtype= 'f' if self.dtype==None else self.dtype)
+        wave_info = np.zeros((self.conf_.tot_number, 3), dtype= self.dtypeR)
 
         wave_info[:, 0] = all_X
         wave_info[:, 1] = all_Y
@@ -932,7 +946,7 @@ class TB:
             all_xyz = np.copy(self.conf_.atomsAllinfo[ : , 4:7])
             
             flat_range= 8 #self.N_flat
-            wave_info = np.zeros((flat_range, self.conf_.tot_number, 7), dtype= 'f' if self.dtype==None else self.dtype)
+            wave_info = np.zeros((flat_range, self.conf_.tot_number, 7), self.dtypeR)
 
             for ii in range(flat_range):
                 wave_info[ii, :, 0] = all_X
@@ -974,13 +988,13 @@ class TB:
             #phase_2 = np.exp(1j*np.dot((all_xyz[self.new_orders[who]]), self.K_path[0]) ) ## fix the id of self.K_path
             ###
             
-            new_bases = np.zeros((flat_range, self.conf_.tot_number), dtype='complex' if self.dtype==None else 'c'+self.dtype)
-            old_vecs = np.zeros((flat_range, self.conf_.tot_number), dtype='complex' if self.dtype==None else 'c'+self.dtype)
-            old_vecs_op = np.zeros((flat_range, self.conf_.tot_number), dtype='complex' if self.dtype==None else 'c'+self.dtype)
-            very_new_bases = np.zeros((flat_range, self.conf_.tot_number), dtype='complex' if self.dtype==None else 'c'+self.dtype)
+            new_bases = np.zeros((flat_range, self.conf_.tot_number), dtype=self.dtypeC)
+            old_vecs = np.zeros((flat_range, self.conf_.tot_number), dtype=self.dtypeC)
+            old_vecs_op = np.zeros((flat_range, self.conf_.tot_number), dtype=self.dtypeC)
+            very_new_bases = np.zeros((flat_range, self.conf_.tot_number), dtype=self.dtypeC)
             #eignvals_neu = np.zeros(flat_range, dtype='f' if self.dtype==None else self.dtype)
             for ii in range(0, flat_range, mix_pairs):
-                S = np.zeros((mix_pairs,mix_pairs), dtype='complex' if self.dtype==None else 'c'+self.dtype)
+                S = np.zeros((mix_pairs,mix_pairs), dtype=self.dtypeC)
                 
                 print('\n\n**I am mixing these energies: ')
                 for jj in range(mix_pairs):
@@ -1031,7 +1045,7 @@ class TB:
                         if se_al == 0:
                         #if se_al == 1:
                             #continue
-                            sdot = np.zeros((mix_pairs,mix_pairs), dtype='complex' if self.dtype==None else 'c'+self.dtype)
+                            sdot = np.zeros((mix_pairs,mix_pairs), dtype=self.dtypeC)
                             print('\n second diagonalizing respect to ', se_al)
                             for sei in range(mix_pairs):
                                 for sef in range(mix_pairs):
@@ -1070,7 +1084,7 @@ class TB:
                             
                 #for se_al in which_operations:
                 for se_al in range(3):
-                    sdot = np.zeros((mix_pairs,mix_pairs), dtype='complex' if self.dtype==None else 'c'+self.dtype)
+                    sdot = np.zeros((mix_pairs,mix_pairs), dtype=self.dtypeC)
                     print('\nfinal check if diagonalized respect to ', se_al)
                     for sei in range(mix_pairs):
                         for sef in range(mix_pairs):
@@ -1277,7 +1291,7 @@ class TB:
                 ref_tp = 0
                 flat_range= 8 #self.N_flat
                 #type_range = 4
-                wave_info = np.zeros((flat_range, 4, self.conf_.tot_number//4, 6), dtype= 'f' if self.dtype==None else self.dtype)
+                wave_info = np.zeros((flat_range, 4, self.conf_.tot_number//4, 6), dtype=self.dtypeR)
                 ##wave_info ITEM:  x y  real img  amp angle
 
                 
@@ -1441,7 +1455,7 @@ class TB:
                             flag_ = np.isclose( np.count_nonzero(check_), self.conf_.tot_number//4, rtol=tol_, atol=0) 
                             
                             ## approach dot product:
-                            vec2 = vec1 = np.zeros(self.conf_.tot_number//4 , dtype='complex' if self.dtype==None else 'c'+self.dtype)
+                            vec2 = vec1 = np.zeros(self.conf_.tot_number//4 , dtype=self.dtypeC)
                             vec1 = wave_info[ii, ref_tp, :, 2] + 1j*wave_info[ii, ref_tp, :, 3]
                             vec2 = wave_info_trs[jj, partner_tp, new_order, 2] + 1j*wave_info_trs[jj, partner_tp, new_order, 3]
                             Dot = np.append(Dot, np.dot(np.conjugate(vec1.T), vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2) ) )
@@ -1861,7 +1875,7 @@ class TB:
 
         vc_mat = self.conf_.dist_matrix
         ez = self.conf_.ez_local
-        T00 = sp.lil_matrix((self.conf_.tot_number, self.conf_.tot_number), dtype='float' if self.dtype==None else self.dtype)
+        T00 = sp.lil_matrix((self.conf_.tot_number, self.conf_.tot_number), dtype=self.dtypeR)
 
         if ez.shape == (3,):
             flag_ez = False
@@ -1922,7 +1936,7 @@ class TB:
 
     def T_meat_sp(self, K_, T_0):
 
-        modulation_matrix = sp.lil_matrix(( self.conf_.tot_number, self.conf_.tot_number), dtype='complex' if self.dtype==None else 'c'+self.dtype)
+        modulation_matrix = sp.lil_matrix(( self.conf_.tot_number, self.conf_.tot_number), dtype=self.dtypeC)
         #print('making modulation_matrix..')
         for ii in range(self.conf_.tot_number):
             neighs = self.conf_.nl[ii][~(np.isnan(self.conf_.nl[ii]))].astype('int')

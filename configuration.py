@@ -16,7 +16,7 @@ class pwl:
 
     def __init__(self, folder_name, file_name, sparse_flag, dtype=None):
         
-        self.dtype = dtype
+        self.dtypeR = dtype
 
         self.folder_name = folder_name
         self.data_file_name = file_name
@@ -61,7 +61,7 @@ class pwl:
 
         file_.close()
         ### get coordinates 
-        self.atomsAllinfo = np.loadtxt(file_name, skiprows =skiplines, max_rows= self.tot_number, dtype=self.dtype)
+        self.atomsAllinfo = np.loadtxt(file_name, skiprows =skiplines, max_rows= self.tot_number, dtype=self.dtypeR)
         self.coords = self.atomsAllinfo[:,4:7]
     
     
@@ -107,16 +107,16 @@ class pwl:
         print('creating vector_connection_matrix...')
 
         if self.sparse_flag:
-            dist_matrix_X = sp.lil_matrix((self.tot_number, self.tot_number), dtype='float' if self.dtype==None else self.dtype)
-            dist_matrix_Y = sp.lil_matrix((self.tot_number, self.tot_number), dtype='float' if self.dtype==None else self.dtype)
-            dist_matrix_Z = sp.lil_matrix((self.tot_number, self.tot_number), dtype='float' if self.dtype==None else self.dtype)
+            dist_matrix_X = sp.lil_matrix((self.tot_number, self.tot_number), self.dtypeR)
+            dist_matrix_Y = sp.lil_matrix((self.tot_number, self.tot_number), self.dtypeR)
+            dist_matrix_Z = sp.lil_matrix((self.tot_number, self.tot_number), self.dtypeR)
             boundary_flag_X = sp.lil_matrix((self.tot_number, self.tot_number), dtype='int')
             boundary_flag_Y = sp.lil_matrix((self.tot_number, self.tot_number), dtype='int')
             #self.dist_matrix_norm = sp.lil_matrix((self.tot_number, self.tot_number), dtype='float')
             self.dist_matrix = np.array([dist_matrix_X, dist_matrix_Y, dist_matrix_Z]) # being 3,N,N # no otherway
             self.B_flag = np.array([boundary_flag_X, boundary_flag_Y]) # being 3,N,N # no otherway
         else:
-            self.dist_matrix = np.zeros((self.tot_number, self.tot_number, 3), dtype='float' if self.dtype==None else self.dtype)
+            self.dist_matrix = np.zeros((self.tot_number, self.tot_number, 3), self.dtypeR)
 
         self.fnn_vec = np.full((self.tot_number,3,3), np.nan)
         self.fnn_id  = np.zeros((self.tot_number,3), dtype='int' )
