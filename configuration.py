@@ -183,60 +183,22 @@ class pwl:
                 raise RuntimeError("there is an error in finding first nearest neighbors:  please tune *fnn_cutoff*")
 
     
-        
-    def sublattice_detector(self):
-        if '_exact' in self.data_file_name or '_zxact' in self.data_file_name:
-            self.sub_type = self.atomsAllinfo[:,2]*10
-        elif '1.08_0fold_no18' in self.data_file_name:
-            self.sub_type = self.atomsAllinfo[:,2]
-        else:
-            self.sub_type = np.zeros(self.tot_number)
-
-            id_1 = np.where(self.atomsAllinfo[:,2]==1)[0][0] # upper layer
-            id_2 = np.where(self.atomsAllinfo[:,2]==2)[0][0] # lower layer
-            print("id_1,id_2",id_1,id_2)
-            iter_ = 0
-            perculation_limit = 200
-            while iter_ < perculation_limit:#(self.tot_number/3):
-                self.sub_type[id_1] = 10 + (iter_%2)*10
-                id_1 = np.unique(self.fnn_id[id_1].flatten())
-                #id_1 = np.random.choice(self.fnn_id[id_1]) 
-
-                self.sub_type[id_2] = 30 + (iter_%2)*10
-                id_2 = np.unique(self.fnn_id[id_2].flatten())
-                #id_2 = np.random.choice(self.fnn_id[id_2]) 
-                
-                iter_ += 1
-                #print(iter_)
+    def normal_vec(self, local_flag=True):
+        """
+            To create local normal vector is local_flag is True (default).
+            Note: On the choice of axis, it is assumed that the two main dimension of structure is on average perpendicular to Z axis.
             
-            for ii in range(self.tot_number):
-                if self.sub_type[ii] == 0:
-                    print("ii", ii)
-                    perculate_flag = False
-                    for jj in self.fnn_id[ii]:
-                        st = self.sub_type[jj]
-                        if st ==0:
-                            continue
-                        elif st ==10:
-                            self.sub_type[ii] = 20
-                        elif st ==20:
-                            self.sub_type[ii] = 10
-                        elif st ==30:
-                            self.sub_type[ii] = 40
-                        elif st ==40:
-                            self.sub_type[ii] = 30
-                        perculate_flag = True
-                        break
-                    if not perculate_flag:
-                        raise TypeError("Perculation limit not enough!")
-        
-    def normal_vec(self, local_normal_flag=True):
-        '''
-        change ez_local to ez latter..
-        '''
-        if local_normal_flag:
+            Warning!! chirality is not computed. Always the positive normal_vec (pointing upward) is returned.
+            
+            Creates:
+                self.ez
+                
+            Returns: None
+        """
+
+        if local_flag:
             print("using **local** ez ...")
-            self.ez_local = np.full((self.tot_number,3), np.nan)
+            self.ez = np.full((self.tot_number,3), np.nan)
 
             for ii in range(self.tot_number):
                 neighs = self.fnn_vec[ii]
@@ -246,182 +208,145 @@ class pwl:
 
                 norm_ = aa + bb + cc
                 norm_ = norm_/np.linalg.norm(norm_)
-
-                # note!! this code does not know about chirality, so better to always return the positive normal_vec
+                
                 if norm_[2] < 0:
                     norm_ *= -1
 
-                self.ez_local[ii] = norm_
+                self.ez[ii] = norm_
         else:
-            print("using **global** ez=[0,0,1] ...")
-            self.ez_local = np.array([0,0,1])
+            print("using **global** ez=[0,0,1] assuming vertical ...")
+            self.ez = np.array([0,0,1])
 
-    def neigh_list_me_smart(self, cutoff, l_width = 100, load_=True, version_=None):
-
-        ''' returns **full** neigh_list '''
+    def neigh_list(self, cutoff, method='RS', l_width = 500, load_=True, version_=''):
+        """
+            Neighbor detect all neighbours of all cites within a cutoff range.
+            
+            Args:
+                cutoff: float
+                    Used to detect neighbors within a circular range around each individual cites.
+                method: str, optional
+                    which method to use for creating neighborlist. 'RS' -reduce space implementation- (faster but might have a bug in rhombic cells, to be investigated) or 'RC' -replicating coordinates- (slower, bug free) (default = 'RS')
+                l_width: int, optional
+                    Maximum number of allowed neghbours. For memory efficency reasons it is better to keep number small (default = 500)
+                    In rare senarios if you use very large cutoff, you might need to increase this quantity. You get a MemoryError in this case.
+                load_: boolean, optional
+                    Load a previously created neighborlist. (default = True)
+                version_: str, optional
+                    A postfix for save name
+            Returns: None
+        """
+        
+        # check inputs
+        try:
+            assert nl_method == 'RC' or dtype == 'RS'
+        except AssertionError: raise TypeError("Wrong nl_method. Only 'RC' or 'RS'")
+ 
         self.cutoff = cutoff
-        self.l_width = l_width
 
-        if load_ == True:
+        if load_:
             try:
-                #print('trying to load=','neigh_list_{0}.npz'.format(version_))
                 data_ = np.load(self.folder_name + 'neigh_list_{0}.npz'.format(version_))
                 np_nl     = data_['np_nl']
                 tot_neigh = data_['tot_neigh']
                 ave_neigh = data_['ave_neigh']
                 print('neigh_list is loaded from the existing file: neigh_list_{0}.npz'.format(version_))
-                print("if want to rebuild the neigh_list, please use: calculate(..., load_neigh=False)")
-            except FileNotFoundError:   load_ = False
+                print("if want to rebuild the neigh_list, use: build_up(..,load_neigh=False)")
+            except FileNotFoundError:   
+                load_ = False
+                print('A neighlist file was not found, building one... ')
 
-
-            # something like this will improve the code if needed..
-            #### new implementation Very fast! but it has some bugs
-            #coords_9x = np.pad(coords_9x, ((0,0), (0,1)))
-            #indx = np.arange(self.tot_number)
-            #for ii in range(9):
-                #coords_9x[self.tot_number*ii:self.tot_number*(1+ii), -1] = indx
-
-            #max_dim = np.max(self.coords, axis=0)
-            #min_dim = np.min(self.coords, axis=0)
-            
-            #cond1x = coords_9x[:, 0] < (max_dim[0] + 2*cutoff)
-            #cond2x = coords_9x[:, 0] > (min_dim[0] - 2*cutoff)
-            #cond1y = coords_9x[:, 1] < (max_dim[1] + 2*cutoff)
-            #cond2y = coords_9x[:, 1] > (min_dim[1] - 2*cutoff)
-            #cc = np.all([cond1x, cond2x, cond1y, cond2y], axis=0)
-            #coords_9x_reduced = coords_9x[ np.where(cc == True)[0] ]
-
-            #tot_neigh = 0
-            #for i in range(self.tot_number):
-                #print(' creating neigh_list {} of {}'.format(i+1, self.tot_number), end = "\r")
-                ##print(xcoords9)
-                #cond_R = np.linalg.norm(coords_9x_reduced[:,:-1]-self.coords[i],axis=1)  < cutoff
-                #possible = np.where(cond_R == True)[0]
-                #possible = coords_9x_reduced[possible][-1] % self.tot_number
-                #possible = np.unique(possible)
-                #possible = np.delete(possible, np.argwhere(possible==i))
-                #k = possible.shape[0]
-                #np_nl[i][:k] = possible
-        
-                #tot_neigh += k
-            ###
-            
-        if load_ == False:
-
+        else:
+            # Init array with maximum neighbours l_width
             np_nl = np.full((self.tot_number, l_width), np.nan)
-            #dd = self.coords+np.array([+self.xlen,0,0])
-            coords_9x = np.concatenate((self.coords,
-                                        self.coords+np.array([+self.xlen,0,0]),
-                                        self.coords+np.array([-self.xlen,0,0]),
-                                        self.coords+np.array([+self.xy,+self.ylen,0]),
-                                        self.coords+np.array([-self.xy,-self.ylen,0]),
-                                        self.coords+np.array([+self.xlen+self.xy,+self.ylen,0]),
-                                        self.coords+np.array([-self.xlen+self.xy,+self.ylen,0]),
-                                        self.coords+np.array([-self.xlen-self.xy,-self.ylen,0]),
-                                        self.coords+np.array([+self.xlen-self.xy,-self.ylen,0])) , axis=0)
+            
+            if method == 'RC':
+                
+                coords_9x = np.concatenate((self.coords,
+                                            self.coords+np.array([+self.xlen,0,0]),
+                                            self.coords+np.array([-self.xlen,0,0]),
+                                            self.coords+np.array([+self.xy,+self.ylen,0]),
+                                            self.coords+np.array([-self.xy,-self.ylen,0]),
+                                            self.coords+np.array([+self.xlen+self.xy,+self.ylen,0]),
+                                            self.coords+np.array([-self.xlen+self.xy,+self.ylen,0]),
+                                            self.coords+np.array([-self.xlen-self.xy,-self.ylen,0]),
+                                            self.coords+np.array([+self.xlen-self.xy,-self.ylen,0])) , axis=0)
 
-            print('Start loop on %i atoms' % self.tot_number)
-            t0 = time.time()
-            pbar = tqdm(total=self.tot_number, unit='neigh list', desc='creating neigh') # Initialise
-            tot_neigh = 0
-            for i in range(self.tot_number):
+                print('Start loop on %i atoms' % self.tot_number)
+                t0 = time.time()
+                pbar = tqdm(total=self.tot_number, unit='neigh list', desc='creating neigh') # Initialise
+                tot_neigh = 0
+                for i in range(self.tot_number):
+                    cond_R = np.linalg.norm(coords_9x-coords_9x[i],axis=1)  < cutoff
+                    possible = np.where(cond_R == True)[0]
+                    possible = possible % self.tot_number
+                    possible = np.unique(possible)
+                    possible = np.delete(possible, np.argwhere(possible==i))
+                    k = possible.shape[0]
+                    try:
+                        np_nl[i][:k] = possible
+                    except ValueError:
+                        if l_width <= k : 
+                            raise MemoryError('please increase *l_width* in neigh_list_me_smart')
+                        else:
+                            raise ValueError('np_nl[i][:k] = possible')
 
-                #print(xcoords9)
-                cond_R = np.linalg.norm(coords_9x-coords_9x[i],axis=1)  < cutoff
-                possible = np.where(cond_R == True)[0]
-                possible = possible % self.tot_number
-                possible = np.unique(possible)
-                possible = np.delete(possible, np.argwhere(possible==i))
-                k = possible.shape[0]
-                np_nl[i][:k] = possible
-
-                tot_neigh += k
-                pbar.update()
-            pbar.close()
-    
-            texec = time.time() - t0
-            print('\nLoop on atoms finished in %is (%.2fmin)' % (texec, texec/60), file=sys.stderr) # leave the completed progress bar on screen
-            del coords_9x
-            ave_neigh= tot_neigh/self.tot_number
-            np.savez(self.folder_name + 'neigh_list_{0}'.format(version_), np_nl=np_nl, tot_neigh=tot_neigh, ave_neigh=ave_neigh )
-            #np.savetxt(self.folder_name + 'neigh_listAK_{0}'.format(version_), np_nl)
-
-        self.nl = np_nl
-        self.ave = ave_neigh
-
-        print('ave_neigh=%f' % self.ave)
-        print('tot_neigh=%f' % tot_neigh)
-
-        return 'full'
-
-    #def progress_bar(self, message, frac=None, width=25, out=sys.stderr): # nice if width matched logging format
-        #if frac == None: print('\r' + message, file=out, end='')
-        #else: print('\r' + '['+'|'*int(frac*width)+' '*int((1-frac)*width)+']', message, file=out, end='')
-
-
-    def neigh_list_AS(self, cutoff, l_width = 100, load_=True, version_=None):
-
-        ''' returns **full** neigh_list '''
-        t0 = time.time()
-
-        self.cutoff = cutoff
-        self.l_width = l_width
-
-        # !!! ASSUMES CELL CAN BE OBATINED LIKE THIS !!!
-        #print(self.xlen, self.xhi)
-        #print(self.ylen, self.yhi)
-        z_off = 30 # assume z is not well defined...
-        A1 = np.array([self.xlen, 0, 0 ])
-        A2 = np.array([self.xy, self.ylen, 0])
-        A3 = np.array([0,0,z_off])
-        u, u_inv = calc_matrices_bvect(A1, A2, A3)
-
-        # Init array with maximum neighbours l_width
-        np_nl = np.full((self.tot_number, l_width), np.nan)
-
-        print('Ask KDTree for neighbours d0=%.3f (it may take a while)' % self.cutoff)
-        # List containing neighbour pairs
-        neighs = np.array(list(pbc_neigh(self.coords, u, self.cutoff))) # convert from set to numpy array
-        ## Ali: I don't understand. pbc_neigh returns a numpy array, whu do you convert to list then numpy array? converting from numpy modules to numpy is strongly discouraged. 
+                    tot_neigh += k
+                    pbar.update()
+                pbar.close()
         
-        # Now we just need to re-order: get all the entries relative to each atom
-        print('Start loop on %i atoms' % self.tot_number)
-        pbar = tqdm(total=self.tot_number, unit='neigh list', desc='creating neigh') # Initialise
-        tot_neigh = 0
-        for i in range(self.tot_number):
-            # AS: printing at each atom position makes it very slow!
-            #if i % int(self.tot_number/100+1) == 0:
-                #self.progress_bar('creating neigh_list {} of {}'.format(i+1, self.tot_number),
-                                  #frac=i/self.tot_number, out=sys.stderr
-                                  #)
+                del coords_9x
+                
+            elif method == 'RS':   
+                ''' Andrea reduce space implementation '''
+                # !!! ASSUMES CELL CAN BE OBATINED LIKE THIS !!!
+                z_off = 30 # assume z is not well defined...
+                A1 = np.array([self.xlen, 0, 0 ])
+                A2 = np.array([self.xy, self.ylen, 0])
+                A3 = np.array([0,0,z_off])
+                u, u_inv = calc_matrices_bvect(A1, A2, A3)
+                
+                print('Ask KDTree for neighbours d0=%.3f (it may take a while)' % self.cutoff)
+                # List containing neighbour pairs
+                neighs = np.array(list(pbc_neigh(self.coords, u, self.cutoff))) # convert from set to numpy array
+                ## Ali: I don't understand. pbc_neigh returns a numpy array, whu do you convert to list then numpy array? converting from numpy modules to numpy is strongly discouraged. 
+                
+                # Now we just need to re-order: get all the entries relative to each atom
+                print('Start loop on %i atoms' % self.tot_number)
+                pbar = tqdm(total=self.tot_number, unit='neigh list', desc='creating neigh') # Initialise
+                tot_neigh = 0
+                for i in range(self.tot_number):
+                    # Where in neigh list (j->k) the current atom i appears?
+                    mask_left = np.where(neighs[:,0] == i)[0] # is it index on the left?
+                    mask_right = np.where(neighs[:,1] == i)[0]  # is it index on the right?
+                    mask = np.concatenate([mask_left, mask_right]) # more or less a logical orlogical OR
+                    # All index pairs where this atom is present
+                    c_neighs = neighs[mask].flatten()
+                    c_neighs = c_neighs[c_neighs != i] # get only the indices differnt from considered atom i
+                    k = len(c_neighs) # number of neighbours 
+                    # Ali why  len? pls use shape[0]
+                    np_nl[i][:k] = c_neighs # save the indices of the k neighbours of atom i
+                    tot_neigh += k
+                    pbar.update()
+                pbar.close()
+                
+  
+            
+            ave_neigh= tot_neigh/self.tot_number
+                
+            ## decrease the array size accordignly
+            max_n = np.max(np.count_nonzero(~np.isnan(np_nl),axis=1))
+            np_nl = np_nl[:,:max_n]
+            
+            np.savez(self.folder_name + 'neigh_list_{0}'.format(version_), np_nl=np_nl, tot_neigh=tot_neigh, ave_neigh=ave_neigh )
 
-            # Where in neigh list (j->k) the current atom i appears?
-            mask_left = np.where(neighs[:,0] == i)[0] # is it index on the left?
-            mask_right = np.where(neighs[:,1] == i)[0]  # is it index on the right?
-            mask = np.concatenate([mask_left, mask_right]) # more or less a logical orlogical OR
-            # All index pairs where this atom is present
-            c_neighs = neighs[mask].flatten()
-            c_neighs = c_neighs[c_neighs != i] # get only the indices differnt from considered atom i
-            k = len(c_neighs) # number of neighbours 
-            # Ali why  len? pls use shape[0]
-            np_nl[i][:k] = c_neighs # save the indices of the k neighbours of atom i
-            tot_neigh += k
-            pbar.update()
-        pbar.close()
-        texec = time.time() - t0
-        print('\nLoop on atoms finished in %is (%.2fmin)' % (texec, texec/60), file=sys.stderr) # leave the completed progress bar on screen
-        ave_neigh= tot_neigh/self.tot_number
-        np.savez(self.folder_name + 'neigh_list_{0}'.format(version_), np_nl=np_nl, tot_neigh=tot_neigh, ave_neigh=ave_neigh )
+            self.nl = np_nl
+            self.ave = ave_neigh
 
-        self.nl = np_nl
-        self.ave = ave_neigh
+            print('ave_neigh=%f' % self.ave)
+            print('tot_neigh=%f' % tot_neigh)
 
-        print('ave_neigh=%f' % self.ave)
-        # AS: silly me, we might very well want to have more than this...
-        #if not np.isclose(self.ave, 3): print('In tBLG each C shoudl have three neighbour. Something is wrong or not efficient!')
-        print('tot_neigh=%f' % tot_neigh)
 
-        return 'full'
+
 
 def pbc_neigh(pos, u, d0, sskin=10):
 

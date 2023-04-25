@@ -30,7 +30,7 @@ class TB:
         print('Created TB object')
 
 
-    def build_up(self, H_style, local_normal=True, load_neigh=True, nl_method='Andrea'):
+    def build_up(self, H_style, local_normal=True, load_neigh=True, nl_method='RS'):
         """
             Build up some basic requirments: normal vectors, neighborlist, and the bone matrix
 
@@ -42,7 +42,7 @@ class TB:
                 load_neigh: boolean
                     load a previously created neighborlist. (default = True)
                 nl_method: str
-                    which method to use for creating neighborlist. 'Andrea' (faster but might have a bug in rhombic cells, to be investigated) or 'Ali'(slower, bug free) (default = 'Andrea')
+                    which method to use for creating neighborlist. 'RS' -reduce space implementation- (faster but might have a bug in rhombic cells, to be investigated) or 'RC' -replicating coordinates- (slower, bug free) (default = 'RS')
             Returns: None
         """
         
@@ -50,22 +50,15 @@ class TB:
         try:
             assert H_style == 'ave' or dtype == '9X'
         except AssertionError: raise TypeError('Only ave(averaged) or 9X(full 9-term Hamiltonian) is supported')
-        try:
-            assert nl_method == 'Ali' or dtype == 'Andrea'
-        except AssertionError: raise TypeError('Wrong nl_method. Only Ali or Andrea')
             
         # build neigh_list
         version_ = self.file_name[:-5] +'_cut_' + str(self.cut_fac)
         
         if self.rank == 0:
             # calculate neigh_list
-            if nl_method == 'Ali':
-                # AK 9x9 implementation
-                self.conf_.neigh_list_me_smart(cutoff=self.r_cut, l_width=300, load_ = load_neigh, version_ = version_ )
-            elif nl_method == 'Andrea':
-                # AS reduce space implementation
-                self.conf_.neigh_list_AS(cutoff=self.r_cut, l_width=300, load_ = load_neigh, version_ = version_ )
-
+            self.conf_.neigh_list(cutoff=self.r_cut,  method=nl_method, load_ = load_neigh, version_ = version_ )
+            
+            # send to other cups
             signal_ = True
             for ii in range(1,self.size):
                 req = self.comm.isend(signal_, dest=ii, tag=11)
@@ -74,7 +67,7 @@ class TB:
             req = self.comm.irecv(source=0, tag=11)
             signal_ = req.wait() 
             assert signal_ is True
-            self.conf_.neigh_list_me_smart(cutoff=self.r_cut, l_width=300, load_ = True, version_ = version_ ) 
+            self.conf_.neigh_list(cutoff=self.r_cut, load_ = True, version_ = version_ ) 
             
         
         # build distance matrix
@@ -286,190 +279,123 @@ class TB:
 
 
 
-    def MBZ(self):
-        '''
-        !!note!! I don't want G1 and G2 change for larger cells!!
-        Maybe later I change my mind
-        #remember: 0_fold == 'armchair'
-        #remember: 1_fold == 'armchair'
-        #remember: 3_fold == 'zigzag'
-        '''
-        debugging = True
-        if debugging == True:
-            ### debugging
-            #vector_b1 = np.array([self.conf_.xlen, 0, 0])
-            #vector_b2 = np.array([0, self.conf_.ylen, 0])
-            #vector_b3 = np.array([0,0,1])
+    def MBZ(self, g1=0, g2=0):
+        """
+            Get mini brillouin zone or calculates or automatically based on unitcell size.
+            Note: automatic method is only implemented for two cases that the angle between a and b lattice vectors is either 60 or 90 degrees.
+            Args:
+                g1: shape (3,) numpy array
+                    Second vector of reciprocal space. 
+                    Set 0 to define automatically. (default=0)
+                g2: shape (3,) numpy array
+                    Second vector of reciprocal space. 
+                    Set 0 to define automatically. (default=0)
+            Returns: None
+        """
+        if not (g1==0 and g2==0):
+            try:
+                assert g1.shape == (3,) and g2.shape == (3,) 
+            except AssertionError: 
+                raise TypeError("g1 & g1 must be numpy array in shape (3,) or simply leave empty for automatic calculation...")
+            self.g1 = g1
+            self.g2 = g2
+            print('vectors: g1, g2',gx,gy)
             
-            #volume = np.abs(np.dot(vector_b3,  np.cross(vector_b1, vector_b2) ) )            
-            gx = 2*np.pi/np.linalg.norm(self.conf_.xlen) *np.array([1,0,0])
-            gy = 2*np.pi/np.linalg.norm(self.conf_.ylen) *np.array([0,1,0])
-            self.g1 = gx
-            self.g2 = gy
-            self.MBZ_X = gx/2
-            self.MBZ_W = (gx+gy)/2
-            self.MBZ_Y = gy/2
-            self.MBZ_gamma = np.array([0,0,0])
-            print('vectors: gx, gy',gx,gy)
-            print('vectors: MBZ_X, MBZ_Y',self.MBZ_X,self.MBZ_Y)
-            print('vectors: MBZ_W',self.MBZ_W)
-            #print('vectors: MBZ_2W',self.MBZ_2W)
-            
-        else:     
-                
-            ##########
-            # from the unitcell:  G1 and G2 
-            # Ali: please take this from user! later!!
-            n_b2 = 2 if self.orientation  == '1_fold' else 1
-            n_b1 = 1
-            
+        else:
             if self.conf_.xy ==0:
-                x2 = self.conf_.xlen*n_b2/2
-                print('Box scew is zero! you entered a rectangular box')
-                if n_b1 !=1:
-                    raise RuntimeError('mistake! in calculating x2. please implement further')
+                gx = 2*np.pi/np.linalg.norm(self.conf_.xlen) *np.array([1,0,0])
+                gy = 2*np.pi/np.linalg.norm(self.conf_.ylen) *np.array([0,1,0])
+                self.g1 = gx
+                self.g2 = gy
+                self.MBZ_X = gx/2
+                self.MBZ_W = (gx+gy)/2
+                self.MBZ_Y = gy/2
+                self.MBZ_gamma = np.array([0,0,0])
+                print('vectors: g1, g2',gx,gy)
             else:
-                x2 = self.conf_.xy
-                print('Box scew is not zero! you entered a tilted box, please check this is for real.')
-
-            vector_b1 = np.array([self.conf_.xlen, 0, 0])
-            vector_b2 = np.array([x2, self.conf_.ylen, 0])
-            vector_b3 = np.array([0,0,1])
-            
-            volume = np.abs(np.dot(vector_b3,  np.cross(vector_b1, vector_b2) ) )            
-            g1 = 2*np.pi/volume * np.cross(vector_b3, vector_b2)
-            g2 = 2*np.pi/volume * np.cross(vector_b3, vector_b1)
-            
-            
-            
-            if self.orientation  == '0_fold' or self.orientation  == '1_fold':
-
-                # from the formulation: G1 & G2
-                #alpha_ = 4*np.pi*np.sin(np.deg2rad(self.phi_)) / (3*self.a0) #(np.sqrt(3)*aa) 
-                #G1 = alpha_ * np.array([-np.sqrt(3), +1, 0]) 
-                #G2 = alpha_ * np.array([0, 2, 0]) 
-
-                G1 = g1 * n_b1
-                G2 = g2 * n_b2 
+                angle_ = np.rad2deg(np.arccos(np.dot(vector_b1,vector_b2)/(np.linalg.norm(vector_b1)*np.linalg.norm(vector_b2))))
                 
-                #print(np.linalg.norm(G2))
-                #print(np.linalg.norm(G1))
-                ## Erio likes 60 degrees.. so I turned G1 by pi
+                if not np.isclose(angle_, 60, atol=1):
+                    raise ValueError("angle(a,b) is {0} \nNote: g1 & g2 could be automatically calculated only if the angle between a and b lattice vectors is either 60 or 90 degrees. Otherwise you should provide as input.".format(angle_))
                 
-                self.g1, self.g2 = g1, g2
+                print('Box scew is not zero.. g1 & g2 will not be orthogonal')
+
+                vector_b1 = np.array([self.conf_.xlen, 0, 0])
+                vector_b2 = np.array([self.conf_.xy, self.conf_.ylen, 0])
+                vector_b3 = np.array([0,0,1])
+                
+                volume = np.abs(np.dot(vector_b3,  np.cross(vector_b1, vector_b2) ) )            
+                g1 = 2*np.pi/volume * np.cross(vector_b3, vector_b2)
+                g2 = 2*np.pi/volume * np.cross(vector_b3, vector_b1)
+                print('vectors: g1, g2',gx,gy)
+                self.g1 = g1
+                self.g2 = g2
+                
                 self.MBZ_gamma = np.array([0,0,0])
-                self.MBZ_M = G2 / 2
-                self.MBZ_K1 = (G2 + G1) /3
-                self.MBZ_K2 = (2*G2 - G1) / 3
-                self.MBZ_K2_prime = (2*G1 - G2) /3
-                
-                if self.orientation  == '1_fold' :
-                    self.MBZ_X = (2*G1 - G2) / 4
-                    self.MBZ_W = G1 / 2
-                    self.MBZ_Y = G2 / 4
-                    
-                    self.MBZ_W1 = self.MBZ_W * np.array([+1,+1,1])
-                    self.MBZ_W2 = self.MBZ_W * np.array([-1,+1,1])
-                    self.MBZ_W3 = self.MBZ_W * np.array([-1,-1,1])
-                    self.MBZ_W4 = self.MBZ_W * np.array([+1,-1,1])
-                    
-                    print('G1,G2 ',self.MBZ_X*2,self.MBZ_Y*2)
-                
-
-            elif self.orientation  == '3_fold':
-                #alpha_ = 4*np.pi*np.sin(np.deg2rad(self.phi_)) / (3*self.a0)
-                ### please also upgrade alpha_ to unitcell method !!
-                #g1 = (alpha_/np.sqrt(3)) * np.array([-np.sqrt(3), +1, 0])
-                #g2 = (alpha_/np.sqrt(3)) * np.array([0, 2, 0])
-                self.MBZ_gamma = np.array([0,0,0])
-                self.MBZ_m = g2 / 2
+                self.MBZ_m2 = g2 / 2
+                self.MBZ_m1 = g1 / 2
                 self.MBZ_k1 = (g2 + g1) /3
                 self.MBZ_k2 = (2*g2 - g1) / 3
-                self.g1, self.g2 = g1, g2
-
-                theta_ = np.deg2rad(30)
-                rot = np.array([[np.cos(theta_), -np.sin(theta_), 0], [np.sin(theta_), np.cos(theta_), 0], [0,0,1]])
-                G1 = np.sqrt(3) * np.dot(g1, rot) # rotates clockwise
-                G2 = np.sqrt(3) * np.dot(g2, rot) # rotates clockwise
-
-
-                self.MBZ_K1 = (G2 + G1) /3
-                self.MBZ_M =  G1 / 2
-                self.MBZ_K2 = (2*G1 - G2) / 3
-
-            elif self.orientation  == 'test_ML':
-                aa = self.a0*np.sqrt(3)
-                #scale = 1/5 # unit cell repetition
-                scale = 1 # unit cell repetition
-                alpha = 8*np.pi/(2*np.sqrt(3)*aa*scale)
-                G1 = alpha * np.array([np.sqrt(3)/2, -1/2, 0])
-                G2 = alpha * np.array([0, -1, 0])
-                #G1 = alpha * np.array([-1/2, np.sqrt(3)/2, 0])
-                #G2 = alpha * np.array([1, 0, 0])
-                self.g1, self.g2 = G1, G2
-                #self.MBZ_M = 2*np.pi/(2*np.sqrt(3)*aa*scale*1) * np.array([np.sqrt(3), -1, 0])
-                #self.MBZ_K1 = 4*np.pi/(3*np.sqrt(3)*aa*scale*1) * np.array([np.sqrt(3),  0, 0])
-                #self.MBZ_K2 = 4*np.pi/(3*np.sqrt(3)*aa*scale*1) * np.array([np.sqrt(3)/2,  -3/2, 0])
-                self.MBZ_M = G2 / 2
-                self.MBZ_K1 = (G2 + G1) /3
-                self.MBZ_K2 = (2*G2 - G1) / 3
-                self.MBZ_K2_prime = (2*G1 - G2) /3
-                self.MBZ_gamma = np.array([0,0,0])
-            else:
-                raise ValueError('Invalid orientation "%s"' % self.orientation)
+                
     
     def label_translator(self, label_ ):
-        if label_ == 'K1':
-            K= self.MBZ_K1
-        elif label_ == 'K2':
-            K= self.MBZ_K2
-        elif label_ == 'M':
-            K= self.MBZ_M
-        elif label_ == 'gamma':
-            K= self.MBZ_gamma
-        elif label_ == 'gammaoff':
-            K= self.MBZ_W*0.05
-        elif label_ == 'K2_prime':
-            K= self.MBZ_K2_prime
+        """
+            Translate label to coordinate of high symmetry point in reciprocal space.
             
+            Args:
+                label_: str, 
+                    Predefined label of high symmetry point
+                    For orthogonal cells: 'Gamma', 'X', 'Y', and 'W'
+                    For rhombic cells: 'Gamma', 'M1', 'M2', 'K1', 'K2'
+                    
+            Returns: 
+                numpy array in shape of (3,) dtype='float'
+            
+        """
+        if label_ == 'K1':
+            K= self.MBZ_k1
+        elif label_ == 'K2':
+            K= self.MBZ_k2
+        elif label_ == 'M1':
+            K= self.MBZ_m1
+        elif label_ == 'M2':
+            K= self.MBZ_m2
+        elif label_ == 'Gamma':
+            K= self.MBZ_gamma
         elif label_ == 'X':
             K= self.MBZ_X
         elif label_ == 'Y':
             K= self.MBZ_Y
-        elif label_ == 'mY':
-            K= self.MBZ_Y + 0.1*self.MBZ_X
-        elif label_ == '2Y':
-            K= 2*self.MBZ_Y
         elif label_ == 'W':
             K= self.MBZ_W
-        elif label_ == '2W':
-            K= 2*self.MBZ_W
-        elif label_ == 'W1':
-            K= self.MBZ_W1
-        elif label_ == 'W2':
-            K= self.MBZ_W2
-        elif label_ == 'W3':
-            K= self.MBZ_W3
-        elif label_ == 'W4':
-            K= self.MBZ_W4
-            
-        elif label_ == 'k1':
-            K= self.MBZ_k1
-        elif label_ == 'k2':
-            K= self.MBZ_k2
-        elif label_ == 'm':
-            K= self.MBZ_m
-            
         else:
-            raise KeyError('unrecognised symmetry point')
+            raise KeyError('Unrecognised high symmetry point. \nPlease make sure: 1) if g1 & g2 has found automatically \n 2) you are using the right Key depending on your rhombic or orthogonal unitcell')
         
         return K
     
-    def set_Kpoints(self, K_label, N=0):
-        '''
-        #N == number of K-points in the given path
-        if N=0(default) then result is for a discrete list. only your input K point
-        '''
+    def set_Kpoints(self, K_label, K_path=None, N=0):
+        """
+            Get a set of K points to calculte bands along, either a discrete or continues.
+            
+            Args:
+                K_label: list of str, list(str)
+                    Label of high symmetry points in reciprocal space.
+                    
+                K_path: numpy array in shape of (n, 3), optional
+                    All coordinates that you would like to calculate electronics levels for.
+                    Note: None(default) is only acceptable, if g1 & g2 are calculated automatically. In that case, high symmetry coordinates are already predifined.  
+                    For orthogonal cells: 'Gamma', 'X', 'Y', and 'W'
+                    For rhombic cells: 'Gamma', 'M1', 'M2', 'K1', 'K2'
+                    
+                    Alternatively you can provide a list of all/high-symmetry coordinates.
+                    
+                N: int, optional
+                    Number of K-points in the given path. If N=0(default) then calculation is done only for the provided list. If non-zero N, calculation is done for N point, displaced uniformly along the provided path.
+                    If N != 0, it must be larger than number of elements in K_label.
+            Returns: None
+        
+        """
+        
         Kmode = 'discrete' if N == 0 else 'continues'
         
         if Kmode == 'discrete':
@@ -522,7 +448,7 @@ class TB:
     def make_Cmat(self, K, pls_check=False,tol_ = 0.1):
         '''
         This method makes true C!
-        K is label like : gamma or float in shape(3,)
+        K is label like : Gamma or float in shape(3,)
         '''
         if self.rank != 0:
             raise RuntimeError('Please plot using **if rank==0** in mpi mode')
@@ -1897,7 +1823,7 @@ class TB:
         assert H_style== 'ave' or H_style=='9X'
 
         vc_mat = self.conf_.dist_matrix
-        ez = self.conf_.ez_local
+        ez = self.conf_.ez
         T00 = sp.lil_matrix((self.conf_.tot_number, self.conf_.tot_number), dtype=self.dtypeR)
 
         if ez.shape == (3,):
@@ -2003,7 +1929,7 @@ class TB:
         raise NotImplementedError('update the Hamiltonian!!')
 
         vc_mat = self.conf_.dist_matrix
-        ez = self.conf_.ez_local
+        ez = self.conf_.ez
 
         dd_mat = np.linalg.norm(vc_mat, axis=2)
 
@@ -2212,7 +2138,7 @@ class TB:
         #for jj in range(self.n_Hsym_points):
             #plt.axvline(xpos_[jj], color='gray')
             
-        xlabels = np.char.replace(self.K_label, 'gamma',r'$\Gamma$')
+        xlabels = np.char.replace(self.K_label, 'Gamma',r'$\Gamma$')
         
         ax.set_xticks(xpos_, xlabels)
         #ax.set_yticks(fontsize=fontsize_)
