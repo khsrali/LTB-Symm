@@ -352,25 +352,28 @@ class TB:
                 numpy array in shape of (3,) dtype='float'
             
         """
-        if label_ == 'K1':
-            K= self.MBZ_k1
-        elif label_ == 'K2':
-            K= self.MBZ_k2
-        elif label_ == 'M1':
-            K= self.MBZ_m1
-        elif label_ == 'M2':
-            K= self.MBZ_m2
-        elif label_ == 'Gamma':
-            K= self.MBZ_gamma
-        elif label_ == 'X':
-            K= self.MBZ_X
-        elif label_ == 'Y':
-            K= self.MBZ_Y
-        elif label_ == 'W':
-            K= self.MBZ_W
-        else:
+        try:
+            if label_ == 'K1':
+                K= self.MBZ_k1
+            elif label_ == 'K2':
+                K= self.MBZ_k2
+            elif label_ == 'M1':
+                K= self.MBZ_m1
+            elif label_ == 'M2':
+                K= self.MBZ_m2
+            elif label_ == 'Gamma':
+                K= self.MBZ_gamma
+            elif label_ == 'X':
+                K= self.MBZ_X
+            elif label_ == 'Y':
+                K= self.MBZ_Y
+            elif label_ == 'W':
+                K= self.MBZ_W
+            else:
+                raise KeyError('Unrecognised high symmetry point. \nPlease make sure: 1) if g1 & g2 has found automatically \n 2) you are using the right Key depending on your rhombic or orthogonal unitcell')
+        except NameError:
             raise KeyError('Unrecognised high symmetry point. \nPlease make sure: 1) if g1 & g2 has found automatically \n 2) you are using the right Key depending on your rhombic or orthogonal unitcell')
-        
+            
         return K
     
     def set_Kpoints(self, K_label, K_path=None, N=0):
@@ -387,7 +390,7 @@ class TB:
                     For orthogonal cells: 'Gamma', 'X', 'Y', and 'W'
                     For rhombic cells: 'Gamma', 'M1', 'M2', 'K1', 'K2'
                     
-                    Alternatively you can provide a list of all/high-symmetry coordinates.
+                    Alternatively, you can provide a list of all/high-symmetry coordinates that you give their names for K_label.
                     
                 N: int, optional
                     Number of K-points in the given path. If N=0(default) then calculation is done only for the provided list. If non-zero N, calculation is done for N point, displaced uniformly along the provided path.
@@ -396,25 +399,39 @@ class TB:
         
         """
         
+        # check arguments
+        self.K_label = np.array(K_label)
+        try: 
+            assert N==0 or N > K_label.shape
+        except AssertionError:
+            raise ValueError("If N != 0, it must be larger than number of elements in K_label. You can set N=0(default) for a discrete calculation")
+        try: 
+            assert K_path==None or K_path.shape[1] == 3
+        except AssertionError:
+            raise ValueError("K_path should be an numpy array in shape of (n, 3)")
+        
+        
         Kmode = 'discrete' if N == 0 else 'continues'
         
+        
+        #
         if Kmode == 'discrete':
             print('your path is discrete')
         else:
             print('your path is continues')
             print("requested n_k_points={0}".format(N))
             N = self.size*(N//self.size) if N!=1 else N
-        self.K_label = np.array(K_label)
-        
-        ## calculate the Mini BZ        
-        self.MBZ()
+        #self.K_label = np.array(K_label)
         
         ## build the path
-        self.K_path_discrete = np.zeros((self.K_label.shape[0],3))
-        ii = 0
-        for label_ in self.K_label:
-            self.K_path_discrete[ii] = self.label_translator(label_ )
-            ii +=1
+        if K_path==None:
+            self.K_path_discrete = np.zeros((self.K_label.shape[0],3))
+            ii = 0
+            for label_ in self.K_label:
+                self.K_path_discrete[ii] = self.label_translator(label_)
+                ii +=1
+        else:
+            self.K_path_discrete = K_path
         
         if Kmode == 'continues':
             """ Generates equi-distance high symmetry path 
@@ -456,7 +473,7 @@ class TB:
         if np.array(K).shape == (3,) :
             K = np.array(K)
         elif type(K) == str :
-            K = self.label_translator(K )
+            K = self.label_translator(K)
         else:
             raise KeyError('make_Cmat: Please provide either str or [kx,ky,kz]')
         
