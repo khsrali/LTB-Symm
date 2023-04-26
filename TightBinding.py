@@ -13,6 +13,7 @@ from tqdm import tqdm
 from scipy.optimize import curve_fit
 from scipy.linalg import ishermitian
 import primme
+import warnings
 
 
 '''
@@ -84,14 +85,37 @@ class TB:
         
 
     def engine_mpi(self, kpoints, n_eigns, solver='primme', return_eigenvectors=False):
-        '''
-        Engine is parallel!
+        """
+            Engine is mpi parallel! 
+            Soon to be a private method.
+            
+            Args:
+                kpoints: numpy array in the shape of (n,3)
+                    K points
+                
+                n_eigns: 
+                    Number of eigen values desired out of Lanczos solver. 
+                
+                solver: str
+                    'primme' (default) or 'scipy'. Caution!  scipy is faster sometimes but it has a error propagation bug in eigenvectros. sometimes returns nonorthonormal. Perhaps a bug in their's GramSchmidt. 
+                    For symmetry checking 'primme' is recommended. 
+                    While for band structure calculation 'scipy' is recommended.
+                
+                return_eigenvectors: boolean
+                    True (default)
+        """
         
-        :param kpoints: numpy array in the shape of (n,3)
-        :param solver:  'primme' (default) or 'scipy'. Caution!  scipy is faster sometimes but it has a error propagation bug in eigenvectros. sometimes returns nonorthonormal. Perhaps a bug in their's GramSchmidt. For symmetry checking 'primme' is recommended. 
-        '''
-        assert solver == 'primme' or solver == 'scipy'
-        npoints = kpoints.shape[0]
+        # Check args
+        try:
+            assert solver == 'primme' or solver == 'scipy'
+        except AssertionError:
+            raise ValueError("Wrong solver! Available options for solver: 'primme' or 'scipy' ")
+        
+        if solver=='scipy' and return_eigenvectors==True:
+            warnings.warn("Setting not recommended!\n scipy has a bug regarding orthonormality of eigenvectors. It is better to use solver solver= 'primme' if you want right symmetries in your wavefunction. Eigenvalues remain bug free.",category=Warning)
+        #
+        
+        npoints = np.array(kpoints).shape[0]
         Eigns = np.zeros([npoints, n_eigns], dtype=self.dtypeR)
         if return_eigenvectors:
             Eignvecs = np.zeros([npoints, self.conf_.tot_number, n_eigns], dtype=self.dtypeC)
@@ -102,7 +126,7 @@ class TB:
         share_ = npoints // self.size 
         share_left = npoints % self.size 
         slice_i = (self.rank)*share_ 
-        slice_f = (self.rank+1)*share_ #if self.rank != self.size-1 else npoints
+        slice_f = (self.rank+1)*share_ 
         
         kk_range = np.arange(slice_i, slice_f)
         
@@ -129,15 +153,15 @@ class TB:
             
             if return_eigenvectors:
                 if solver == 'primme':
-                    eigvals, Eignvecs[kk] = primme.eigsh(H, k=n_eigns, return_eigenvectors=True, which=self.sigma_shift, tol=1e-12)#, v0=v0)#
+                    eigvals, Eignvecs[kk] = primme.eigsh(H, k=n_eigns, return_eigenvectors=True, which=self.sigma_shift, tol=1e-12)
                 else:
-                    eigvals, Eignvecs[kk] = eigs(H, k=n_eigns, sigma=self.sigma_shift, which='LM', return_eigenvectors=True, )#tol=1e-24)  maxiter=1e11, tol=1e-24,)# mode='normal')
+                    eigvals, Eignvecs[kk] = eigs(H, k=n_eigns, sigma=self.sigma_shift, which='LM', return_eigenvectors=True, )
                 
             else:
                 if solver == 'primme':
                     eigvals = primme.eigsh(H, k=n_eigns, return_eigenvectors=False, which=self.sigma_shift, tol=1e-12)
                 else:
-                    eigvals = eigs(H, k=n_eigns, sigma=self.sigma_shift, which='LM', return_eigenvectors=False,)# mode='normal')
+                    eigvals = eigs(H, k=n_eigns, sigma=self.sigma_shift, which='LM', return_eigenvectors=False,)
             
             Eigns[kk] = np.real(eigvals) - self.sigma_shift
             self.H = H.todense()
@@ -148,10 +172,10 @@ class TB:
         if self.rank ==0 or True:
             pbar.close()
             
-        #----- OUT OF THE LOOP -----
         print("Total time: {:.2f} seconds".format(time.time() - t_start))
         
         
+        ## collect from all cpus
         if return_eigenvectors:
             sendbufVec = Eignvecs
             recvbufVec = None
@@ -184,30 +208,15 @@ class TB:
                     if return_eigenvectors:
                         Eignvecs[-rev_rank]  = recvbufVec[ii][-rev_rank]
             
-            print('Succesfully collected eigens ')
+            print('Succesfully collected eigensvalues ')
 
             if return_eigenvectors: 
-                print('Und eigens vectors!')
+                print('Succesfully collected vectors!')
                 return Eigns, Eignvecs
             else:
                 return Eigns        
         else:
             return None
-
-    def GramSchmidt(self, A):
-               
-        ## modifed GSch
-        n_vec = A.shape[1]
-        Q = np.zeros(A.shape, dtype=self.dtypeC)
-        for k in range(n_vec):
-            q = A[:, k]
-            for j in range(k):
-                q = q - np.dot(np.conjugate(Q[:,j]), q)*Q[:,j]
-            
-            Q[:, k] = q/np.linalg.norm(q)
-        ##
-        
-        return Q
 
 
     def set_configuration(self, file_and_folder, sparse_flag=True, dtype='float', version=''):
@@ -2016,7 +2025,6 @@ class TB:
         return  ax
 
     def plotter(self, ax=None, color_='black',  shift_tozero=None):
-                
         if self.rank != 0:
             raise RuntimeError('Please plot using **if rank==0** in mpi mode')
         
@@ -2179,7 +2187,6 @@ class TB:
 
     ## plot
     def plot_BZ(self, ax=None, ws_params={'ls': '--', 'color': 'tab:gray', 'lw': 1, 'fill': False}):
-
         if self.rank != 0:
             raise RuntimeError('Please plot using **if rank==0** in mpi mode')     
         if ax==None:
@@ -2214,8 +2221,8 @@ class TB:
         ax.set_ylabel(r'$k_y$ [$\AA^{-1}$]')
         return ax
 
+    
     def plotter_DOS(self, ax):
-        
         if self.rank != 0:
             raise RuntimeError('Please plot using **if rank==0** in mpi mode')
         if self.dosEigns != None:
@@ -2285,7 +2292,23 @@ class TB:
 
 
 
-    def calculate_bands(self, n_eigns, solver, return_eigenvectors):      
+    def calculate_bands(self, n_eigns, solver, return_eigenvectors):    
+        """
+            Calculates band structure and vectors if requested.
+            
+            Args:             
+                n_eigns: 
+                    Number of eigen values desired out of Lanczos solver. 
+                
+                solver: str
+                    'primme' (default) or 'scipy'. Caution!  scipy is faster sometimes but it has a error propagation bug in eigenvectros. sometimes returns nonorthonormal. Perhaps a bug in their's GramSchmidt. 
+                    For symmetry checking 'primme' is recommended. 
+                    While for band structure calculation 'scipy' is recommended.
+                
+                return_eigenvectors: boolean
+                    True (default)
+        """
+        
         if return_eigenvectors:
             self.bandsEigns, self.bandsVector = self.engine_mpi(self.K_path, n_eigns, solver, return_eigenvectors=True)
             self.bandsVector_exist = True
