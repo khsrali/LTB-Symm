@@ -392,6 +392,7 @@ class TB:
             Args:
                 K_label: list of str, list(str)
                     Label of high symmetry points in reciprocal space.
+                    They most correspond to K_path respectivly.
                     
                 K_path: numpy array in shape of (n, 3), optional
                     All coordinates that you would like to calculate electronics levels for.
@@ -459,7 +460,7 @@ class TB:
                 for jj in range(step_list[ii]):
                     self.K_path_continues = np.append(self.K_path_continues,[self.K_path_continues[-1] + diff_discrete[ii] * 1.0 / step_list[ii]], axis=0)
                     
-            self.K_path_Highsymm_indices = np.insert(step_list,0,0)
+            self.K_path_Highsymm_indices = np.cumsum(np.insert(step_list,0,0))
             
             self.K_path = self.K_path_continues
         
@@ -1886,7 +1887,7 @@ class TB:
                         t_d += ez[ii][pp]*ez[jj][(pp+2)%3] * lmn[pp]*lmn[(pp+2)%3] *(V_sigam - V_pi)
                 
                 
-                T00[ii, jj] = t_d
+                T00[ii, jj] = t_d *0.5 # *0.5  because of H.C.
 
         T00_copy = T00.copy()
         T00_trans = sp.lil_matrix.transpose(T00, copy=True)
@@ -1912,7 +1913,7 @@ class TB:
                 
                 ## tight binding type 2, no extra phase
                 thing = [1*self.conf_.B_flag[0][ii,jj] * self.conf_.xlen, 1*self.conf_.B_flag[1][ii,jj] * self.conf_.ylen, 0]
-                modulation_matrix[ii,jj] = np.exp(+1j * np.dot(thing, K_ ))/2 # /2 because of H.C.
+                modulation_matrix[ii,jj] = np.exp(+1j * np.dot(thing, K_ )) 
         
         # for 9X it makes more sense to do it here...
         #M1 = modulation_matrix.copy()
@@ -2021,165 +2022,160 @@ class TB:
         
         return  ax
 
-    def plotter(self, ax=None, color_='black',  shift_tozero=None):
-        if self.rank != 0:
-            raise RuntimeError('Please plot using **if rank==0** in mpi mode')
-        
-        ## plot
-        if ax==None:
-            fig, ax = plt.subplots(figsize=(7, 10))
-            #fig = plt.figure(figsize=(5, 10))
-            #plt.figure(figsize=(5, 10))
-            mpl.rcParams['pdf.fonttype'] = 42
-            fontsize_ =20
-            plt.rcParams['font.family'] = 'Helvetica'
-
-        #mpl.rcParams['pdf.fonttype'] = 42
-        #fontsize_ =20
-        #plt.rcParams['font.family'] = 'Helvetica'
-
-        n_k_points = self.bandsEigns.shape[0]
-        n_eigns = self.bandsEigns.shape[1]
-
-        y_low = -30
-        y_high = +35
-
-        xpos_ = np.cumsum(self.K_path_Highsymm_indices)
-        self.n_Hsym_points = xpos_.shape[0]
-
-        ## sort in order to have flat bands at the beggining of the eigens
-        N_flat = 0
-        N_flat_old =0
-        for k_ in range(n_k_points):
-            eigs_now = self.bandsEigns[k_, :]
-            # sort eigs. Includes factor 0.5 from h.C
-            arg_sort = np.argsort(np.abs( eigs_now - 0.02 ))
-            self.bandsEigns[k_, :] = (eigs_now[arg_sort] *1000 )*0.5
-            
-            #try: 
-            if self.bandsVector_exist == True:
-                self.bandsVector[k_] = self.bandsVector[k_, :, arg_sort].T
-                print('Vectors sorted!!')
-                
-                np.savez('v0', v0=self.bandsVector[k_, :,0])
-                np.set_printoptions(suppress=True)
-                #print('DOTT', np.dot(Eignvecs[kk].T, Eignvecs[kk]) )
-                print('DOTT', np.dot(np.conjugate(self.bandsVector[k_].T), self.bandsVector[k_]) )
-                #self.bandsVector[k_] = self.GramSchmidt(self.bandsVector[k_])
-                #print('DOTT', np.dot(np.conjugate(self.bandsVector[k_].T), self.bandsVector[k_]) )
+    def check_orthonormality(self, ii):
+        """
+            Checks if Vector are correctly orthonormal. (See the notes about solver.)
+            Args:
+                ii: int
+                    Index of Kpoint to check. 
+        """
+        np.set_printoptions(suppress=True)
+        print('DOT', np.dot(np.conjugate(self.bandsVector[k_].T), self.bandsVector[k_]) )
     
+
+    def detect_flat_bands(self, E_range=0.03):
+        """
+            Detect flat bands, assuming they are around E=0.
+            All levels are sorted respect to E=0
+                        
+            Args:
+                E_range: float
+                    A positive value in unit [eV], setting a window of energy around E=0(sigma) to search for flat bands. (default = 30)
             
+            Returns: None
+        """
+        if self.rank == 0:
+            ## sort to have flat bands at the beggining of the bandsEigns
+            N_flat = 0
+            N_flat_old =0
+            for k_ in range(self.bandsEigns.shape[0]):
+                eigs_now = self.bandsEigns[k_, :]
+
+                arg_sort = np.argsort(np.abs( eigs_now - 0.02 ))
+                self.bandsEigns[k_, :] = eigs_now[arg_sort] 
                 
-            #except ValueError:  pass
-            
-            # AS: For the MonoLayer test this makes no sense
-            # find the flatbands
-            if self.orientation != 'test_ML':
-                N_flat = np.all([y_low<eigs_now, eigs_now<y_high],axis=0).sum()
-                if N_flat_old != N_flat and k_>0:
-                    print("there might be a bug!!, N_flat_old != N_flat, {0}!={1}, k_={2}".format(N_flat_old, N_flat, k_))
-                    exit() # AS: Is this really an error? Or you are looking in the wrong place?
-                    # Ali: Just an extra check..
-                    ## we will remove it in final version
+                if self.bandsVector_exist == True:
+                    self.bandsVector[k_] = self.bandsVector[k_, :, arg_sort].T
+                    
+                
+                # find the flatbands
+                N_flat = np.all([-1*E_range<eigs_now, eigs_now<E_range],axis=0).sum()
+                try:
+                    assert N_flat_old == N_flat or k_==0
+                except AssertionError:
+                    raise("Could not detect flat bands at k_={2}, N_flat_old != N_flat, {0}!={1} \n maybe try to change E_range".format(N_flat_old, N_flat, k_))
+                        
                 N_flat_old = N_flat
 
-        #self.n_flat = N_flat
+            self.n_flat = N_flat
 
-        # find zero
-        if shift_tozero == None:
-            if N_flat == 8:
-                try:
-                    idx = np.where(self.K_label=='K2')[0][0]
-                    shift_tozero = np.average( self.bandsEigns[int(xpos_[idx]), 2:6])
-                    print("I'm shifting to zero")
-                except IndexError:
-                    try:
-                        idx = np.where(self.K_label=='K1')[0][0]
-                        shift_tozero = np.average( self.bandsEigns[int(xpos_[idx]), 2:6])
-                        print("I'm shifting to zero")
-                    except IndexError:
-                        print("Cannot find the Right value to shift_tozero, so I'm not shifting")
-                        shift_tozero = 0
-            elif N_flat == 4:
-                try:
-                    idx = np.where(self.K_label=='K2')[0][0]
-                    shift_tozero = np.average( self.bandsEigns[int(xpos_[idx]), 0:4])
-                    print("I'm shifting to zero")
-                except IndexError:
-                    try:
-                        idx = np.where(self.K_label=='K1')[0][0]
-                        shift_tozero = np.average( self.bandsEigns[int(xpos_[idx]), 0:4])
-                        print("I'm shifting to zero")
-                    except IndexError:
-                        print("Cannot find the Right value to shift_tozero, so I'm not shifting")
-                        shift_tozero = 0
-            elif N_flat == 12:
-                try:
-                    idx = np.where(self.K_label=='k1')[0][0]
-                    shift_tozero = np.average( self.bandsEigns[int(xpos_[idx]), 5:7])
-                    print("I'm shifting to zero")
-                except IndexError:
-                    print("Cannot find the Right value to shift_tozero, so I'm not shifting")
-                    shift_tozero = 0
-            else:
-                shift_tozero = 0
-        print("shift_tozero={0}".format(shift_tozero))
-
-        #resort flatbands after shift
-        for k_ in range(n_k_points):
-            eigs_now = self.bandsEigns[k_, :N_flat] - shift_tozero
+    def shift_2_zero(self, k_label, idx_s):
+        """
+            A precise shift of Fermi level to zero, at given K point.
+            Only useful if flat bands already exist.
             
-            arg_sort = np.argsort(eigs_now )
-            arg_sort = np.flip(arg_sort)
-            #self.bandsEigns[k_, :N_flat] = eigs_now[arg_sort]
-            self.bandsEigns[k_, :N_flat] = self.bandsEigns[k_, arg_sort]
-            #print('sorted', eigs_now[arg_sort])
-            #print('sorted', self.bandsEigns[k_, :N_flat])
-            if self.bandsVector_exist == True:
-                self.bandsVector[k_, :, :N_flat] = self.bandsVector[k_, :, arg_sort].T
-                print('Vectors re-sorted after shift_tozero!!')
+            Note: this function resorts also flatbands based on the new shift.
             
-
-
-        #color_list= ['yellow','black','purple','orange']
-        # plot far-bands
-        for k_ in range(n_k_points):
-            yy = self.bandsEigns[k_, :]- shift_tozero
-            xx = np.full(n_eigns ,k_)
-
-            ax.plot(xx[N_flat:], yy[N_flat:], '.', color=color_, linewidth=5, markersize=1)
-
-        # plot flat-bands
-        for jin in range(N_flat):
-            xx = np.arange(n_k_points)
-            yy = self.bandsEigns[:, jin] - shift_tozero
-            ax.plot(xx, yy, '.', linewidth=3, markersize=5,color=color_)
-            #ax.plot(xx, yy, '-o', linewidth=3, markersize=6, color='C{0}'.format(jin))
-
-        ## plot vertical lines
-        #for jj in range(self.n_Hsym_points):
-            #plt.axvline(xpos_[jj], color='gray')
+            Args:
+                k_label: str 
+                    A specific k_label point to use of shifting. Must be an element of K_label
+                
+                idx_s: a list of indices (numpy)
+                    Indices of flat bands to use for centering the Fermi-level. At least two Indices are required
             
-        xlabels = np.char.replace(self.K_label, 'Gamma',r'$\Gamma$')
-        
-        ax.set_xticks(xpos_, xlabels)
-        #ax.set_yticks(fontsize=fontsize_)
-        ax.tick_params(axis='both', which='major', labelsize=fontsize_+5)
-        
-        if xpos_.shape[0] >1:
-            ax.set_xlim([xpos_[0],xpos_[-1]])
-        ax.set_ylabel("E (meV)",fontsize=fontsize_)
-        title_ = ''#save_name
-        ax.set_title(title_+ 'Total number of flat bands= '+str(N_flat))#,fontsize=fontsize_)
-        ax.grid(axis='y', c='gray',alpha=0.5)
-        ax.grid(axis='x', c='gray',alpha=0.5)
-        plt.gcf().subplots_adjust(left=0.15)
-        
-        self.N_flat = N_flat
-        self.shift_tozero = shift_tozero
-        
-        #fig.tight_layout()
-        return  ax
+            Hint for twisted bilayer graphene: 'K1' or 'K2'
+        """
+        if self.rank == 0:
+            # check arguments
+            try:
+                assert  idx_s.shape >= (2,)
+            except AssertionError:
+                raise ValueError("Cannot shift, minimum two indices of flat bands are required")
+
+            xpos_ = self.K_path_Highsymm_indices
+            
+            # find zero
+            shift_tozero = 0
+            try:
+                idx = np.where(self.K_label==k_label)[0][0]
+                shift_tozero = np.average( self.bandsEigns[int(xpos_[idx]), idx_s])
+                print("I'm shifting to zero")
+            except IndexError:
+                raise ValueError("Wrong idx_s of flat bands")
+                
+            print("shift_tozero={0}".format(shift_tozero))
+
+            #resort flatbands after shift
+            for k_ in range(self.bandsEigns.shape[0]):
+                eigs_now = self.bandsEigns[k_, :N_flat] - shift_tozero
+                
+                arg_sort = np.argsort(eigs_now )
+                arg_sort = np.flip(arg_sort)
+                #self.bandsEigns[k_, :N_flat] = eigs_now[arg_sort]
+                self.bandsEigns[k_, :N_flat] = self.bandsEigns[k_, arg_sort]
+                #print('sorted', eigs_now[arg_sort])
+                #print('sorted', self.bandsEigns[k_, :N_flat])
+                if self.bandsVector_exist == True:
+                    self.bandsVector[k_, :, :N_flat] = self.bandsVector[k_, :, arg_sort].T
+                    print('Vectors re-sorted after shift_2_zero..')
+                            
+
+    def plotter(self, ax=None, color_='black',  shift_tozero=None):
+
+        if self.rank == 0:
+            
+            ## plot
+            if ax==None:
+                fig, ax = plt.subplots(figsize=(7, 10))
+                #fig = plt.figure(figsize=(5, 10))
+                #plt.figure(figsize=(5, 10))
+                mpl.rcParams['pdf.fonttype'] = 42
+                fontsize_ =20
+                plt.rcParams['font.family'] = 'Helvetica'
+
+            #mpl.rcParams['pdf.fonttype'] = 42
+            #fontsize_ =20
+            #plt.rcParams['font.family'] = 'Helvetica'
+
+            #color_list= ['yellow','black','purple','orange']
+            # plot far-bands
+            for k_ in range(n_k_points):
+                yy = self.bandsEigns[k_, :]- shift_tozero
+                xx = np.full(n_eigns ,k_)
+
+                ax.plot(xx[N_flat:], yy[N_flat:], '.', color=color_, linewidth=5, markersize=1)
+
+            # plot flat-bands
+            for jin in range(N_flat):
+                xx = np.arange(n_k_points)
+                yy = self.bandsEigns[:, jin] - shift_tozero
+                ax.plot(xx, yy, '.', linewidth=3, markersize=5,color=color_)
+                #ax.plot(xx, yy, '-o', linewidth=3, markersize=6, color='C{0}'.format(jin))
+
+            ## plot vertical lines
+            #for jj in range(self.n_Hsym_points):
+                #plt.axvline(xpos_[jj], color='gray')
+                
+            xlabels = np.char.replace(self.K_label, 'Gamma',r'$\Gamma$')
+            
+            ax.set_xticks(xpos_, xlabels)
+            #ax.set_yticks(fontsize=fontsize_)
+            ax.tick_params(axis='both', which='major', labelsize=fontsize_+5)
+            
+            if xpos_.shape[0] >1:
+                ax.set_xlim([xpos_[0],xpos_[-1]])
+            ax.set_ylabel("E (meV)",fontsize=fontsize_)
+            title_ = ''#save_name
+            ax.set_title(title_+ 'Total number of flat bands= '+str(N_flat))#,fontsize=fontsize_)
+            ax.grid(axis='y', c='gray',alpha=0.5)
+            ax.grid(axis='x', c='gray',alpha=0.5)
+            plt.gcf().subplots_adjust(left=0.15)
+            
+            self.N_flat = N_flat
+            self.shift_tozero = shift_tozero
+            
+            #fig.tight_layout()
+            return  ax
 
 
     ## plot
@@ -2248,7 +2244,6 @@ class TB:
 ### DOS staff
 
 
-
     def MP_grid(self, Na, Nb):
         '''
         written by Andrea, I don't know what it does
@@ -2285,8 +2280,6 @@ class TB:
         print('Created %i x %i K grid (nKgrid=%i)' % (Na, Nb, self.nKgrid))
         print("Number of ir-kpoints: %d" % np.unique(self.K_mapping).shape[0] )
         self.nKgrid_uniq = np.unique(self.K_mapping).shape[0]
-
-
 
 
     def calculate_bands(self, n_eigns, solver, return_eigenvectors):    
