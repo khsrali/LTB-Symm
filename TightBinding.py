@@ -1990,38 +1990,6 @@ class TB:
         return return_
 
 
-
-    def plotter_3D(self, ax=None, color_='black', shift_tozero=None):
-        if self.rank != 0:
-            raise RuntimeError('Please plot using **if rank==0** in mpi mode')
-        ## plot
-        if ax==None:
-            fig, ax = plt.subplots(figsize=(7, 10))
-            ax = plt.axes(projection='3d')
-        
-        x = np.linspace(-1, 1, self.eigns_3D.shape[0])
-        y = np.linspace( 0, 1, self.eigns_3D.shape[1])
-        X, Y = np.meshgrid(x, y)
-
-        print( self.eigns_3D.shape)
-        #print( self.gsize_v)
-        #print( self.eigns_3D.shape)
-        data = (self.eigns_3D*1000*0.5 - shift_tozero).flatten()
-        print(data.shape)
-        np.savetxt("3d_data.txt",data,delimiter=',')
-        exit()
-        #X, Y = np.meshgrid(x, y)
-        for ii in range(self.eigns_3D.shape[2]):
-            Z = self.eigns_3D[:,:,ii]*1000*0.5 - shift_tozero
-            ax.scatter3D(X, Y, Z, color='black', linewidth=0.1)
-        #ax.set_ylim()
-        ax.set_zlim([-10,15])
-        ax.set_xlabel('x')
-        ax.set_ylabel('y')
-        ax.set_zlabel('E (meV)')
-        
-        return  ax
-
     def check_orthonormality(self, ii):
         """
             Checks if Vector are correctly orthonormal. (See the notes about solver.)
@@ -2031,8 +1999,8 @@ class TB:
         """
         np.set_printoptions(suppress=True)
         print('DOT', np.dot(np.conjugate(self.bandsVector[k_].T), self.bandsVector[k_]) )
-    
 
+    ## plotting tools
     def detect_flat_bands(self, E_range=0.03):
         """
             Detect flat bands, assuming they are around E=0.
@@ -2104,27 +2072,41 @@ class TB:
                 raise ValueError("Wrong idx_s of flat bands")
                 
             print("shift_tozero={0}".format(shift_tozero))
-
-            #resort flatbands after shift
-            for k_ in range(self.bandsEigns.shape[0]):
-                eigs_now = self.bandsEigns[k_, :N_flat] - shift_tozero
+            
+            self.bandsEigns -= shift_tozero
+            # I am not sure why below is useful:
+            ##resort flatbands after shift
+            #for k_ in range(self.bandsEigns.shape[0]):
+                #eigs_now = self.bandsEigns[k_, :N_flat] - shift_tozero
                 
-                arg_sort = np.argsort(eigs_now )
-                arg_sort = np.flip(arg_sort)
-                #self.bandsEigns[k_, :N_flat] = eigs_now[arg_sort]
-                self.bandsEigns[k_, :N_flat] = self.bandsEigns[k_, arg_sort]
-                #print('sorted', eigs_now[arg_sort])
-                #print('sorted', self.bandsEigns[k_, :N_flat])
-                if self.bandsVector_exist == True:
-                    self.bandsVector[k_, :, :N_flat] = self.bandsVector[k_, :, arg_sort].T
-                    print('Vectors re-sorted after shift_2_zero..')
+                #arg_sort = np.argsort(eigs_now )
+                #arg_sort = np.flip(arg_sort)
+                ##self.bandsEigns[k_, :N_flat] = eigs_now[arg_sort]
+                #self.bandsEigns[k_, :N_flat] = self.bandsEigns[k_, arg_sort]
+                ##print('sorted', eigs_now[arg_sort])
+                ##print('sorted', self.bandsEigns[k_, :N_flat])
+                #if self.bandsVector_exist == True:
+                    #self.bandsVector[k_, :, :N_flat] = self.bandsVector[k_, :, arg_sort].T
+                    #print('Vectors re-sorted after shift_2_zero..')
                             
-
-    def plotter(self, ax=None, color_='black',  shift_tozero=None):
+    def plotter_bands(self, ax=None, color_='black',  y_shift=0):
+        """
+            Plot band structure
+                        
+            Args:
+                ax: matplotlib object, optional
+                    axis to plot, if not provided will create an ply.figure()
+                color_: str 
+                    color of lines, passed to matplotlib
+                y_shift: float
+                    an arbitraty vertical shift (default=0)
+            
+            Returns:
+                ax: matplotlib object
+        """
 
         if self.rank == 0:
             
-            ## plot
             if ax==None:
                 fig, ax = plt.subplots(figsize=(7, 10))
                 #fig = plt.figure(figsize=(5, 10))
@@ -2133,24 +2115,20 @@ class TB:
                 fontsize_ =20
                 plt.rcParams['font.family'] = 'Helvetica'
 
-            #mpl.rcParams['pdf.fonttype'] = 42
-            #fontsize_ =20
-            #plt.rcParams['font.family'] = 'Helvetica'
-
-            #color_list= ['yellow','black','purple','orange']
+            
             # plot far-bands
-            for k_ in range(n_k_points):
-                yy = self.bandsEigns[k_, :]- shift_tozero
+            for k_ in range(self.n_k_points):
+                yy = self.bandsEigns[k_, :]*1000
                 xx = np.full(n_eigns ,k_)
 
-                ax.plot(xx[N_flat:], yy[N_flat:], '.', color=color_, linewidth=5, markersize=1)
+                ax.plot(xx[self.n_flat:], yy[self.n_flat:], '.', color=color_, linewidth=5, markersize=1)
 
             # plot flat-bands
-            for jin in range(N_flat):
-                xx = np.arange(n_k_points)
-                yy = self.bandsEigns[:, jin] - shift_tozero
+            for flt in range(self.n_flat):
+                xx = np.arange(self.n_k_points)
+                yy = self.bandsEigns[:, flt]*1000
                 ax.plot(xx, yy, '.', linewidth=3, markersize=5,color=color_)
-                #ax.plot(xx, yy, '-o', linewidth=3, markersize=6, color='C{0}'.format(jin))
+                #ax.plot(xx, yy, '-o', linewidth=3, markersize=6, color='C{0}'.format(flt))
 
             ## plot vertical lines
             #for jj in range(self.n_Hsym_points):
@@ -2158,6 +2136,7 @@ class TB:
                 
             xlabels = np.char.replace(self.K_label, 'Gamma',r'$\Gamma$')
             
+            xpos_ = self.K_path_Highsymm_indices
             ax.set_xticks(xpos_, xlabels)
             #ax.set_yticks(fontsize=fontsize_)
             ax.tick_params(axis='both', which='major', labelsize=fontsize_+5)
@@ -2166,19 +2145,15 @@ class TB:
                 ax.set_xlim([xpos_[0],xpos_[-1]])
             ax.set_ylabel("E (meV)",fontsize=fontsize_)
             title_ = ''#save_name
-            ax.set_title(title_+ 'Total number of flat bands= '+str(N_flat))#,fontsize=fontsize_)
+            ax.set_title(title_+ 'Total number of flat bands= '+str(self.n_flat))#,fontsize=fontsize_)
             ax.grid(axis='y', c='gray',alpha=0.5)
             ax.grid(axis='x', c='gray',alpha=0.5)
             plt.gcf().subplots_adjust(left=0.15)
-            
-            self.N_flat = N_flat
-            self.shift_tozero = shift_tozero
-            
+                        
             #fig.tight_layout()
             return  ax
 
 
-    ## plot
     def plot_BZ(self, ax=None, ws_params={'ls': '--', 'color': 'tab:gray', 'lw': 1, 'fill': False}):
         if self.rank != 0:
             raise RuntimeError('Please plot using **if rank==0** in mpi mode')     
@@ -2239,6 +2214,40 @@ class TB:
             # remember factor 0.5 from h.C.
             ax.fill_betweenx(self.Ebin_center*1e3*0.5, self.DOS, 0, alpha=0.5, color='tab:blue') # meV
             #ax.fill_betweenx(self., 0, self.Ebin_center, alpha=0.5, color='tab:blue')
+
+
+    def plotter_3D(self, ax=None, color_='black', shift_tozero=None):
+        if self.rank != 0:
+            raise RuntimeError('Please plot using **if rank==0** in mpi mode')
+        ## plot
+        if ax==None:
+            fig, ax = plt.subplots(figsize=(7, 10))
+            ax = plt.axes(projection='3d')
+        
+        x = np.linspace(-1, 1, self.eigns_3D.shape[0])
+        y = np.linspace( 0, 1, self.eigns_3D.shape[1])
+        X, Y = np.meshgrid(x, y)
+
+        print( self.eigns_3D.shape)
+        #print( self.gsize_v)
+        #print( self.eigns_3D.shape)
+        data = (self.eigns_3D*1000*0.5 - shift_tozero).flatten()
+        print(data.shape)
+        np.savetxt("3d_data.txt",data,delimiter=',')
+        exit()
+        #X, Y = np.meshgrid(x, y)
+        for ii in range(self.eigns_3D.shape[2]):
+            Z = self.eigns_3D[:,:,ii]*1000*0.5 - shift_tozero
+            ax.scatter3D(X, Y, Z, color='black', linewidth=0.1)
+        #ax.set_ylim()
+        ax.set_zlim([-10,15])
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_zlabel('E (meV)')
+        
+        return  ax
+
+
 
 
 ### DOS staff
