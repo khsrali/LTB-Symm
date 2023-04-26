@@ -673,8 +673,6 @@ class TB:
             
             
             
-        
-        
      
     def check_hamiltoninan_symmetry(self,operation, tol = 0.1):
         if self.rank != 0:
@@ -796,11 +794,8 @@ class TB:
         print('Under',operation,', Hamiltoninan invariance is:',case_, 'and senario is',senario)
         #print('complex count is ',count)
         
-        
-     
     
     def build_sym_operation(self, tol_=0.1):
-        
         if self.rank != 0:
             raise RuntimeError('Please plot using **if rank==0** in mpi mode')
     
@@ -895,7 +890,6 @@ class TB:
         self.new_orders = new_orders
         np.savez(self.folder_name + 'Operations_' +self.save_name, new_orders=self.new_orders)
         
-    
     
     def point_symmetry_check(self, which_K, diagno, mix_pairs = 2, block=False, tol_=0.1 ,skip_diag = False):
         """
@@ -1732,7 +1726,6 @@ class TB:
                 np.savez(self.folder_name + '3Dband_'+self.save_name, gsize_v=self.gsize_v, gsize_h=self.gsize_h, flat_grid=self.flat_grid, eigns_3D=self.eigns_3D, eigns_3D_reduced=self.eigns_3D_reduced)
 
     def load(self, folder_='', ver_ ='',load_H=False):
-        
         if self.rank ==0 :
             data_name_dos = None
             data_name_band = None
@@ -1840,14 +1833,19 @@ class TB:
                 print('3D bands file not found, so not loaded.')
 
 
-############ functions
 
     def T_bone_sp(self, H_style):
-        '''
-        :param H_style: 'ave' or '9X'
-        '''
-        assert H_style== 'ave' or H_style=='9X'
-
+        """
+            Build the sparse skeleton of Hamiltonian matrix. Please turn to private!
+            
+            Args:
+                H_style: 'str'
+                    type of Hamiltonina formula in use
+            
+            Returns:
+                T00 matrix
+        """
+        
         vc_mat = self.conf_.dist_matrix
         ez = self.conf_.ez
         T00 = sp.lil_matrix((self.conf_.tot_number, self.conf_.tot_number), dtype=self.dtypeR)
@@ -1858,35 +1856,26 @@ class TB:
         elif ez.shape == (self.conf_.tot_number,3):
             flag_ez = True
         else:
-            raise RuntimeError('Wrong ez!! there is a bug, please report code: bone_sp')
+            raise RuntimeError('Wrong ez!! unexpected.')
 
         for ii in range(self.conf_.tot_number):
             neighs = self.conf_.nl[ii][~(np.isnan(self.conf_.nl[ii]))].astype('int')
             for jj in neighs:
-
+                
                 # calculate the hoping
                 v_c = np.array([ vc_mat[0][ii,jj],  vc_mat[1][ii,jj],  vc_mat[2][ii,jj] ])
                 dd = np.linalg.norm(v_c)
 
-                #if flag_ez == True:
-                    #ez_ = ez[ii]
-                    ##ez_ = (ez[ii] + ez[jj])/2
-
-                #tilt = np.power(np.dot(v_c, ez_)/ dd, 2)
                 V_sigam = self.V0_sigam * np.exp(-(dd-self.d0) / self.r0 )
                 V_pi    = self.V0_pi    * np.exp(-(dd-self.a0) / self.r0 )
-                #t_d =  V_sigam * tilt + V_pi * (1-tilt)
                 
-                ## new efforts 
-                #Kolmogorov-Crespi-like approximate
-                #ez[jj] = ez[ii] = [0,0,1]
                 if H_style == 'ave':
+                    #Kolmogorov-Crespi-like approximate
                     tilt_1 = np.power(np.dot(v_c, ez[ii])/ dd, 2)
                     tilt_2 = np.power(np.dot(v_c, ez[jj])/ dd, 2)
                     t_d =   V_sigam * (tilt_1+tilt_2)/2 + V_pi * (1- (tilt_1 + tilt_2)/2 )
-                else:
-                    
-                    ## 9 BOUNDS
+                
+                elif H_style == '9X':
                     t_d = 0 
                     # x,x y,y z,z
                     lmn = v_c / dd
@@ -1897,11 +1886,8 @@ class TB:
                         t_d += ez[ii][pp]*ez[jj][(pp+2)%3] * lmn[pp]*lmn[(pp+2)%3] *(V_sigam - V_pi)
                 
                 
-                ## end: new efforts
-
                 T00[ii, jj] = t_d
 
-        ## I commented for fabrizio's correction
         T00_copy = T00.copy()
         T00_trans = sp.lil_matrix.transpose(T00, copy=True)
         T00_dagger  = sp.lil_matrix.conjugate(T00_trans, copy=True)
@@ -1910,24 +1896,25 @@ class TB:
         return T00
 
     def T_meat_sp(self, K_, T_0):
+        """
+            Adds the sparse modulation phase at each K_ to T_0. Turn to private.
+        """
 
         modulation_matrix = sp.lil_matrix(( self.conf_.tot_number, self.conf_.tot_number), dtype=self.dtypeC)
         #print('making modulation_matrix..')
         for ii in range(self.conf_.tot_number):
             neighs = self.conf_.nl[ii][~(np.isnan(self.conf_.nl[ii]))].astype('int')
             for jj in neighs:
-                ## my usual method
+                ## tight binding type 1, with a phase
                 #v_c = np.array([ self.conf_.dist_matrix[0][ii,jj],  self.conf_.dist_matrix[1][ii,jj],  self.conf_.dist_matrix[2][ii,jj] ])
                 #modulation_matrix[ii,jj] = np.exp(-1j * np.dot(v_c, K_))#*2
                 ###
                 
-                ## tb2
+                ## tight binding type 2, no extra phase
                 thing = [1*self.conf_.B_flag[0][ii,jj] * self.conf_.xlen, 1*self.conf_.B_flag[1][ii,jj] * self.conf_.ylen, 0]
-                #if np.dot(thing, K_ ) !=0 :
-                    #print(np.dot(thing, K_ )/(np.pi))
-                modulation_matrix[ii,jj] = np.exp(+1j * np.dot(thing, K_ )) 
+                modulation_matrix[ii,jj] = np.exp(+1j * np.dot(thing, K_ ))/2 # /2 because of H.C.
         
-        #exit()
+        # for 9X it makes more sense to do it here...
         #M1 = modulation_matrix.copy()
         #MT = sp.lil_matrix.transpose(modulation_matrix, copy=True)
         #MD  = sp.lil_matrix.conjugate(MT, copy=True)
@@ -1938,20 +1925,29 @@ class TB:
 
 
     def T_meat(self, K_, T_0):
+        """
+            Adds the non-sparse modulation phase at each K_ to T_0. Turn to private.
+        """
 
+        ## at the moment implemented only for tight binding type 1
+        ## maybe I should change this
         modulation_matrix = np.exp(-1j * np.dot(self.conf_.dist_matrix, K_))
         return_ = T_0 * modulation_matrix
         del modulation_matrix
 
         return return_
 
-
-
-
     def T_bone(self):
-        '''
-        please provid ez, only in dimention of (N,3)
-        '''
+        """
+            Build the non-sparse skeleton of Hamiltonian matrix. Please turn to private!
+            
+            Args:
+                H_style: 'str' !! Not available yet!!
+                    type of Hamiltonina formula in use
+            
+            Returns:
+                T00 matrix
+        """
         raise NotImplementedError('update the Hamiltonian!!')
 
         vc_mat = self.conf_.dist_matrix
@@ -1991,6 +1987,7 @@ class TB:
         return_ = return_ + return_.transpose()
 
         return return_
+
 
 
     def plotter_3D(self, ax=None, color_='black', shift_tozero=None):
