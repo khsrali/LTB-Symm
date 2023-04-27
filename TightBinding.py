@@ -28,7 +28,7 @@ class TB:
         self.rank = self.comm.Get_rank()
         self.size = self.comm.Get_size()
         
-        print('Created TB object')
+        print('TB object created')
 
 
     def build_up(self, H_style, local_normal=True, load_neigh=True, nl_method='RS'):
@@ -141,7 +141,7 @@ class TB:
         
         if self.rank ==0 or True:
             pbar = tqdm(total=slice_size, unit=' K-point', desc='rank {}'.format(self.rank)) # Initialise
-            
+        
         for kk in kk_range:
             t_loop = time.time()
 
@@ -164,8 +164,14 @@ class TB:
                     eigvals = eigs(H, k=n_eigns, sigma=self.sigma_shift, which='LM', return_eigenvectors=False,)
             
             Eigns[kk] = np.real(eigvals) - self.sigma_shift
-            self.H = H.todense()
-            
+            #self.H = H.todense()
+            if self.saveH:
+                try:
+                    idxH = np.where(self.K_path_Highsymm_indices==kk)[0][0]
+                    self.save(str_=self.K_label[idxH], write_param = False, H = H)
+                except IndexError:
+                    pass
+                
             if self.rank ==0 or True:
                 pbar.update()
                 
@@ -385,7 +391,7 @@ class TB:
             
         return K
     
-    def set_Kpoints(self, K_label, K_path=None, N=0):
+    def set_Kpoints(self, K_label, K_path=None, N=0, saveH = False):
         """
             Get a set of K points to calculte bands along, either a discrete or continues.
             
@@ -405,11 +411,14 @@ class TB:
                 N: int, optional
                     Number of K-points in the given path. If N=0(default) then calculation is done only for the provided list. If non-zero N, calculation is done for N point, displaced uniformly along the provided path.
                     If N != 0, it must be larger than number of elements in K_label.
+                saveH: boolean
+                    whether to save Hamiltonian at high symmetry points. False(default)
             Returns: None
         
         """
         
         # check arguments
+        self.saveH = saveH
         self.K_label = np.array(K_label)
         try: 
             assert N==0 or N > K_label.shape
@@ -608,6 +617,7 @@ class TB:
             
             ##
             org = sp.lil_matrix(self.H, dtype=self.H.dtype, copy=True)
+            #org = self.H
             
             H_primeX = sp.lil_matrix(sp.linalg.inv(self.Cop_x) @ org @ self.Cop_x)
             H_primeY = sp.lil_matrix(sp.linalg.inv(self.Cop_y) @ org @ self.Cop_y)
@@ -1192,9 +1202,11 @@ class TB:
             self.new_bases = new_bases
             
             #check if bases are True bases of H
+            Hdense = self.H.todense() ## please improve maybe using sp multiply
             for ch in range(flat_range):
                 psi =  np.expand_dims(new_bases[ch], axis=1)
-                left = np.matmul( np.conjugate(psi.T),  self.H)
+                #left = np.matmul( np.conjugate(psi.T),  self.H)
+                left = np.matmul( np.conjugate(psi.T),  Hdense ) ## please improve maybe using sp multiply
                 value_ = np.matmul( left,  psi)
                 
                 #phi =  np.expand_dims(old_vecs[ch], axis=1)
@@ -1693,11 +1705,15 @@ class TB:
             #file_.close()
     
 
-    def save(self, str_='', write_param = True):
+    def save(self, str_='', write_param = True, H = None):
         if write_param == True:
             self.save_name =  self.file_name[:-5]+'_d0_' + str(self.d0) +'_cut_' + str(self.cut_fac) + '_' + str_
         else:
             self.save_name =  str_
+        if H!= None:
+            #np.savez(self.folder_name + 'HH_' +self.save_name, H=self.H)
+            sp.save_npz(self.folder_name + 'HH_' +self.save_name, sp.csr_matrix(H, copy=True))
+            return 0
         
         if self.rank ==0 :
             if hasattr(self, 'bandsEigns'):
@@ -1710,9 +1726,7 @@ class TB:
                         file_name = self.file_name,
                         sub_type= self.conf_.sub_type)
                 
-                np.savez(self.folder_name + 'HH_' +self.save_name, H=self.H)
-                #sp.save_npz(self.folder_name + 'HH_' +self.save_name, self.H)
-                #self.H = sp.load_npz('/tmp/sparse_matrix.npz')
+
                 np.savez(self.folder_name + 'conf_' +self.save_name, B_flag=self.conf_.B_flag, nl = self.conf_.nl)
                 
             if hasattr(self, 'dosEigns'):
@@ -1726,7 +1740,7 @@ class TB:
             if hasattr(self, 'eigns_3D'):
                 np.savez(self.folder_name + '3Dband_'+self.save_name, gsize_v=self.gsize_v, gsize_h=self.gsize_h, flat_grid=self.flat_grid, eigns_3D=self.eigns_3D, eigns_3D_reduced=self.eigns_3D_reduced)
 
-    def load(self, folder_='', ver_ ='',load_H=False):
+    def load(self, folder_='', ver_ ='',HH=''):
         if self.rank ==0 :
             data_name_dos = None
             data_name_band = None
@@ -1748,7 +1762,7 @@ class TB:
                                     data_name_dos = lis
                                 elif '3Dband_' in lis:
                                     data_name_3Dbands = lis
-                                elif 'HH' in lis:
+                                elif 'HH_' in lis and HH in lis and HH != '':
                                     data_name_HH = lis
                                 elif 'Operations_' in lis:
                                     data_name_operation = lis
@@ -1792,9 +1806,10 @@ class TB:
             else:
                 raise FileNotFoundError('cannot find bands file')
             
-            if data_name_HH != None and load_H:
+            if data_name_HH != None:# and load_H:
                 print('loading HH')
-                self.H = np.load(self.folder_name + data_name_HH, allow_pickle=True)['H']
+                #self.H = np.load(self.folder_name + data_name_HH, allow_pickle=True)['H']
+                self.H = sp.lil_matrix(sp.load_npz(self.folder_name + data_name_HH))
                 #print(type(self.H), self.H.shape)
                 #exit()
             if data_name_operation != None:
