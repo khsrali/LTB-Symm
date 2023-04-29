@@ -15,10 +15,25 @@ If your use of LTB-Symm leads to an academic publication, please acknowledge tha
 
 
 Installation and Requirements
-------------
+-----------------------------
 
-This code is highly customizable, therfore we provide in a portable format, only.
-You may just download and run like an usual python script.
+There are two ways to install and use the package, depending on your needs.
+
+Through pip
++++++++++++
+
+Use this option if you do not need to highly modify source code.
+In this case you simply run:
+
+.. code-block:: console
+
+    $ pip install ltb-symm
+
+
+Through source code
++++++++++++++++++++
+
+This option is suitable if you would like to customize the source code for your needs. For this purpose simply download and run like an usual python script.
 
 However make sure you have all dependencies correctly installed. That includes;
 The usual one that probebly you already have,
@@ -34,6 +49,7 @@ and some others that necessarily to function properly:
     $ pip install mpi4py tqdm spglib primme
 
 Note you need a working MPI implementation for ``mpi4py`` to succesfully function.
+
 
 
 How to run

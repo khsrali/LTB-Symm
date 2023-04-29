@@ -47,7 +47,11 @@
 <li class="toctree-l1"><a class="reference internal" href="Tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#download">Download</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#installation-and-requirements">Installation and Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation-and-requirements">Installation and Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#through-pip">Through pip</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#through-source-code">Through source code</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#how-to-run">How to run</a></li>
 </ul>
 </li>
@@ -91,8 +95,18 @@
 </div>
 <div class="section" id="installation-and-requirements">
 <h2>Installation and Requirements<a class="headerlink" href="#installation-and-requirements" title="Permalink to this headline">¶</a></h2>
-<p>This code is highly customizable, therfore we provide in a portable format, only.
-You may just download and run like an usual python script.</p>
+<p>There are two ways to install and use the package, depending on your needs.</p>
+<div class="section" id="through-pip">
+<h3>Through pip<a class="headerlink" href="#through-pip" title="Permalink to this headline">¶</a></h3>
+<p>Use this option if you do not need to highly modify source code.
+In this case you simply run:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> pip install ltb-symm
+</pre></div>
+</div>
+</div>
+<div class="section" id="through-source-code">
+<h3>Through source code<a class="headerlink" href="#through-source-code" title="Permalink to this headline">¶</a></h3>
+<p>This option is suitable if you would like to customize the source code for your needs. For this purpose simply download and run like an usual python script.</p>
 <p>However make sure you have all dependencies correctly installed. That includes;
 The usual one that probebly you already have,</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> pip install numpy scipy matplotlib mpi4py tqdm spglib primme
@@ -103,6 +117,7 @@ The usual one that probebly you already have,</p>
 </pre></div>
 </div>
 <p>Note you need a working MPI implementation for <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> to succesfully function.</p>
+</div>
 </div>
 <div class="section" id="how-to-run">
 <h2>How to run<a class="headerlink" href="#how-to-run" title="Permalink to this headline">¶</a></h2>
