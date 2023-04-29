@@ -13,45 +13,17 @@ rank = comm.Get_rank()
 
 # === TB SETUP ===
 mytb = TB()
-#
-# --- Real sys --- #1.08_1AA.data  1.08_1fold_strain_0.0.data
-#mytb.set_configuration('1.08_1AA.data', phi_ = 1.08455, orientation = '0_fold' , sparse_flag = True)
-#mytb.set_configuration('1.08_1AA_2y.data', phi_ = 1.08455, orientation = '1_fold' , sparse_flag = True)
-#mytb.set_configuration('1.08_1AA_2y_rectangular.data', phi_ = 1.08455, orientation = '1_fold' , sparse_flag = True, dtype='double')
-#mytb.set_configuration('1.08_1fold_strain_0.0.data_exact', phi_ = 1.08455, orientation = '1_fold' , sparse_flag = True, dtype='double')
-#mytb.set_configuration('1.08_1fold_strain_0.0.data_zxact', phi_ = 1.08455, orientation = '1_fold' , sparse_flag = True, dtype='double')
-#mytb.set_configuration('1.08_0fold_no18.data', phi_ = 1.08455, orientation = '1_fold' , sparse_flag = True, dtype='double')
-#mytb.set_configuration('1.08_1fold_strain_0.0.data_noa0_relaxed', phi_ = 1.08455, orientation = '1_fold' , sparse_flag = True, dtype='double')
-mytb.set_configuration('1.08_1fold_strain_0.0.data_relaxed', phi_ = 1.08455, orientation = '1_fold' , sparse_flag = True, dtype='double', ver_='_nH_scipy')
-#mytb.set_configuration('1.08_1fold_strain_0.0.data', phi_ = 1.08455, orientation = '1_fold' , sparse_flag = True, dtype='double')
-#mytb.set_configuration('1.08_3fold_final.data', phi_ = 1.08455, orientation = '3_fold' , sparse_flag = True)
-
-#mytb.set_parameters(a0 = 1.42039011, d0 = 3.3, V0_sigam = +0.48, V0_pi = -2.7, cut_fac = 3.0) #4.01) #d0 = 3.344
+mytb.set_configuration('1.08_1fold_strain_0.0.data_relaxed', sparse_flag = True, version='_nH_scipy', dtype='double') 
 mytb.set_parameters(a0 = 1.42039011, d0 = 3.344, V0_sigam = +0.48, V0_pi = -2.7, cut_fac = 4.01) 
-#mytb.set_parameters(a0 = 1.42039011, d0 = 3.344, V0_sigam = +0.48, V0_pi = -2.7, cut_fac = 7.0) 
-#mytb.set_parameters(a0 = 1.42039011, d0 = 3.3, V0_sigam = +0.68, V0_pi = -2.7, cut_fac = 7.0) 
 #
-#mytb.set_symmetry_path(['gamma','X','K2_prime', 'K1','gamma' ,'M','K2'] , N=100) #[]
-#mytb.calculate(n_eigns = 20)
-#mytb.save('')
-# --- Graphene 5x5 ML test ---
-#mytb.set_configuration('mono_0_twist_50.data', phi_ = 0, orientation = 'test_ML', sparse_flag = False)
-#mytb.set_parameters(a0 = 1.42039011, d0 = 3.344, V0_sigam = +0.48, V0_pi = -2.7, cut_fac = 1)
-
-#mytb.build_up('ave' ,load_neigh=True, nl_method='Ali', ver_ = '_Pf')
 mytb.build_up('9X' ,load_neigh=True, nl_method='Ali', ver_ = '_Pf')
-mytb.conf_.sublattice_detector()
-#mytb.conf_.build_perfect(a0 = 1.42039011)
+
+# removed:
+#mytb.conf_.sublattice_detector()
 #mytb.conf_.build_perfect(a0 = 0)
-#exit()
-#mytb.build_up(load_neigh=False, nl_method='Andrea')
-#mytb.conf_.neigh_list_AS(mytb.r_cut, load_=False)
-#mytb.conf_.neigh_list_me_smart(mytb.r_cut, load_=False)
-#exit(0)
-#mytb.set_symmetry_path(['gamma','M','K1','gamma'] , N=1000)
-#mytb.set_symmetry_path(['gamma','X','W', 'Y', 'gamma', 'W' ] , N=1200)
-#mytb.set_Kpoints(['gamma','X','W', 'Y', 'gamma', 'W' ] , N=1200)
-mytb.set_Kpoints(['gamma','X' ] , N=4)
+
+mytb.MBZ()
+mytb.set_Kpoints(['gamma','X'] , N=4)
 #mytb.set_symmetry_path(['gamma','m','k1','gamma'] , N=1000)
 #mytb.set_symmetry_path(['gamma'] , N=1)
 #singlePoint = 'gamma'
