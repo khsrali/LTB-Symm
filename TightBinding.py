@@ -682,8 +682,6 @@ class TB:
             pbar.close()
             if case: print('Hamiltoninan is invariance under C2z. Buffer: ',mistake_buffer)
             
-            
-            
      
     def check_hamiltoninan_symmetry(self,operation, tol = 0.1):
         if self.rank != 0:
@@ -1597,7 +1595,6 @@ class TB:
                             likelihood=100* np.count_nonzero(check_)/ (self.conf_.tot_number//4)
                             print("level {:.0f} has {:.2f} symmetry \n".format(ii, likelihood))
                     
-
 
     def embed_flatVec(self, which_K, vers='', d_phase=False,  vec_='lanczos'):
         '''
