@@ -5,7 +5,7 @@ setup(
     name='LTB-Symm',
     version='0.1',
     license='GNU under General Public License v3.0',
-    author="Ali Khosravi",
+    author="Ali Khosravi, Andrea Silva",
     author_email='khsrali@gmail.com',
     packages=find_packages('src'),
     package_dir={'': 'src'},
