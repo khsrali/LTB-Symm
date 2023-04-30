@@ -15,7 +15,7 @@ Welcome to LB-Symm's documentation!
    This project is under active development. Feel free to contact us directly for any question, we can give you advise if this code is suitable for your project. Email: `khsrali@gmail.com <khsrali@gmail.com>`_
 
 
-.. .. include:: ../../README.rst
+.. include:: ../../README.rst
 
    
 
