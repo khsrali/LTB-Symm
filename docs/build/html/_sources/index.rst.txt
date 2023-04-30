@@ -7,9 +7,13 @@ Welcome to LB-Symm's documentation!
 ===================================
 
 
+.. image:: logo_V_0.1.png
+   :width: 1200
+
 .. note::
 
-   This project is under active development.
+   This project is under active development. Feel free to contact us directly for any question, we can give you advise if this code is suitable for your project. Email: `khsrali@gmail.com <khsrali@gmail.com>`_
+
 
 .. include:: ../../README.md
 
