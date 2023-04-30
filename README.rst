@@ -14,18 +14,20 @@ LTB-Symm is an ideal choice for researchers looking for a ready-to-use, easy-to-
 All input needed is (a) coordinate of atoms/orbitals, e.g. lammpstrj, XYZ  (b) functional for of Hamiltoninan
 
 Some mid level calculations are automated. For instance no worries about:
+
 Indices of atoms, 
 Detecting neghibors withing a cutoff,
 Periodic boundary condition,
 Orientation of orbitals like local normal vercors
 
 Possible outputs are: 
+
 Bands structure,
 Density of States, 
 Check topological symmetries of wave functions.
 
 Advantage of LTB-Symm:
-.. ----------------------
+
 MPI implemented, able to run on HPC clusters.
 Object Oriented, easy to modify for multi purpose.
 Automated many routings, no need to bother.
