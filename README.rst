@@ -1,7 +1,7 @@
 .. image:: https://github.com/khsrali/LTB-Symm/blob/main/docs/source/logo_V_0.1.png?raw=true
     :width:  1200
 
-.. include:: https://github.com/khsrali/LTB-Symm/blob/main/docs/source/home.rst?raw=true
+.. .. include:: https://github.com/khsrali/LTB-Symm/blob/main/docs/source/home.rst?raw=true
 
 
 What is LTB-Symm?
