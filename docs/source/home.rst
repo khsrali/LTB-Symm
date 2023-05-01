@@ -1,8 +1,3 @@
-.. image:: https://github.com/khsrali/LTB-Symm/blob/main/docs/source/logo_V_0.1.png?raw=true
-    :width:  1200
-
-.. include:: https://github.com/khsrali/LTB-Symm/blob/main/docs/source/home.rst?raw=true
-
 
 What is LTB-Symm?
 -----------------
@@ -28,6 +23,7 @@ Why LTB-Symm?
 -------------
     * MPI implemented, able to run on HPC clusters.
     * Object Oriented, easy to modify for multi purpose.
+    * Efficient, only energy levels that are needed thanks to pre-developed implementtaions of ``LANCZOS`` algorithm.
     * Ideal for 2D materials, e.g. graphene, MoS2
     * Many routings are automated. For instance no worries about:
         * Indices of atoms, 
@@ -36,3 +32,4 @@ Why LTB-Symm?
         * Orientation of orbitals like local normal vercors
     * Simply because there is no other open-source code that we know of. 
     That is why we wrote this code!
+ 
