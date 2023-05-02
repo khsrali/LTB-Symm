@@ -1,17 +1,7 @@
-Tutorial
-=====
+How to modify
+=============
 
-
-Blah
---------
-fgj
-
-Example
-------------
-
-
-How to run
-----------
+You can easily modify this code for your needs
 
 .. this makes red      ``blah``
 .. this looks like a function     :py:func:`blah`

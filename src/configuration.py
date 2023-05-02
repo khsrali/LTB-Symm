@@ -64,42 +64,44 @@ class pwl:
         self.atomsAllinfo = np.loadtxt(file_name, skiprows =skiplines, max_rows= self.tot_number, dtype=self.dtypeR)
         self.coords = self.atomsAllinfo[:,4:7]
     
+        self.coords[:,0] -= self.xlo
+        self.coords[:,1] -= self.ylo
+        self.xlo = self.ylo =0.0
+        
+        self.xhi = self.xlen
+        self.yhi = self.ylen
+        
+        self.atomsAllinfo[:,4:7] = self.coords
     
-    #def set_59_cell(self, ):
-        if '_exact' not in file_name and '2y_rectangular' not in file_name and '_zxact' not in file_name:
-            if self.xy != 0:
-                raise RuntimeError("set_59_cell is not supported becasue xy != 0")
-            else:
-                print('I am shifting your cell and atoms to 59!!')
+    ##def set_59_cell(self, ):
+        #if '_exact' not in file_name and '2y_rectangular' not in file_name and '_zxact' not in file_name:
+            #if self.xy != 0:
+                #raise RuntimeError("set_59_cell is not supported becasue xy != 0")
+            #else:
+                #print('I am shifting your cell and atoms to 59!!')
             
-            #a0 = 1.42039011
-            #self.coords[:,0] -= (self.xlo - 1/4 * self.xlen + a0/2) # for 1 fold  !zxact!
-            #self.coords[:,0] -= (self.xlo - 1/4 * self.xlen) # for 1 fold !exact! & !relaxed!
-            if 'noa0_relaxed' in file_name:
-                #print('Hallo Ali, I am doing this!!')
-                a0 = 1.42039011
-                self.coords[:,0] -= (self.xlo - 1/4 * self.xlen - a0/2) # to make C2y like C2x
-                self.coords[:,1] -=  (self.ylo - 1/4 * self.ylen) # for 1 fold
-            elif '_relaxed' in file_name:
-                #print('Hallo Ali, I should not do this!!')
-                self.coords[:,0] -= (self.xlo - 1/4 * self.xlen) # for 1 fold !exact! & !relaxed!
-                self.coords[:,1] -=  (self.ylo - 1/4 * self.ylen) # for 1 fold
-            elif '1.08_0fold_no18' in file_name:
-                pass
+            ##a0 = 1.42039011
+            ##self.coords[:,0] -= (self.xlo - 1/4 * self.xlen + a0/2) # for 1 fold  !zxact!
+            ##self.coords[:,0] -= (self.xlo - 1/4 * self.xlen) # for 1 fold !exact! & !relaxed!
+            #if 'noa0_relaxed' in file_name:
+                ##print('Hallo Ali, I am doing this!!')
+                #a0 = 1.42039011
+                #self.coords[:,0] -= (self.xlo - 1/4 * self.xlen - a0/2) # to make C2y like C2x
+                #self.coords[:,1] -=  (self.ylo - 1/4 * self.ylen) # for 1 fold
+            #elif '_relaxed' in file_name:
+                ##print('Hallo Ali, I should not do this!!')
+                #self.coords[:,0] -= (self.xlo - 1/4 * self.xlen) # for 1 fold !exact! & !relaxed!
+                #self.coords[:,1] -=  (self.ylo - 1/4 * self.ylen) # for 1 fold
+            #elif '1.08_0fold_no18' in file_name:
+                #pass
                 
-            else:
-                raise RuntimeError("please chhose your convention here::")
+            #else:
+                #raise RuntimeError("please chhose your convention here::")
             
 
-            self.coords[:,0] -=  (self.coords[:,0]//self.xlen)*self.xlen
-            self.coords[:,1] -=  (self.coords[:,1]//self.ylen)*self.ylen
+            #self.coords[:,0] -=  (self.coords[:,0]//self.xlen)*self.xlen
+            #self.coords[:,1] -=  (self.coords[:,1]//self.ylen)*self.ylen
             
-            self.xlo = 0.0
-            self.xhi = self.xlen
-            self.ylo = 0.0
-            self.yhi = self.ylen
-            
-            self.atomsAllinfo[:,4:7] = self.coords
                 
     
 
@@ -114,9 +116,9 @@ class pwl:
         print('creating vector_connection_matrix...')
 
         if self.sparse_flag:
-            dist_matrix_X = sp.lil_matrix((self.tot_number, self.tot_number), self.dtypeR)
-            dist_matrix_Y = sp.lil_matrix((self.tot_number, self.tot_number), self.dtypeR)
-            dist_matrix_Z = sp.lil_matrix((self.tot_number, self.tot_number), self.dtypeR)
+            dist_matrix_X = sp.lil_matrix((self.tot_number, self.tot_number), dtype=self.dtypeR)
+            dist_matrix_Y = sp.lil_matrix((self.tot_number, self.tot_number), dtype=self.dtypeR)
+            dist_matrix_Z = sp.lil_matrix((self.tot_number, self.tot_number), dtype=self.dtypeR)
             boundary_flag_X = sp.lil_matrix((self.tot_number, self.tot_number), dtype='int')
             boundary_flag_Y = sp.lil_matrix((self.tot_number, self.tot_number), dtype='int')
             #self.dist_matrix_norm = sp.lil_matrix((self.tot_number, self.tot_number), dtype='float')
@@ -129,7 +131,8 @@ class pwl:
         self.fnn_id  = np.zeros((self.tot_number,3), dtype='int' )
 
         for ii in range(self.tot_number):
-            neighs = self.nl[ii][~(np.isnan(self.nl[ii]))].astype('int') # number of neighbors are not known, so you put this super
+            neighs = self.nl[ii][~(np.isnan(self.nl[ii]))].astype('int') 
+            # number of neighbors are not known, so we use this approach
             zz = 0
             for jj in neighs:
 
@@ -183,9 +186,9 @@ class pwl:
                 raise RuntimeError("there is an error in finding first nearest neighbors:  please tune *fnn_cutoff*")
 
     
-    def normal_vec(self, local_flag=True):
+    def normal_vec(self):
         """
-            To create local normal vector is local_flag is True (default).
+            To create local normal vector.
             Note: On the choice of axis, it is assumed that the two main dimension of structure is on average perpendicular to Z axis.
             
             Warning!! chirality is not computed. Always the positive normal_vec (pointing upward) is returned.
@@ -196,28 +199,29 @@ class pwl:
             Returns: None
         """
 
-        if local_flag:
-            print("using **local** ez ...")
-            self.ez = np.full((self.tot_number,3), np.nan)
+        #if local_flag:
+        print("calculating local normal vectors ...")
+        self.ez_lc = np.full((self.tot_number,3), np.nan)
 
-            for ii in range(self.tot_number):
-                neighs = self.fnn_vec[ii]
-                aa = np.cross(neighs[0], neighs[1])
-                bb = np.cross(neighs[1], neighs[2])
-                cc = np.cross(neighs[2], neighs[0])
+        for ii in range(self.tot_number):
+            neighs = self.fnn_vec[ii]
+            aa = np.cross(neighs[0], neighs[1])
+            bb = np.cross(neighs[1], neighs[2])
+            cc = np.cross(neighs[2], neighs[0])
 
-                norm_ = aa + bb + cc
-                norm_ = norm_/np.linalg.norm(norm_)
-                
-                if norm_[2] < 0:
-                    norm_ *= -1
+            norm_ = aa + bb + cc
+            norm_ = norm_/np.linalg.norm(norm_)
+            
+            if norm_[2] < 0:
+                norm_ *= -1
 
-                self.ez[ii] = norm_
-        else:
-            print("using **global** ez=[0,0,1] assuming vertical ...")
-            self.ez = np.array([0,0,1])
+            self.ez_lc[ii] = norm_
+        #else:
+            #print("using **global** ez=[0,0,1] assuming vertical ...")
+            ##self.ez = np.array([0,0,1])
+            #self.ez_gl = np.full((10,3), [0,0,1])
 
-    def neigh_list(self, cutoff, method='RS', l_width = 500, load_=True, version_=''):
+    def neigh_list(self, cutoff, nl_method='RS', l_width = 500, load_=True, version_=''):
         """
             Neighbor detect all neighbours of all cites within a cutoff range.
             
@@ -238,7 +242,7 @@ class pwl:
         
         # check inputs
         try:
-            assert nl_method == 'RC' or dtype == 'RS'
+            assert nl_method == 'RC' or nl_method == 'RS'
         except AssertionError: raise TypeError("Wrong nl_method. Only 'RC' or 'RS'")
  
         self.cutoff = cutoff
@@ -246,20 +250,21 @@ class pwl:
         if load_:
             try:
                 data_ = np.load(self.folder_name + 'neigh_list_{0}.npz'.format(version_))
-                np_nl     = data_['np_nl']
+                self.nl     = data_['np_nl']
                 tot_neigh = data_['tot_neigh']
                 ave_neigh = data_['ave_neigh']
                 print('neigh_list is loaded from the existing file: neigh_list_{0}.npz'.format(version_))
+                print('ave_neigh={0} \ntot_neigh={1}'.format(ave_neigh, tot_neigh))
                 print("if want to rebuild the neigh_list, use: build_up(..,load_neigh=False)")
             except FileNotFoundError:   
                 load_ = False
                 print('A neighlist file was not found, building one... ')
 
-        else:
+        if not load_:
             # Init array with maximum neighbours l_width
             np_nl = np.full((self.tot_number, l_width), np.nan)
             
-            if method == 'RC':
+            if nl_method == 'RC':
                 
                 coords_9x = np.concatenate((self.coords,
                                             self.coords+np.array([+self.xlen,0,0]),
@@ -296,7 +301,7 @@ class pwl:
         
                 del coords_9x
                 
-            elif method == 'RS':   
+            elif nl_method == 'RS':   
                 ''' Andrea reduce space implementation '''
                 # !!! ASSUMES CELL CAN BE OBATINED LIKE THIS !!!
                 z_off = 30 # assume z is not well defined...
@@ -340,10 +345,8 @@ class pwl:
             np.savez(self.folder_name + 'neigh_list_{0}'.format(version_), np_nl=np_nl, tot_neigh=tot_neigh, ave_neigh=ave_neigh )
 
             self.nl = np_nl
-            self.ave = ave_neigh
 
-            print('ave_neigh=%f' % self.ave)
-            print('tot_neigh=%f' % tot_neigh)
+            print('ave_neigh={0} \ntot_neigh={1}'.format(ave_neigh, tot_neigh))
 
 
 

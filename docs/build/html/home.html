@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LTB-Symm &mdash; LB-Symm v.1.0.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>What is LTB-Symm? &mdash; LB-Symm v.1.0.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
@@ -40,7 +40,6 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Tutorial.html">Tutorial</a></li>
@@ -64,7 +63,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">LTB-Symm</li>
+      <li class="breadcrumb-item active">What is LTB-Symm?</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -73,14 +72,51 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="ltb-symm">
-<h1>LTB-Symm<a class="headerlink" href="#ltb-symm" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="TightBinding.html">TightBinding module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="configuration.html">configuration module</a></li>
-</ul>
+  <div class="section" id="what-is-ltb-symm">
+<h1>What is LTB-Symm?<a class="headerlink" href="#what-is-ltb-symm" title="Permalink to this headline">¶</a></h1>
+<p>LTB-Symm is a publicly available code for large scale tight-binding (TB) calculation of 2D materials. Moreover it is also able to check topological symmetries of wave functions.</p>
 </div>
+<div class="section" id="for-who-is-ltb-symm">
+<h1>For who is LTB-Symm?<a class="headerlink" href="#for-who-is-ltb-symm" title="Permalink to this headline">¶</a></h1>
+<p>LTB-Symm is an ideal choice for researchers looking for a ready-to-use, easy-to-modify, and MPI-implemented TB code for large scale structures. Up to 1 (0.1) Milions atoms for limited (vast) K-points, is easily managable.</p>
+<dl class="simple">
+<dt>All input needed are:</dt><dd><ol class="arabic simple">
+<li><p>Coordinate of atoms/orbitals, e.g. lammpstrj, XYZ</p></li>
+<li><p>Functional form of Hamiltoninan</p></li>
+</ol>
+</dd>
+<dt>And possible outputs are:</dt><dd><ul class="simple">
+<li><p>Bands structure,</p></li>
+<li><p>Density of States,</p></li>
+<li><p>Check topological symmetries of wave functions.</p></li>
+<li><p>Shape of the wavefunction</p></li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="why-ltb-symm">
+<h1>Why LTB-Symm?<a class="headerlink" href="#why-ltb-symm" title="Permalink to this headline">¶</a></h1>
+<dl>
+<dt>Because:</dt><dd><ul class="simple">
+<li><p>MPI implemented, able to run on HPC clusters.</p></li>
+<li><p>Object Oriented, easy to modify for multi purpose.</p></li>
+<li><p>Efficient, only energy levels that are needed thanks to pre-developed implementtaions of <code class="docutils literal notranslate"><span class="pre">LANCZOS</span></code> algorithm.</p></li>
+<li><p>Ideal for 2D materials, e.g. graphene, MoS2</p></li>
+<li><dl class="simple">
+<dt>Many routings are automated. For instance no worries about:</dt><dd><ul>
+<li><p>Indices of atoms,</p></li>
+<li><p>Detecting neghibors withing a cutoff,</p></li>
+<li><p>Periodic boundary condition,</p></li>
+<li><p>Orientation of orbitals like local normal vercors</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Simply because there is no other open-source code that we know of.</p></li>
+</ul>
+<p>That is why we wrote this code!</p>
+</dd>
+</dl>
 </div>
 
 

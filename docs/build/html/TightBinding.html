@@ -42,6 +42,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Tutorial.html">Tutorial</a></li>
@@ -122,11 +123,15 @@ Set 0 to define automatically. (default=0)</p>
 
 <dl class="py method">
 <dt id="TightBinding.TB.T_bone_sp">
-<code class="sig-name descname">T_bone_sp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">H_style</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TightBinding.TB.T_bone_sp" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">T_bone_sp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">H_style</span></em>, <em class="sig-param"><span class="n">flag_ez</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TightBinding.TB.T_bone_sp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build the sparse skeleton of Hamiltonian matrix. Please turn to private!</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
-<dt>H_style: ‘str’</dt><dd><p>type of Hamiltonina formula in use</p>
+<dt>H_style: function</dt><dd><p>Pairwise Hamiltonina formula in use. It should get the following arguments in order:
+H_ij(vector_ij, normal_i, normal_j)
+Where vector_ij is the vector connecing cite “i” to cite “j”. normal_i (normal_j) is the normal vector to surface at cite “i” (“j”).</p>
+</dd>
+<dt>flag_ez: boolean</dt><dd><p>If to use calculated vertical normals</p>
 </dd>
 </dl>
 </dd>
@@ -158,7 +163,9 @@ Set 0 to define automatically. (default=0)</p>
 <dd><p>Build up some basic requirments: normal vectors, neighborlist, and the bone matrix</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
-<dt>H_style: str</dt><dd><p>type of the Hamiltonian, ‘ave’ or ‘9X’</p>
+<dt>H_style: function</dt><dd><p>Pairwise Hamiltonina formula in use. It should get the following arguments in order:
+H_ij(vector_ij, normal_i, normal_j)
+Where vector_ij is the vector connecing cite “i” to cite “j”. normal_i (normal_j) is the normal vector to surface at cite “i” (“j”).</p>
 </dd>
 <dt>local_normal: boolean</dt><dd><p>To use local_normal to orbital direction(True) or consider them all aligned in Z direction (False). (default = True)</p>
 </dd>
@@ -189,7 +196,7 @@ Set 0 to define automatically. (default=0)</p>
 
 <dl class="py method">
 <dt id="TightBinding.TB.calculate_bands">
-<code class="sig-name descname">calculate_bands</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_eigns</span></em>, <em class="sig-param"><span class="n">solver</span></em>, <em class="sig-param"><span class="n">return_eigenvectors</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TightBinding.TB.calculate_bands" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate_bands</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_eigns</span></em>, <em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">solver</span></em>, <em class="sig-param"><span class="n">return_eigenvectors</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TightBinding.TB.calculate_bands" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates band structure and vectors if requested.</p>
 <dl class="simple">
 <dt>Args:             </dt><dd><dl class="simple">
@@ -199,7 +206,9 @@ Set 0 to define automatically. (default=0)</p>
 For symmetry checking ‘primme’ is recommended. 
 While for band structure calculation ‘scipy’ is recommended.</p>
 </dd>
-<dt>return_eigenvectors: boolean</dt><dd><p>True (default)</p>
+<dt>return_eigenvectors: boolean</dt><dd><p>False (default)</p>
+</dd>
+<dt>sigma: float</dt><dd><p>Find the n_eigns eigenvalues around this value</p>
 </dd>
 </dl>
 </dd>
@@ -377,7 +386,7 @@ If N != 0, it must be larger than number of elements in K_label.</p>
 
 <dl class="py method">
 <dt id="TightBinding.TB.set_configuration">
-<code class="sig-name descname">set_configuration</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_and_folder</span></em>, <em class="sig-param"><span class="n">sparse_flag</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">dtype</span><span class="o">=</span><span class="default_value">'float'</span></em>, <em class="sig-param"><span class="n">version</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TightBinding.TB.set_configuration" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_configuration</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_and_folder</span></em>, <em class="sig-param"><span class="n">r_cut</span></em>, <em class="sig-param"><span class="n">sparse_flag</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">dtype</span><span class="o">=</span><span class="default_value">'float'</span></em>, <em class="sig-param"><span class="n">version</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TightBinding.TB.set_configuration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the basic configuration</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
@@ -391,6 +400,9 @@ Calculation are faster with non-sparse, but eager on ram size.</p>
 </dd>
 <dt>version: str, optional</dt><dd><p>Postfix to name the output folder in format of ‘<a href="#id9"><span class="problematic" id="id10">calculation_</span></a>’+filename(directory excluded)+version</p>
 </dd>
+<dt>cut_fac: float</dt><dd><p>Neighboring cutoff in the same distance unit as the coordinate file. Circular based neighbor detecting method.
+Larger value includes more neighbor for each cite.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -401,29 +413,6 @@ Calculation are faster with non-sparse, but eager on ram size.</p>
 <dt id="TightBinding.TB.set_grid">
 <code class="sig-name descname">set_grid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_points</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TightBinding.TB.set_grid" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="py method">
-<dt id="TightBinding.TB.set_parameters">
-<code class="sig-name descname">set_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d0</span></em>, <em class="sig-param"><span class="n">a0</span></em>, <em class="sig-param"><span class="n">V0_sigam</span></em>, <em class="sig-param"><span class="n">V0_pi</span></em>, <em class="sig-param"><span class="n">cut_fac</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TightBinding.TB.set_parameters" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set some parameters of the twisted-bilayer-model
-Args:</p>
-<blockquote>
-<div><dl class="simple">
-<dt>d0: float</dt><dd><p>Distance between two layers. Notice d0 &lt;= than minimum interlayer distance, otherwise you are exponentially increasing interaction!</p>
-</dd>
-<dt>a0: float</dt><dd><p>Equilibrium distance between two neghibouring cites.</p>
-</dd>
-<dt>V0_sigam: float</dt><dd><p>…</p>
-</dd>
-<dt>V0_pi: float</dt><dd><p>…</p>
-</dd>
-<dt>cut_fac: float</dt><dd><p>Neighboring cutoff in unit a0. Circular based neighbor detecting method.
-larger value includes more neighbor for each cite.</p>
-</dd>
-</dl>
-</div></blockquote>
-<p>Returns: None</p>
-</dd></dl>
 
 <dl class="py method">
 <dt id="TightBinding.TB.shift_2_zero">

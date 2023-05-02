@@ -42,6 +42,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Tutorial.html">Tutorial</a></li>
@@ -94,7 +95,7 @@
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt id="configuration.pwl.neigh_list">
-<code class="sig-name descname">neigh_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cutoff</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'RS'</span></em>, <em class="sig-param"><span class="n">l_width</span><span class="o">=</span><span class="default_value">500</span></em>, <em class="sig-param"><span class="n">load_</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">version_</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#configuration.pwl.neigh_list" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">neigh_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cutoff</span></em>, <em class="sig-param"><span class="n">nl_method</span><span class="o">=</span><span class="default_value">'RS'</span></em>, <em class="sig-param"><span class="n">l_width</span><span class="o">=</span><span class="default_value">500</span></em>, <em class="sig-param"><span class="n">load_</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">version_</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#configuration.pwl.neigh_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Neighbor detect all neighbours of all cites within a cutoff range.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
@@ -117,8 +118,8 @@ In rare senarios if you use very large cutoff, you might need to increase this q
 
 <dl class="py method">
 <dt id="configuration.pwl.normal_vec">
-<code class="sig-name descname">normal_vec</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">local_flag</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#configuration.pwl.normal_vec" title="Permalink to this definition">¶</a></dt>
-<dd><p>To create local normal vector is local_flag is True (default).
+<code class="sig-name descname">normal_vec</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#configuration.pwl.normal_vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>To create local normal vector.
 Note: On the choice of axis, it is assumed that the two main dimension of structure is on average perpendicular to Z axis.</p>
 <p>Warning!! chirality is not computed. Always the positive normal_vec (pointing upward) is returned.</p>
 <dl class="simple">

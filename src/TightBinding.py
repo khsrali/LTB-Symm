@@ -36,8 +36,10 @@ class TB:
             Build up some basic requirments: normal vectors, neighborlist, and the bone matrix
 
             Args:
-                H_style: str
-                    type of the Hamiltonian, 'ave' or '9X'
+                H_style: function
+                    Pairwise Hamiltonina formula in use. It should get the following arguments in order:
+                    H_ij(vector_ij, normal_i, normal_j)
+                    Where vector_ij is the vector connecing cite "i" to cite "j". normal_i (normal_j) is the normal vector to surface at cite "i" ("j"). 
                 local_normal: boolean
                     To use local_normal to orbital direction(True) or consider them all aligned in Z direction (False). (default = True)
                 load_neigh: boolean
@@ -48,16 +50,13 @@ class TB:
         """
         
         # check input args
-        try:
-            assert H_style == 'ave' or dtype == '9X'
-        except AssertionError: raise TypeError('Only ave(averaged) or 9X(full 9-term Hamiltonian) is supported')
-            
+  
         # build neigh_list
-        version_ = self.file_name[:-5] +'_cut_' + str(self.cut_fac)
+        version_ = self.file_name[:-5] +'_cutoff_' + str(self.r_cut)
         
         if self.rank == 0:
             # calculate neigh_list
-            self.conf_.neigh_list(cutoff=self.r_cut,  method=nl_method, load_ = load_neigh, version_ = version_ )
+            self.conf_.neigh_list(cutoff=self.r_cut,  nl_method=nl_method, load_ = load_neigh, version_ = version_ )
             
             # send to other cups
             signal_ = True
@@ -225,7 +224,7 @@ class TB:
             return None
 
 
-    def set_configuration(self, file_and_folder, sparse_flag=True, dtype='float', version=''):
+    def set_configuration(self, file_and_folder, r_cut, sparse_flag=True, dtype='float', version=''):
         """
             Set the basic configuration
 
@@ -240,14 +239,17 @@ class TB:
                     precision of Calculation. float(default) or double is supported. 
                 version: str, optional
                     Postfix to name the output folder in format of 'calculation_'+filename(directory excluded)+version
-                    
+                cut_fac: float
+                    Neighboring cutoff in the same distance unit as the coordinate file. Circular based neighbor detecting method.
+                    Larger value includes more neighbor for each cite.
             Returns: None
         """
-        
+        # check input
         try:
             assert dtype == 'float' or dtype == 'double'
         except AssertionError: raise TypeError('Only float(default) or double is supported for dtype')
-    
+        
+        self.r_cut = r_cut 
         self.sparse_flag=sparse_flag
         self.dtypeR = dtype
         self.dtypeC = 'c'+dtype
@@ -255,7 +257,7 @@ class TB:
         self.folder_name = '/'.join(file_and_folder.split('/')[:-1]) #+ '/'
 
         # Creating new folder:
-        new_folder = 'calculation_' + self.file_name +version+ '/'
+        new_folder = 'out_' + '.'.join(self.file_name.split('.')[:-1]) +version+ '/'
         self.folder_name += new_folder
         if self.rank == 0:  os.makedirs(self.folder_name, exist_ok=True)
         
@@ -263,34 +265,15 @@ class TB:
         self.conf_ = pwl(self.folder_name, self.file_name, self.sparse_flag, self.dtypeR)
 
 
-    def set_parameters(self, d0, a0, V0_sigam, V0_pi, cut_fac):
-        """
-            Set some parameters of the twisted-bilayer-model
-            Args:
-                d0: float
-                    Distance between two layers. Notice d0 <= than minimum interlayer distance, otherwise you are exponentially increasing interaction!
-                a0: float
-                    Equilibrium distance between two neghibouring cites.
-                V0_sigam: float
-                    ... 
-                V0_pi: float
-                    ...
-                cut_fac: float
-                    Neighboring cutoff in unit a0. Circular based neighbor detecting method.
-                    larger value includes more neighbor for each cite.
-            Returns: None
-        """
-        self.d0 = d0
-        self.a0 = a0
-        self.V0_sigam = V0_sigam
-        self.V0_pi = V0_pi
-        self.cut_fac = cut_fac
-
-        onsite_ = 0 # for later development, right now always 0
-        self.r_cut = cut_fac*a0 
-        self.r0 = 0.184* a0 * np.sqrt(3) #  0.3187*a0 and -2.8 ev
-        # approximate guess for sigma value in the eignvalue problem.
-        self.sigma_shift = np.abs(V0_pi-V0_sigam)/2
+    #def set_parameters(self, d0, a0, V0_sigam, V0_pi, cut_fac):
+        #"""
+            #Set some parameters of the twisted-bilayer-model
+            #Args:
+                
+            #Returns: None
+        #"""
+        ## approximate guess for sigma value in the eignvalue problem.
+        #self.sigma_shift = np.abs(V0_pi-V0_sigam)/2
 
 
     def MBZ(self, g1=0, g2=0):
@@ -313,7 +296,7 @@ class TB:
                 raise TypeError("g1 & g1 must be numpy array in shape (3,) or simply leave empty for automatic calculation...")
             self.g1 = g1
             self.g2 = g2
-            print('vectors: g1, g2',gx,gy)
+            print('vectors: \ng1={0}, \ng2={1}'.format(g1,g2))
             
         else:
             if self.conf_.xy ==0:
@@ -325,8 +308,12 @@ class TB:
                 self.MBZ_W = (gx+gy)/2
                 self.MBZ_Y = gy/2
                 self.MBZ_gamma = np.array([0,0,0])
-                print('vectors: g1, g2',gx,gy)
+                print('vectors: \ng1={0}, \ng2={1}'.format(gx,gy))
             else:
+                vector_b1 = np.array([self.conf_.xlen, 0, 0])
+                vector_b2 = np.array([self.conf_.xy, self.conf_.ylen, 0])
+                vector_b3 = np.array([0,0,1])
+                
                 angle_ = np.rad2deg(np.arccos(np.dot(vector_b1,vector_b2)/(np.linalg.norm(vector_b1)*np.linalg.norm(vector_b2))))
                 
                 if not np.isclose(angle_, 60, atol=1):
@@ -334,14 +321,11 @@ class TB:
                 
                 print('Box scew is not zero.. g1 & g2 will not be orthogonal')
 
-                vector_b1 = np.array([self.conf_.xlen, 0, 0])
-                vector_b2 = np.array([self.conf_.xy, self.conf_.ylen, 0])
-                vector_b3 = np.array([0,0,1])
                 
                 volume = np.abs(np.dot(vector_b3,  np.cross(vector_b1, vector_b2) ) )            
                 g1 = 2*np.pi/volume * np.cross(vector_b3, vector_b2)
                 g2 = 2*np.pi/volume * np.cross(vector_b3, vector_b1)
-                print('vectors: g1, g2',gx,gy)
+                print('vectors: \ng1={0}, \ng2={1}'.format(g1,g2))
                 self.g1 = g1
                 self.g2 = g2
                 
@@ -420,7 +404,7 @@ class TB:
         self.saveH = saveH
         self.K_label = np.array(K_label)
         try: 
-            assert N==0 or N > K_label.shape
+            assert N==0 or N > self.K_label.shape[0]
         except AssertionError:
             raise ValueError("If N != 0, it must be larger than number of elements in K_label. You can set N=0(default) for a discrete calculation")
         try: 
@@ -1846,59 +1830,38 @@ class TB:
 
 
 
-    def T_bone_sp(self, H_style):
+    def T_bone_sp(self, H_style, flag_ez):
         """
             Build the sparse skeleton of Hamiltonian matrix. Please turn to private!
             
             Args:
-                H_style: 'str'
-                    type of Hamiltonina formula in use
-            
+                H_style: function
+                    Pairwise Hamiltonina formula in use. It should get the following arguments in order:
+                    H_ij(vector_ij, normal_i, normal_j)
+                    Where vector_ij is the vector connecing cite "i" to cite "j". normal_i (normal_j) is the normal vector to surface at cite "i" ("j").
+                flag_ez: boolean
+                    If to use calculated vertical normals
             Returns:
                 T00 matrix
         """
         
         vc_mat = self.conf_.dist_matrix
-        ez = self.conf_.ez
         T00 = sp.lil_matrix((self.conf_.tot_number, self.conf_.tot_number), dtype=self.dtypeR)
 
-        if ez.shape == (3,):
-            flag_ez = False
-            ez_ = ez
-        elif ez.shape == (self.conf_.tot_number,3):
-            flag_ez = True
+        
+        if flag_ez:
+            ez = self.conf_.ez_lc
         else:
-            raise RuntimeError('Wrong ez!! unexpected.')
+            ez = np.full((self.conf_.tot_number,3), [0,0,1])
 
         for ii in range(self.conf_.tot_number):
             neighs = self.conf_.nl[ii][~(np.isnan(self.conf_.nl[ii]))].astype('int')
             for jj in neighs:
                 
                 # calculate the hoping
-                v_c = np.array([ vc_mat[0][ii,jj],  vc_mat[1][ii,jj],  vc_mat[2][ii,jj] ])
-                dd = np.linalg.norm(v_c)
-
-                V_sigam = self.V0_sigam * np.exp(-(dd-self.d0) / self.r0 )
-                V_pi    = self.V0_pi    * np.exp(-(dd-self.a0) / self.r0 )
+                v_ij = np.array([ vc_mat[0][ii,jj],  vc_mat[1][ii,jj],  vc_mat[2][ii,jj] ])
                 
-                if H_style == 'ave':
-                    #Kolmogorov-Crespi-like approximate
-                    tilt_1 = np.power(np.dot(v_c, ez[ii])/ dd, 2)
-                    tilt_2 = np.power(np.dot(v_c, ez[jj])/ dd, 2)
-                    t_d =   V_sigam * (tilt_1+tilt_2)/2 + V_pi * (1- (tilt_1 + tilt_2)/2 )
-                
-                elif H_style == '9X':
-                    t_d = 0 
-                    # x,x y,y z,z
-                    lmn = v_c / dd
-                    for pp in range(3):
-                        t_d += ez[ii][pp]*ez[jj][pp] *( (lmn[pp]**2)*V_sigam + (1-lmn[pp]**2)*V_pi )
-                        
-                        t_d += ez[ii][pp]*ez[jj][(pp+1)%3] * lmn[pp]*lmn[(pp+1)%3] *(V_sigam - V_pi)
-                        t_d += ez[ii][pp]*ez[jj][(pp+2)%3] * lmn[pp]*lmn[(pp+2)%3] *(V_sigam - V_pi)
-                
-                
-                T00[ii, jj] = t_d *0.5 # *0.5  because of H.C.
+                T00[ii, jj] = H_style(v_ij, ez[ii], ez[jj]) *0.5 # *0.5  because of H.C.
 
         T00_copy = T00.copy()
         T00_trans = sp.lil_matrix.transpose(T00, copy=True)
@@ -2302,7 +2265,7 @@ class TB:
         self.nKgrid_uniq = np.unique(self.K_mapping).shape[0]
 
 
-    def calculate_bands(self, n_eigns, solver, return_eigenvectors):    
+    def calculate_bands(self, n_eigns, sigma, solver, return_eigenvectors=False):    
         """
             Calculates band structure and vectors if requested.
             
@@ -2316,8 +2279,13 @@ class TB:
                     While for band structure calculation 'scipy' is recommended.
                 
                 return_eigenvectors: boolean
-                    True (default)
+                    False (default)
+                    
+                sigma: float
+                    Find the n_eigns eigenvalues around this value
         """
+        
+        self.sigma_shift = sigma
         
         if return_eigenvectors:
             self.bandsEigns, self.bandsVector = self.engine_mpi(self.K_path, n_eigns, solver, return_eigenvectors=True)

@@ -26,6 +26,7 @@ And possible outputs are:
 
 Why LTB-Symm?
 -------------
+Because:
     * MPI implemented, able to run on HPC clusters.
     * Object Oriented, easy to modify for multi purpose.
     * Ideal for 2D materials, e.g. graphene, MoS2
