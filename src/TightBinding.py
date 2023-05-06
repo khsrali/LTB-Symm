@@ -22,68 +22,73 @@ This code is using MPI
 
 
 class TB:
-    def __init__(self, ):
+    def __init__(self):
         
         self.comm = MPI.COMM_WORLD
         self.rank = self.comm.Get_rank()
         self.size = self.comm.Get_size()
         
-        print('TB object created')
+        self.print0('TB object created')
+                
 
 
-    def build_up(self, H_style, local_normal=True, load_neigh=True, nl_method='RS'):
-        """
-            Build up some basic requirments: normal vectors, neighborlist, and the bone matrix
+    #def build_up(self, H_style, local_normal=True, load_neigh=True, nl_method='RS'):
+        #"""
+            #Build up some basic requirments: normal vectors, neighborlist, and the bone matrix
 
-            Args:
-                H_style: function
-                    Pairwise Hamiltonina formula in use. It should get the following arguments in order:
-                    H_ij(vector_ij, normal_i, normal_j)
-                    Where vector_ij is the vector connecing cite "i" to cite "j". normal_i (normal_j) is the normal vector to surface at cite "i" ("j"). 
-                local_normal: boolean
-                    To use local_normal to orbital direction(True) or consider them all aligned in Z direction (False). (default = True)
-                load_neigh: boolean
-                    load a previously created neighborlist. (default = True)
-                nl_method: str
-                    which method to use for creating neighborlist. 'RS' -reduce space implementation- (faster but might have a bug in rhombic cells, to be investigated) or 'RC' -replicating coordinates- (slower, bug free) (default = 'RS')
-            Returns: None
-        """
+            #Args:
+                #H_style: function
+                    #Pairwise Hamiltonina formula in use. It should get the following arguments in order:
+                    #H_ij(vector_ij, normal_i, normal_j)
+                    #Where vector_ij is the vector connecing cite "i" to cite "j". normal_i (normal_j) is the normal vector to surface at cite "i" ("j"). 
+                #local_normal: boolean
+                    #To use local_normal to orbital direction(True) or consider them all aligned in Z direction (False). (default = True)
+                #load_neigh: boolean
+                    #load a previously created neighborlist. (default = True)
+                #nl_method: str
+                    #which method to use for creating neighborlist. 'RS' -reduce space implementation- (faster but might have a bug in rhombic cells, to be investigated) or 'RC' -replicating coordinates- (slower, bug free) (default = 'RS')
+            #Returns: None
+        #"""
         
-        # check input args
+        ## check input args
   
-        # build neigh_list
-        version_ = self.file_name[:-5] +'_cutoff_' + str(self.r_cut)
+        ## build neigh_list
+        #version_ = self.file_name[:-5] +'_cutoff_' + str(self.r_cut)
         
+        #if self.rank == 0:
+            ## calculate neigh_list
+            #self.conf.neigh_list(cutoff=self.r_cut,  nl_method=nl_method, load_ = load_neigh, version_ = version_ )
+            
+            ## send to other cups
+            #signal_ = True
+            #for ii in range(1,self.size):
+                #req = self.comm.isend(signal_, dest=ii, tag=11)
+                #req.wait()
+        #else:
+            #req = self.comm.irecv(source=0, tag=11)
+            #signal_ = req.wait() 
+            #assert signal_ is True
+            #self.conf.neigh_list(cutoff=self.r_cut, load_ = True, version_ = version_ ) 
+            
+        
+        ## build distance matrix
+        #self.conf.vector_connection_matrix()
+        ## build normal vectors
+        #if local_normal:
+            #self.conf.normal_vec()
+
+        ## build the 'Bone' matrix
+        #if self.sparse_flag:
+            #self.T0 = self.T_bone_sp(H_style, flag_ez=local_normal)
+        #else:
+            #self.T0 = self.T_bone(H_style)
+        #print('T_bone is constructed..')
+
+    def print0(self, *argv):
         if self.rank == 0:
-            # calculate neigh_list
-            self.conf_.neigh_list(cutoff=self.r_cut,  nl_method=nl_method, load_ = load_neigh, version_ = version_ )
-            
-            # send to other cups
-            signal_ = True
-            for ii in range(1,self.size):
-                req = self.comm.isend(signal_, dest=ii, tag=11)
-                req.wait()
-        else:
-            req = self.comm.irecv(source=0, tag=11)
-            signal_ = req.wait() 
-            assert signal_ is True
-            self.conf_.neigh_list(cutoff=self.r_cut, load_ = True, version_ = version_ ) 
-            
-        
-        # build distance matrix
-        self.conf_.vector_connection_matrix()
-        # build normal vectors
-        self.conf_.normal_vec(local_normal)
+            print(*argv)
 
-        # build the 'Bone' matrix
-        if self.sparse_flag:
-            self.T0 = self.T_bone_sp(H_style)
-        else:
-            self.T0 = self.T_bone(H_style)
-        print('T_bone is constructed..')
-        
-
-    def engine_mpi(self, kpoints, n_eigns, solver='primme', return_eigenvectors=False):
+    def engine_mpi(self, T_M, kpoints, n_eigns, solver='primme', return_eigenvectors=False):
         """
             Engine is mpi parallel! 
             Soon to be a private method.
@@ -112,12 +117,14 @@ class TB:
         
         if solver=='scipy' and return_eigenvectors==True:
             warnings.warn("Setting not recommended!\n scipy has a bug regarding orthonormality of eigenvectors. It is better to use solver solver= 'primme' if you want right symmetries in your wavefunction. Eigenvalues remain bug free.",category=Warning)
+        
+
         #
         
         npoints = np.array(kpoints).shape[0]
         Eigns = np.zeros([npoints, n_eigns], dtype=self.dtypeR)
         if return_eigenvectors:
-            Eignvecs = np.zeros([npoints, self.conf_.tot_number, n_eigns], dtype=self.dtypeC)
+            Eignvecs = np.zeros([npoints, self.conf.tot_number, n_eigns], dtype=self.dtypeC)
             
         
         
@@ -144,10 +151,7 @@ class TB:
         for kk in kk_range:
             t_loop = time.time()
 
-            if self.sparse_flag:
-                H = self.T_meat_sp(kpoints[kk], self.T0 )
-            else:
-                H = self.T_meat(kpoints[kk], self.T0 )
+            H = T_M(kpoints[kk], self.T0 )
             
             
             if return_eigenvectors:
@@ -167,7 +171,7 @@ class TB:
             if self.saveH:
                 try:
                     idxH = np.where(self.K_path_Highsymm_indices==kk)[0][0]
-                    self.save(str_=self.K_label[idxH], write_param = False, H = H)
+                    self.save(str_=self.K_label[idxH], H = H)
                 except IndexError:
                     pass
                 
@@ -190,7 +194,7 @@ class TB:
         if self.rank == 0:
             recvbuf    = np.zeros([self.size, npoints, n_eigns], dtype=self.dtypeR)
             if return_eigenvectors:
-                recvbufVec = np.zeros([self.size, npoints, self.conf_.tot_number, n_eigns], dtype=self.dtypeC)
+                recvbufVec = np.zeros([self.size, npoints, self.conf.tot_number, n_eigns], dtype=self.dtypeC)
 
         self.comm.Gather(sendbuf, recvbuf, root=0)
         if return_eigenvectors:
@@ -213,6 +217,7 @@ class TB:
                     if return_eigenvectors:
                         Eignvecs[-rev_rank]  = recvbufVec[ii][-rev_rank]
             
+            Eigns *= 0.5 # 0.5 because of H.C. more efficent this way
             print('Succesfully collected eigensvalues ')
 
             if return_eigenvectors: 
@@ -224,9 +229,9 @@ class TB:
             return None
 
 
-    def set_configuration(self, file_and_folder, r_cut, sparse_flag=True, dtype='float', version=''):
+    def set_configuration(self, file_and_folder, r_cut, local_normal=True, nl_method='RS', sparse_flag=True, dtype='float', version=''):
         """
-            Set the basic configuration
+            Set the basic configuration. And build up some basic requirments: normal vectors, neighborlist,
 
             Args:
                 file_and_folder: str
@@ -239,11 +244,16 @@ class TB:
                     precision of Calculation. float(default) or double is supported. 
                 version: str, optional
                     Postfix to name the output folder in format of 'calculation_'+filename(directory excluded)+version
-                cut_fac: float
+                r_cut: float
                     Neighboring cutoff in the same distance unit as the coordinate file. Circular based neighbor detecting method.
                     Larger value includes more neighbor for each cite.
-            Returns: None
+                local_normal: boolean
+                    To use local_normal to orbital direction(True) or consider them all aligned in Z direction (False). (default = True)
+                nl_method: str
+                    which method to use for creating neighborlist. 'RS' -reduce space implementation- (faster but might have a bug in rhombic cells, to be investigated) or 'RC' -replicating coordinates- (slower, bug free) (default = 'RS')
+                    nl_method is ignored if load_neigh=True and a previously calculated neighborlist exist.
         """
+        
         # check input
         try:
             assert dtype == 'float' or dtype == 'double'
@@ -262,7 +272,36 @@ class TB:
         if self.rank == 0:  os.makedirs(self.folder_name, exist_ok=True)
         
         # Call on configuration.py
-        self.conf_ = pwl(self.folder_name, self.file_name, self.sparse_flag, self.dtypeR)
+        self.conf = pwl(self.folder_name, self.sparse_flag, self.dtypeR)
+        
+        self.conf.read_coords(self.file_name)
+
+        # build neigh_list
+        version_ = '_cutoff_' + str(self.r_cut)
+        
+        if self.rank == 0:  
+            # calculate neigh_list
+            self.conf.neigh_list(cutoff=self.r_cut,  nl_method=nl_method, load_ = False, version_ = version_ )
+            
+            # send to other cups
+            signal_ = True
+            for ii in range(1,self.size):
+                req = self.comm.isend(signal_, dest=ii, tag=11)
+                req.wait()
+        else:
+            req = self.comm.irecv(source=0, tag=11)
+            signal_ = req.wait() 
+            assert signal_ is True
+            self.conf.neigh_list(cutoff=self.r_cut, load_ = True, version_ = version_ ) 
+            
+        
+        # build distance matrix
+        self.conf.vector_connection_matrix()
+        # build normal vectors
+        self.conf.normal_vec(local_normal)
+
+
+
 
 
     #def set_parameters(self, d0, a0, V0_sigam, V0_pi, cut_fac):
@@ -296,22 +335,22 @@ class TB:
                 raise TypeError("g1 & g1 must be numpy array in shape (3,) or simply leave empty for automatic calculation...")
             self.g1 = g1
             self.g2 = g2
-            print('vectors: \ng1={0}, \ng2={1}'.format(g1,g2))
+            self.print0('vectors: \ng1={0}, \ng2={1}'.format(g1,g2))
             
         else:
-            if self.conf_.xy ==0:
-                gx = 2*np.pi/np.linalg.norm(self.conf_.xlen) *np.array([1,0,0])
-                gy = 2*np.pi/np.linalg.norm(self.conf_.ylen) *np.array([0,1,0])
+            if self.conf.xy ==0:
+                gx = 2*np.pi/np.linalg.norm(self.conf.xlen) *np.array([1,0,0])
+                gy = 2*np.pi/np.linalg.norm(self.conf.ylen) *np.array([0,1,0])
                 self.g1 = gx
                 self.g2 = gy
                 self.MBZ_X = gx/2
                 self.MBZ_W = (gx+gy)/2
                 self.MBZ_Y = gy/2
                 self.MBZ_gamma = np.array([0,0,0])
-                print('vectors: \ng1={0}, \ng2={1}'.format(gx,gy))
+                self.print0('vectors: \ng1={0}, \ng2={1}'.format(gx,gy))
             else:
-                vector_b1 = np.array([self.conf_.xlen, 0, 0])
-                vector_b2 = np.array([self.conf_.xy, self.conf_.ylen, 0])
+                vector_b1 = np.array([self.conf.xlen, 0, 0])
+                vector_b2 = np.array([self.conf.xy, self.conf.ylen, 0])
                 vector_b3 = np.array([0,0,1])
                 
                 angle_ = np.rad2deg(np.arccos(np.dot(vector_b1,vector_b2)/(np.linalg.norm(vector_b1)*np.linalg.norm(vector_b2))))
@@ -319,13 +358,12 @@ class TB:
                 if not np.isclose(angle_, 60, atol=1):
                     raise ValueError("angle(a,b) is {0} \nNote: g1 & g2 could be automatically calculated only if the angle between a and b lattice vectors is either 60 or 90 degrees. Otherwise you should provide as input.".format(angle_))
                 
-                print('Box scew is not zero.. g1 & g2 will not be orthogonal')
+                #self.print0('Box scew is not zero.. g1 & g2 will not be orthogonal')
 
                 
                 volume = np.abs(np.dot(vector_b3,  np.cross(vector_b1, vector_b2) ) )            
                 g1 = 2*np.pi/volume * np.cross(vector_b3, vector_b2)
                 g2 = 2*np.pi/volume * np.cross(vector_b3, vector_b1)
-                print('vectors: \ng1={0}, \ng2={1}'.format(g1,g2))
                 self.g1 = g1
                 self.g2 = g2
                 
@@ -335,6 +373,7 @@ class TB:
                 self.MBZ_k1 = (g2 + g1) /3
                 self.MBZ_k2 = (2*g2 - g1) / 3
                 
+        self.print0('K vectors: \ng1={0}, \ng2={1}'.format(self.g1,self.g2)) 
     
     def label_translator(self, label_ ):
         """
@@ -418,10 +457,10 @@ class TB:
         
         #
         if Kmode == 'discrete':
-            print('your path is discrete')
+            self.print0('your path is discrete')
         else:
-            print('your path is continues')
-            print("requested n_k_points={0}".format(N))
+            self.print0('your path is continues')
+            self.print0("requested n_k_points={0}".format(N))
             N = self.size*(N//self.size) if N!=1 else N
         #self.K_label = np.array(K_label)
         
@@ -460,8 +499,8 @@ class TB:
             self.K_path = self.K_path_discrete
             self.K_path_Highsymm_indices = np.arange(self.K_label.shape[0])
             
-        self.n_k_points = self.K_path.shape[0]
-        print("actual n_k_points={0}".format(self.n_k_points))
+        n_k_points = self.K_path.shape[0]
+        self.print0("actual n_k_points={0}".format(n_k_points))
     
     
     def make_Cmat(self, K, pls_check=False,tol_ = 0.1):
@@ -482,17 +521,17 @@ class TB:
         #self.K_path[0]
         #assert K.shape[0] == 3
         
-        self.Cop_x = sp.lil_matrix((self.conf_.tot_number, self.conf_.tot_number), dtype='int')
-        self.Cop_y = sp.lil_matrix((self.conf_.tot_number, self.conf_.tot_number), dtype='int')
-        self.Cop_z = sp.lil_matrix((self.conf_.tot_number, self.conf_.tot_number), dtype='int')
+        self.Cop_x = sp.lil_matrix((self.conf.tot_number, self.conf.tot_number), dtype='int')
+        self.Cop_y = sp.lil_matrix((self.conf.tot_number, self.conf.tot_number), dtype='int')
+        self.Cop_z = sp.lil_matrix((self.conf.tot_number, self.conf.tot_number), dtype='int')
         print('**I am making C2 matrix for this K point:**', K )
-        for sh in range(self.conf_.tot_number):
+        for sh in range(self.conf.tot_number):
             i = sh
             j = self.new_orders[0][sh]
             k = self.new_orders[1][sh]
             l = self.new_orders[2][sh]
-            convention_x = 1 if (self.conf_.atomsAllinfo[ i , 4] //self.conf_.xlen_half) %2 == 0 else  np.exp(+1j *  self.conf_.xlen * K[0] )
-            convention_y = 1 if (self.conf_.atomsAllinfo[ i , 5] //self.conf_.ylen_half) %2 == 0 else  np.exp(+1j *  self.conf_.ylen * K[1] )
+            convention_x = 1 if (self.conf.atomsAllinfo[ i , 4] //self.conf.xlen_half) %2 == 0 else  np.exp(+1j *  self.conf.xlen * K[0] )
+            convention_y = 1 if (self.conf.atomsAllinfo[ i , 5] //self.conf.ylen_half) %2 == 0 else  np.exp(+1j *  self.conf.ylen * K[1] )
             #convention_y = 1
             self.Cop_x[i, j] = convention_x#*convention_y
             self.Cop_y[i, k] = convention_y#-1 if i<k else +1
@@ -548,10 +587,10 @@ class TB:
                 nonz = A2.nonzero()
                 nonz_tot = nonz[0].shape[0]
                 
-                if self.conf_.tot_number < nonz_tot:
+                if self.conf.tot_number < nonz_tot:
                     print('square has more non-zero elements that identity')
                     return 1
-                elif self.conf_.tot_number > nonz_tot:
+                elif self.conf.tot_number > nonz_tot:
                     print('square has less non-zero elements that identity')
                     return 1
                 
@@ -670,7 +709,7 @@ class TB:
         if self.rank != 0:
             raise RuntimeError('Please plot using **if rank==0** in mpi mode')
         #Operations:: 'C2x', 'C2y', 'C2z'
-        oper_mat = sp.lil_matrix((self.conf_.tot_number, self.conf_.tot_number), dtype='int')
+        oper_mat = sp.lil_matrix((self.conf.tot_number, self.conf.tot_number), dtype='int')
         
         whos =  {'C2x':0, 'C2y':1, 'C2z':2}
         op_ = self.new_orders[whos[operation]]
@@ -683,15 +722,15 @@ class TB:
         nonZ_tot = nonZ[0].shape[0]
         ##Make the M matrix
         #version_ = self.file_name[:-5] +'_cut_' + str(self.cut_fac) + '_Pf'
-        #self.conf_.neigh_list_me_smart(cutoff=self.r_cut, l_width=300, load_ = True, version_ = version_ )
-        M = sp.lil_matrix((self.conf_.tot_number, self.conf_.tot_number), dtype='int')
-        for ii in range(self.conf_.tot_number):
-            neighs = self.nl[ii][~(np.isnan(self.nl[ii]))].astype('int')
+        #self.conf.neigh_list_me_smart(cutoff=self.r_cut, l_width=300, load_ = True, version_ = version_ )
+        M = sp.lil_matrix((self.conf.tot_number, self.conf.tot_number), dtype='int')
+        for ii in range(self.conf.tot_number):
+            neighs = self.conf.nl[ii][~(np.isnan(self.conf.nl[ii]))].astype('int')
             for jj in neighs:
-                sign_before_X = 1 if self.B_flag[0][ii,jj]==0 else -1
-                sign_after_X  = 1 if self.B_flag[0][op_[ii],op_[jj]]==0 else -1
-                #sign_before_Y = 1 if self.B_flag[1][ii,jj]==0 else -1
-                #sign_after_Y  = 1 if self.B_flag[1][op_[ii],op_[jj]]==0 else -1
+                sign_before_X = 1 if self.conf.B_flag[0][ii,jj]==0 else -1
+                sign_after_X  = 1 if self.conf.B_flag[0][op_[ii],op_[jj]]==0 else -1
+                #sign_before_Y = 1 if self.conf.B_flag[1][ii,jj]==0 else -1
+                #sign_after_Y  = 1 if self.conf.B_flag[1][op_[ii],op_[jj]]==0 else -1
                 
                 convention = sign_before_X*sign_after_X #* sign_before_Y*sign_after_Y
                 
@@ -791,16 +830,16 @@ class TB:
         if self.rank != 0:
             raise RuntimeError('Please plot using **if rank==0** in mpi mode')
     
-        all_X = np.copy(self.conf_.atomsAllinfo[ : , 4])
-        all_Y = np.copy(self.conf_.atomsAllinfo[ : , 5])
-        all_Z = np.copy(self.conf_.atomsAllinfo[ : , 6])
-        wave_info = np.zeros((self.conf_.tot_number, 3), dtype= self.dtypeR)
+        all_X = np.copy(self.conf.atomsAllinfo[ : , 4])
+        all_Y = np.copy(self.conf.atomsAllinfo[ : , 5])
+        all_Z = np.copy(self.conf.atomsAllinfo[ : , 6])
+        wave_info = np.zeros((self.conf.tot_number, 3), dtype= self.dtypeR)
 
         wave_info[:, 0] = all_X
         wave_info[:, 1] = all_Y
         wave_info[:, 2] = all_Z
         
-        new_orders = np.zeros((3, self.conf_.tot_number), dtype='int') # 'C2x', 'C2y', 'C2z'
+        new_orders = np.zeros((3, self.conf.tot_number), dtype='int') # 'C2x', 'C2y', 'C2z'
         who =0
         for which_operation in ['C2x', 'C2y', 'C2z']:
             print('making the operation for ', which_operation)
@@ -808,7 +847,7 @@ class TB:
             if which_operation == 'C2x':
                 #x+1/2,-y,-z
                 print('doing c2x')
-                wave_info_trs[:, 0] += 1/2 * self.conf_.xlen
+                wave_info_trs[:, 0] += 1/2 * self.conf.xlen
                 wave_info_trs[:, 1] *= -1
                 wave_info_trs[:, 2] *= -1
                 
@@ -817,7 +856,7 @@ class TB:
                 #-x,y+1/2,-z
                 print('doing c2y')
                 wave_info_trs[:, 0] *= -1
-                wave_info_trs[:, 1] += 1/2 * self.conf_.ylen
+                wave_info_trs[:, 1] += 1/2 * self.conf.ylen
                 wave_info_trs[:, 2] *= -1
                 
                 if '_zxact' not in self.file_name and 'noa0_relaxed' not in self.file_name and '1.08_0fold_no18' not in self.file_name:
@@ -828,8 +867,8 @@ class TB:
             elif which_operation == 'C2z':     
                 #-x+1/2,-y+1/2,z
                 print('doing c2z')
-                wave_info_trs[:, 0] = -1*wave_info_trs[:, 0] + 1/2 * self.conf_.xlen
-                wave_info_trs[:, 1] = -1*wave_info_trs[:, 1] + 1/2 * self.conf_.ylen
+                wave_info_trs[:, 0] = -1*wave_info_trs[:, 0] + 1/2 * self.conf.xlen
+                wave_info_trs[:, 1] = -1*wave_info_trs[:, 1] + 1/2 * self.conf.ylen
                 
                 if '_zxact' not in self.file_name and 'noa0_relaxed' not in self.file_name and '1.08_0fold_no18' not in self.file_name:
                     wave_info_trs[:, 0] -= self.a0 ## for 1 fold #i don't know why it is this way!
@@ -837,15 +876,15 @@ class TB:
             
                             
             ## translate to cell(0,0) 
-            x_back = (wave_info_trs[:, 0]//self.conf_.xlen)
-            y_back = (wave_info_trs[:, 1]//self.conf_.ylen)
-            wave_info_trs[:, 0] -=  x_back*self.conf_.xlen
-            wave_info_trs[:, 1] -=  y_back*self.conf_.ylen
+            x_back = (wave_info_trs[:, 0]//self.conf.xlen)
+            y_back = (wave_info_trs[:, 1]//self.conf.ylen)
+            wave_info_trs[:, 0] -=  x_back*self.conf.xlen
+            wave_info_trs[:, 1] -=  y_back*self.conf.ylen
             
             ## get the right indices to compare 
-            new_order = np.zeros(self.conf_.tot_number, dtype='int')
+            new_order = np.zeros(self.conf.tot_number, dtype='int')
             
-            for nn in range(self.conf_.tot_number):
+            for nn in range(self.conf.tot_number):
                 
                 cond_all = np.isclose( np.linalg.norm(wave_info_trs - wave_info[nn], axis=1) , 0, rtol=0, atol=0.2) 
         
@@ -860,8 +899,8 @@ class TB:
                             for pY in possible:
                                 desire_coord = np.copy(wave_info[nn])
                                 #print('doing ',pX,pY, desire_coord)
-                                desire_coord[0] += pX * self.conf_.xlen 
-                                desire_coord[1] += pY * self.conf_.ylen 
+                                desire_coord[0] += pX * self.conf.xlen 
+                                desire_coord[1] += pY * self.conf.ylen 
                         
                                 cond_all = np.isclose( np.linalg.norm(wave_info_trs - desire_coord, axis=1) , 0, rtol=0, atol=0.2) 
                                 idx = np.where(cond_all)[0]
@@ -901,13 +940,13 @@ class TB:
             print('id_={0}'.format(id_))
             
             
-            all_X = np.copy(self.conf_.atomsAllinfo[ : , 4])
-            all_Y = np.copy(self.conf_.atomsAllinfo[ : , 5])
-            all_Z = np.copy(self.conf_.atomsAllinfo[ : , 6])
-            all_xyz = np.copy(self.conf_.atomsAllinfo[ : , 4:7])
+            all_X = np.copy(self.conf.atomsAllinfo[ : , 4])
+            all_Y = np.copy(self.conf.atomsAllinfo[ : , 5])
+            all_Z = np.copy(self.conf.atomsAllinfo[ : , 6])
+            all_xyz = np.copy(self.conf.atomsAllinfo[ : , 4:7])
             
             flat_range= 8 #self.N_flat
-            wave_info = np.zeros((flat_range, self.conf_.tot_number, 7), self.dtypeR)
+            wave_info = np.zeros((flat_range, self.conf.tot_number, 7), self.dtypeR)
 
             for ii in range(flat_range):
                 wave_info[ii, :, 0] = all_X
@@ -949,10 +988,10 @@ class TB:
             #phase_2 = np.exp(1j*np.dot((all_xyz[self.new_orders[who]]), self.K_path[0]) ) ## fix the id of self.K_path
             ###
             
-            new_bases = np.zeros((flat_range, self.conf_.tot_number), dtype=self.dtypeC)
-            old_vecs = np.zeros((flat_range, self.conf_.tot_number), dtype=self.dtypeC)
-            old_vecs_op = np.zeros((flat_range, self.conf_.tot_number), dtype=self.dtypeC)
-            very_new_bases = np.zeros((flat_range, self.conf_.tot_number), dtype=self.dtypeC)
+            new_bases = np.zeros((flat_range, self.conf.tot_number), dtype=self.dtypeC)
+            old_vecs = np.zeros((flat_range, self.conf.tot_number), dtype=self.dtypeC)
+            old_vecs_op = np.zeros((flat_range, self.conf.tot_number), dtype=self.dtypeC)
+            very_new_bases = np.zeros((flat_range, self.conf.tot_number), dtype=self.dtypeC)
             #eignvals_neu = np.zeros(flat_range, dtype='f' if self.dtype==None else self.dtype)
             for ii in range(0, flat_range, mix_pairs):
                 S = np.zeros((mix_pairs,mix_pairs), dtype=self.dtypeC)
@@ -986,7 +1025,7 @@ class TB:
                 print('sum (w**2)=', np.sum(np.power(w,2)),'\n')
                 #print(eignvals_neu[ii:ii+mix_pairs].shape)
                 #print(w.shape)
-                #new_bases = np.zeros((mix_pairs, self.conf_.tot_number), dtype='complex' if self.dtype==None else 'c'+self.dtype)
+                #new_bases = np.zeros((mix_pairs, self.conf.tot_number), dtype='complex' if self.dtype==None else 'c'+self.dtype)
                 
                 #continue
                 
@@ -1123,12 +1162,12 @@ class TB:
                     for qq in range(kk, flat_range):
                         #check_ = np.isclose(np.absolute(new_bases[qq]), np.absolute(new_bases[kk][self.new_orders[wihh]] ), rtol=0.2, atol=0.0)
                         check_ = np.isclose(np.absolute(new_bases[qq]), np.absolute(transed), rtol=0.2,  atol=0.0)
-                        flag_  = np.isclose( np.count_nonzero(check_), self.conf_.tot_number, rtol=tol_, atol=0) 
+                        flag_  = np.isclose( np.count_nonzero(check_), self.conf.tot_number, rtol=tol_, atol=0) 
                         #print('{0} dot {1} is '.format(ii+qq,ii+kk), np.dot(np.conjugate(new_bases[qq].T), new_bases[kk][new_orders[wihh]]))
                         #print(np.count_nonzero(check_))
                         condintion = (kk==qq) if only_itself else True
                         if flag_ and condintion:
-                            print('{0} to {1} **symmetry Holds!** '.format(qq,kk), np.count_nonzero(check_), ' of ', self.conf_.tot_number)
+                            print('{0} to {1} **symmetry Holds!** '.format(qq,kk), np.count_nonzero(check_), ' of ', self.conf.tot_number)
                             #print('instance: ',np.angle(new_bases[qq][10], deg=True), np.angle(new_bases[kk][new_orders[wihh]][10], deg=True))
                             #print('instance: ',np.angle(new_bases[qq][1356], deg=True), np.angle(new_bases[kk][new_orders[wihh]][1356], deg=True))
                             #print('dot product is ', np.dot(np.conjugate(new_bases[qq].T), new_bases[kk][new_orders[wihh]]))
@@ -1162,7 +1201,7 @@ class TB:
                                     #vec_b *= vec_b*phase_2
                                     check_m = np.isclose(np.absolute(vec_a), np.absolute(vec_b), rtol=0.2, atol=0.0)
                                     
-                                    if  np.isclose( np.count_nonzero(check_m), self.conf_.tot_number, rtol=tol_, atol=0):
+                                    if  np.isclose( np.count_nonzero(check_m), self.conf.tot_number, rtol=tol_, atol=0):
                                         delta_phase=np.rad2deg(np.arccos((np.real(vec_a)*np.real(vec_b) + np.imag(vec_a)*np.imag(vec_b) )/(np.absolute(vec_a)*np.absolute(vec_b))))
                                         print('\tmagnetic #{0} check: '.format(case_n), np.count_nonzero(check_m),'   phase is ', np.mean(delta_phase), np.std(delta_phase))
                                     case_n += 1
@@ -1175,8 +1214,8 @@ class TB:
                                     #axs[(kk)].set_ylim([0,1])
                             
                         elif flag_:
-                            #print('   Only in amplitude {0} to {1} '.format(qq,kk), np.count_nonzero(check_), ' of ', self.conf_.tot_number)
-                            only_amp_str += '   Only in amplitude {0} to {1}  {2} of {3} \n'.format(qq,kk, np.count_nonzero(check_), self.conf_.tot_number)
+                            #print('   Only in amplitude {0} to {1} '.format(qq,kk), np.count_nonzero(check_), ' of ', self.conf.tot_number)
+                            only_amp_str += '   Only in amplitude {0} to {1}  {2} of {3} \n'.format(qq,kk, np.count_nonzero(check_), self.conf.tot_number)
                 print(only_amp_str)
             print('\n')
             #who += 1
@@ -1233,14 +1272,14 @@ class TB:
             if self.rank ==0:
                 #if orientation != '1_fold' :
                     #raise RuntimeError('Non rectangular boxes are not supported yet, for checking symmetry')
-                if self.conf_.xy !=0:
+                if self.conf.xy !=0:
                     #raise RuntimeError('Non rectangular boxes are not supported yet, for checking symmetry')
-                    all_X = np.copy(self.conf_.atomsAllinfo[ : , 4]) 
-                    all_Y = np.copy(self.conf_.atomsAllinfo[ : , 5])
-                    all_X -= (all_X//self.conf_.xhi)*self.conf_.xlen
+                    all_X = np.copy(self.conf.atomsAllinfo[ : , 4]) 
+                    all_Y = np.copy(self.conf.atomsAllinfo[ : , 5])
+                    all_X -= (all_X//self.conf.xhi)*self.conf.xlen
                 else:
-                    all_X = np.copy(self.conf_.atomsAllinfo[ : , 4])
-                    all_Y = np.copy(self.conf_.atomsAllinfo[ : , 5])
+                    all_X = np.copy(self.conf.atomsAllinfo[ : , 4])
+                    all_Y = np.copy(self.conf.atomsAllinfo[ : , 5])
 
                 
                 xpos_ = np.cumsum(self.K_path_Highsymm_indices)
@@ -1254,14 +1293,14 @@ class TB:
                 ref_tp = 0
                 flat_range= 8 #self.N_flat
                 #type_range = 4
-                wave_info = np.zeros((flat_range, 4, self.conf_.tot_number//4, 6), dtype=self.dtypeR)
+                wave_info = np.zeros((flat_range, 4, self.conf.tot_number//4, 6), dtype=self.dtypeR)
                 ##wave_info ITEM:  x y  real img  amp angle
 
                 
                 for ii in range(flat_range):
                     for type_ in range(4):
-                        abcd = self.conf_.sub_type==10*(type_+1)
-                        #print(self.conf_.sub_type)
+                        abcd = self.conf.sub_type==10*(type_+1)
+                        #print(self.conf.sub_type)
                         wave_info[ii, type_, :, 0] = all_X[abcd]
                         wave_info[ii, type_, :, 1] = all_Y[abcd]
                         
@@ -1272,18 +1311,18 @@ class TB:
                 
                 # Set Fabrizio's cell to (0,xlen) and (0,ylen)
                 # and put everything in the box 
-                #wave_info[:, :, :, 0] -= (self.conf_.xlo - 1/4 * self.conf_.xlen) # for 1 fold
-                #wave_info[:, :, :, 1] -= (self.conf_.ylo - 1/4 * self.conf_.ylen) # for 1 fold
+                #wave_info[:, :, :, 0] -= (self.conf.xlo - 1/4 * self.conf.xlen) # for 1 fold
+                #wave_info[:, :, :, 1] -= (self.conf.ylo - 1/4 * self.conf.ylen) # for 1 fold
                 
-                #wave_info[:, :, :, 0] -=  (wave_info[:, :, :, 0]//self.conf_.xlen)*self.conf_.xlen
-                #wave_info[:, :, :, 1] -=  (wave_info[:, :, :, 1]//self.conf_.ylen)*self.conf_.ylen
+                #wave_info[:, :, :, 0] -=  (wave_info[:, :, :, 0]//self.conf.xlen)*self.conf.xlen
+                #wave_info[:, :, :, 1] -=  (wave_info[:, :, :, 1]//self.conf.ylen)*self.conf.ylen
                 
                 # apply transformation
                 wave_info_trs = np.copy(wave_info)
                 if which_operation == 'C2x':
                     #x+1/2,-y,-z
                     print('doing c2x')
-                    wave_info_trs[:, :, :, 0] += 1/2 * self.conf_.xlen
+                    wave_info_trs[:, :, :, 0] += 1/2 * self.conf.xlen
                     wave_info_trs[:, :, :, 1] *= -1
                     
                     # type is the same, layer changes :: 0,3 (a,c) and (1,2) b,d have the same type! ...
@@ -1295,7 +1334,7 @@ class TB:
                     #-x,y+1/2,-z
                     print('doing c2y')
                     wave_info_trs[:, :, :, 0] *= -1
-                    wave_info_trs[:, :, :, 1] += 1/2 * self.conf_.ylen
+                    wave_info_trs[:, :, :, 1] += 1/2 * self.conf.ylen
                     
                     if '_zxact' not in self.file_name and 'noa0_relaxed' not in self.file_name and '1.08_0fold_no18' not in self.file_name:
                         wave_info_trs[:, :, :, 0] -= self.a0 ## # for 1 fold i don't know why it is this way!
@@ -1308,8 +1347,8 @@ class TB:
                 elif which_operation == 'C2z':     
                     #-x+1/2,-y+1/2,z
                     print('doing c2z')
-                    wave_info_trs[:, :, :, 0] = -1*wave_info_trs[:, :, :, 0] + 1/2 * self.conf_.xlen
-                    wave_info_trs[:, :, :, 1] = -1*wave_info_trs[:, :, :, 1] + 1/2 * self.conf_.ylen
+                    wave_info_trs[:, :, :, 0] = -1*wave_info_trs[:, :, :, 0] + 1/2 * self.conf.xlen
+                    wave_info_trs[:, :, :, 1] = -1*wave_info_trs[:, :, :, 1] + 1/2 * self.conf.ylen
                     
                     if '_zxact' not in self.file_name and 'noa0_relaxed' not in self.file_name  and '1.08_0fold_no18' not in self.file_name:
                         wave_info_trs[:, :, :, 0] -= self.a0 ## for 1 fold #i don't know why it is this way!
@@ -1319,24 +1358,24 @@ class TB:
                     partner_tp = 1
                 
                 elif which_operation == 'sigma_yz' :
-                    wave_info_trs[:, :, :, 0] = -1*wave_info_trs[:, :, :, 0] + 1/2 * self.conf_.xlen
+                    wave_info_trs[:, :, :, 0] = -1*wave_info_trs[:, :, :, 0] + 1/2 * self.conf.xlen
                     partner_tp = 2
                 
                 elif which_operation == 'sigma_xz' :
-                    wave_info_trs[:, :, :, 1] = -1*wave_info_trs[:, :, :, 1] + 1/2 * self.conf_.ylen
+                    wave_info_trs[:, :, :, 1] = -1*wave_info_trs[:, :, :, 1] + 1/2 * self.conf.ylen
                     partner_tp = 0
                     
                 #elif which_operation == 'mz' :
-                    #wave_info_trs[:, :, :, 0] += 1/2 * self.conf_.xlen
-                    #wave_info_trs[:, :, :, 1] -= 1/2 * self.conf_.ylen
+                    #wave_info_trs[:, :, :, 0] += 1/2 * self.conf.xlen
+                    #wave_info_trs[:, :, :, 1] -= 1/2 * self.conf.ylen
                 
                 
                 ## translate to cell(0,0) 
-                wave_info_trs[:, :, :, 0] -=  (wave_info_trs[:, :, :, 0]//self.conf_.xlen)*self.conf_.xlen
-                wave_info_trs[:, :, :, 1] -=  (wave_info_trs[:, :, :, 1]//self.conf_.ylen)*self.conf_.ylen
+                wave_info_trs[:, :, :, 0] -=  (wave_info_trs[:, :, :, 0]//self.conf.xlen)*self.conf.xlen
+                wave_info_trs[:, :, :, 1] -=  (wave_info_trs[:, :, :, 1]//self.conf.ylen)*self.conf.ylen
                 
                 ## get the right indices to compare 
-                new_order = np.zeros(self.conf_.tot_number//4, dtype='int')
+                new_order = np.zeros(self.conf.tot_number//4, dtype='int')
 
                 
                 #plt.figure()
@@ -1365,7 +1404,7 @@ class TB:
                 #plt.show()
                 #exit()
                 
-                for nn in range(self.conf_.tot_number//4):
+                for nn in range(self.conf.tot_number//4):
                     
                     cond_all = np.isclose( np.linalg.norm(wave_info_trs[0, partner_tp, :, 0:2] - wave_info[0, ref_tp, nn, 0:2], axis=1) , 0, rtol=0, atol=0.9) 
                     
@@ -1381,8 +1420,8 @@ class TB:
                                 for pY in possible:
                                     desire_coord = np.copy(wave_info[0, ref_tp, nn, 0:2])
                                     #print('doing ',pX,pY, desire_coord)
-                                    desire_coord[0] += pX * self.conf_.xlen 
-                                    desire_coord[1] += pY * self.conf_.ylen 
+                                    desire_coord[0] += pX * self.conf.xlen 
+                                    desire_coord[1] += pY * self.conf.ylen 
                             
                                     cond_all = np.isclose( np.linalg.norm(wave_info_trs[0, partner_tp, :, 0:2] - desire_coord, axis=1) , 0, rtol=0, atol=0.5) 
                                     idx = np.where(cond_all)[0]
@@ -1415,10 +1454,10 @@ class TB:
                         for jj in range(flat_range):
                             check_ = np.isclose(wave_info[ii, ref_tp, :, aml], wave_info_trs[jj, partner_tp, new_order, aml], rtol=0.3, atol=0.0)
                             the_ratio = wave_info[ii, ref_tp, :, aml] / wave_info_trs[jj, partner_tp, new_order, aml]
-                            flag_ = np.isclose( np.count_nonzero(check_), self.conf_.tot_number//4, rtol=tol_, atol=0) 
+                            flag_ = np.isclose( np.count_nonzero(check_), self.conf.tot_number//4, rtol=tol_, atol=0) 
                             
                             ## approach dot product:
-                            vec2 = vec1 = np.zeros(self.conf_.tot_number//4 , dtype=self.dtypeC)
+                            vec2 = vec1 = np.zeros(self.conf.tot_number//4 , dtype=self.dtypeC)
                             vec1 = wave_info[ii, ref_tp, :, 2] + 1j*wave_info[ii, ref_tp, :, 3]
                             vec2 = wave_info_trs[jj, partner_tp, new_order, 2] + 1j*wave_info_trs[jj, partner_tp, new_order, 3]
                             Dot = np.append(Dot, np.dot(np.conjugate(vec1.T), vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2) ) )
@@ -1474,10 +1513,10 @@ class TB:
                                 
                                 #print('delta_phase=',delta_phase)
                                 #print('symmetry Holds!')
-                                print('symmetry Holds! ',np.count_nonzero(check_), ' of ', self.conf_.tot_number//4)
+                                print('symmetry Holds! ',np.count_nonzero(check_), ' of ', self.conf.tot_number//4)
                                 print('level {0} -> {1}. phase_shift is '.format(ii, jj), np.round(phase_shift,3),' with std=', np.round(std,3))
                                 print('energy of level {0} is {1}'.format(ii, self.bandsEigns[id_, ii]-self.shift_tozero) )
-                                #print(np.count_nonzero(check_), ' of ', self.conf_.tot_number//4)
+                                #print(np.count_nonzero(check_), ' of ', self.conf.tot_number//4)
                                 print('the_ratio, mean, std:',the_ratio, np.mean(the_ratio), np.std(the_ratio) )
                                 #print('magnetic check', np.count_nonzero(check_m1),  np.count_nonzero(check_m2), np.count_nonzero(check_m3), np.count_nonzero(check_m4) )
                                 #print('Dot',Dot)
@@ -1494,7 +1533,7 @@ class TB:
                                 print('symmetry sucks!')
                                 print('the_ratio, mean, std:',the_ratio, np.mean(the_ratio), np.std(the_ratio) )
                                 np.set_printoptions(precision=1)
-                                likelihood=100* likelihood/ (self.conf_.tot_number//4)
+                                likelihood=100* likelihood/ (self.conf.tot_number//4)
                                 print("'level {0} looks ".format(ii), likelihood, " % like levels",  likelevels, 'total of {:.2f} \n'.format(np.sum(likelihood)))
                             if jj == flat_range-1:# and found == True:
                                 print('Dot',Dot)
@@ -1538,7 +1577,7 @@ class TB:
                         #check_ = np.isclose(wave_info[ii, ref_tp, :, aml], zz, rtol=0.2, atol=0.0)
                         print(np.count_nonzero(check_))
                         
-                        flag_ = np.isclose( np.count_nonzero(check_), self.conf_.tot_number//4, rtol=tol_, atol=0) 
+                        flag_ = np.isclose( np.count_nonzero(check_), self.conf.tot_number//4, rtol=tol_, atol=0) 
                         
                         
                         #sc = axs[0].scatter(wave_info[ii, ref_tp, :, 0],
@@ -1566,16 +1605,16 @@ class TB:
                             
                             ##print('delta_phase=',delta_phase)
                             ##print('symmetry Holds!')
-                            print('symmetry Holds! ',np.count_nonzero(check_), ' of ', self.conf_.tot_number//4)
+                            print('symmetry Holds! ',np.count_nonzero(check_), ' of ', self.conf.tot_number//4)
                             #print('level {0} -> {1}. phase_shift is '.format(ii, jj), np.round(phase_shift,3),' with std=', np.round(std,3))
-                            #print(np.count_nonzero(check_), ' of ', self.conf_.tot_number//4)
+                            #print(np.count_nonzero(check_), ' of ', self.conf.tot_number//4)
                             print('\n')
                             #break
                         else:
 
                             print('symmetry sucks!')
                             #np.set_printoptions(precision=1)
-                            likelihood=100* np.count_nonzero(check_)/ (self.conf_.tot_number//4)
+                            likelihood=100* np.count_nonzero(check_)/ (self.conf.tot_number//4)
                             print("level {:.0f} has {:.2f} symmetry \n".format(ii, likelihood))
                     
 
@@ -1605,17 +1644,17 @@ class TB:
             header_ = ''
                         
             
-            if self.conf_.xy ==0:
-                header_ += "ITEM: TIMESTEP \n{0} \nITEM: NUMBER OF ATOMS \n"+"{0} \nITEM: BOX BOUNDS pp pp ss \n".format(self.conf_.tot_number)
-                header_ +="{0} {1} \n{2} {3} \n{4} {5} \n".format(                                                                                                                                                                            self.conf_.xlo, self.conf_.xhi, 
-                self.conf_.ylo, self.conf_.yhi,
-                self.conf_.zlo, self.conf_.zhi)
+            if self.conf.xy ==0:
+                header_ += "ITEM: TIMESTEP \n{0} \nITEM: NUMBER OF ATOMS \n"+"{0} \nITEM: BOX BOUNDS pp pp ss \n".format(self.conf.tot_number)
+                header_ +="{0} {1} \n{2} {3} \n{4} {5} \n".format(                                                                                                                                                                            self.conf.xlo, self.conf.xhi, 
+                self.conf.ylo, self.conf.yhi,
+                self.conf.zlo, self.conf.zhi)
             else:
-                header_ += "ITEM: TIMESTEP \n{0} \nITEM: NUMBER OF ATOMS \n"+"{0} \nITEM: BOX BOUNDS xy xz yz pp pp ss \n".format(self.conf_.tot_number)
-                header_ +="{0} {1} {6} \n{2} {3} 0 \n{4} {5} 0 \n".format(                                                                                                                                                                            self.conf_.xlo, self.conf_.xhi+self.conf_.xy, 
-                self.conf_.ylo, self.conf_.yhi,
-                self.conf_.zlo, self.conf_.zhi,
-                self.conf_.xy)
+                header_ += "ITEM: TIMESTEP \n{0} \nITEM: NUMBER OF ATOMS \n"+"{0} \nITEM: BOX BOUNDS xy xz yz pp pp ss \n".format(self.conf.tot_number)
+                header_ +="{0} {1} {6} \n{2} {3} 0 \n{4} {5} 0 \n".format(                                                                                                                                                                            self.conf.xlo, self.conf.xhi+self.conf.xy, 
+                self.conf.ylo, self.conf.yhi,
+                self.conf.zlo, self.conf.zhi,
+                self.conf.xy)
                 
                 
             header_ += "ITEM: ATOMS id type x y z  "
@@ -1637,7 +1676,7 @@ class TB:
                 vecs = self.new_bases.T
             #elif vec_ ==  'phasesign':
                 #vecs = self.new_bases.T
-                ##for shit in range(self.conf_.tot_number):
+                ##for shit in range(self.conf.tot_number):
                     ##assert self.phaseSigns[2][self.new_orders[2]][shit] == self.phaseSigns[2][shit]
                 #for ii in range(out_range):
                     #vecs[:, ii] =  vecs[self.new_orders[2], ii] * self.phaseSigns[2]
@@ -1656,8 +1695,8 @@ class TB:
                     angle_ = delta_phase
                 
                 
-                XX = np.concatenate((self.conf_.atomsAllinfo[:,np.r_[0]],  np.expand_dims(self.conf_.sub_type, axis=1), 
-                self.conf_.atomsAllinfo[:,np.r_[4:7]],
+                XX = np.concatenate((self.conf.atomsAllinfo[:,np.r_[0]],  np.expand_dims(self.conf.sub_type, axis=1), 
+                self.conf.atomsAllinfo[:,np.r_[4:7]],
                 np.expand_dims(np.absolute(vecs[:, ii]), axis=1), 
                 np.expand_dims(angle_, axis=1),
                 ), axis = 1)
@@ -1668,7 +1707,7 @@ class TB:
             np.savetxt(fname+'__eign_values__', self.bandsEigns[id_, :out_range]-self.shift_tozero) 
 
             #for ii in range(self.N_flat):
-                #XX = np.concatenate((self.conf_.atomsAllinfo[:,np.r_[0]],  np.expand_dims(self.conf_.sub_type, axis=1), self.conf_.atomsAllinfo[:,np.r_[4:7]],
+                #XX = np.concatenate((self.conf.atomsAllinfo[:,np.r_[0]],  np.expand_dims(self.conf.sub_type, axis=1), self.conf.atomsAllinfo[:,np.r_[4:7]],
                                     #np.absolute(self.bandsVector[id_, :, :self.N_flat]), 
                                     #np.angle(self.bandsVector[id_, :, :self.N_flat]),
                                     #), axis = 1) #
@@ -1679,35 +1718,55 @@ class TB:
             
             #file_ = open(fname, 'w')
             #file_.write(header_)
-            #for ii in range(self.conf_.tot_number):
-                #file_.write(('{:.0f} '*4 + '{:.12f} '*3 + ' 0 0 0 ' + '{:.2e} '*self.N_flat +'  \n').format(*self.conf_.atomsAllinfo[ii], *self.bandsVector[id_, ii, :self.N_flat] ))
+            #for ii in range(self.conf.tot_number):
+                #file_.write(('{:.0f} '*4 + '{:.12f} '*3 + ' 0 0 0 ' + '{:.2e} '*self.N_flat +'  \n').format(*self.conf.atomsAllinfo[ii], *self.bandsVector[id_, ii, :self.N_flat] ))
                 
             #file_.close()
     
 
-    def save(self, str_='', write_param = True, H = None):
-        if write_param == True:
-            self.save_name =  self.file_name[:-5]+'_d0_' + str(self.d0) +'_cut_' + str(self.cut_fac) + '_' + str_
-        else:
-            self.save_name =  str_
+    def save(self, str_='', H = None):
+        
+        self.save_name =  str_
         if H!= None:
             #np.savez(self.folder_name + 'HH_' +self.save_name, H=self.H)
             sp.save_npz(self.folder_name + 'HH_' +self.save_name, sp.csr_matrix(H, copy=True))
             return 0
         
+        
         if self.rank ==0 :
+            if hasattr(self, 'conf'):
+                np.savez(self.folder_name + 'configuration_' +self.save_name,
+                        nl = self.conf.nl,
+                        dtypeR = self.conf.dtypeR,
+                        sparse_flag = self.conf.sparse_flag,
+                        xy = self.conf.xy,
+                        xlen = self.conf.xlen,
+                        ylen = self.conf.ylen,
+                        zlen = self.conf.zlen,
+                        tot_number= self.conf.tot_number,
+                        xlen_half = self.conf.xlen_half,
+                        ylen_half = self.conf.ylen_half,
+                        coords = self.conf.coords,
+                        atomsAllinfo = self.conf.atomsAllinfo,
+                        fnn_id = self.conf.fnn_id,
+                        B_flag = self.conf.B_flag,
+                        dist_matrix = self.conf.dist_matrix,
+                        fnn_vec = self.conf.fnn_vec,
+                        ez = self.conf.ez,
+                        cutoff = self.conf.cutoff,
+                        local_flag = self.conf.local_flag,
+                        file_name = self.conf.file_name)
+            
             if hasattr(self, 'bandsEigns'):
                 np.savez(self.folder_name + 'bands_' +self.save_name ,
                         bandsEigns=self.bandsEigns, K_path=self.K_path, 
                         K_path_Highsymm_indices = self.K_path_Highsymm_indices, 
                         K_label=self.K_label, K_path_discrete= self.K_path_discrete,
-                        g1=self.g1, g2=self.g2, orientation=self.orientation, 
+                        g1=self.g1, g2=self.g2,  
                         bandsVector = self.bandsVector,
-                        file_name = self.file_name,
-                        sub_type= self.conf_.sub_type)
+                        file_name = self.file_name)
                 
 
-                np.savez(self.folder_name + 'conf_' +self.save_name, B_flag=self.conf_.B_flag, nl = self.conf_.nl)
                 
             if hasattr(self, 'dosEigns'):
                 np.savez(self.folder_name + 'DOS_'+self.save_name,
@@ -1720,7 +1779,50 @@ class TB:
             if hasattr(self, 'eigns_3D'):
                 np.savez(self.folder_name + '3Dband_'+self.save_name, gsize_v=self.gsize_v, gsize_h=self.gsize_h, flat_grid=self.flat_grid, eigns_3D=self.eigns_3D, eigns_3D_reduced=self.eigns_3D_reduced)
 
-    def load(self, folder_='', ver_ ='',HH=''):
+    def load_configuration(self, folder_, ver_ =''):
+
+        self.folder_name = folder_  if folder_[-1] == '/' else folder_+'/'
+        
+        self.conf = pwl(self.folder_name)
+        data_name_conf = None
+        for lis in os.listdir(self.folder_name):
+            if lis[-(4+len(ver_)):] == ver_+'.npz':
+                try:
+                    #if float(lis[:-4].split('_cut_')[1].split('_')[0]) == self.cut_fac:
+                        #if  float(lis[:-4].split('_d0_')[1].split('_')[0]) == self.d0:
+                            #print(lis)
+                            if 'configuration_' in lis:
+                                data_name_conf = lis
+                                
+                except IndexError: pass
+        if data_name_conf != None:
+                self.print0('loading conf_')
+                conf_file = np.load(self.folder_name + data_name_conf, allow_pickle=True)
+                
+                self.dtypeR = self.conf.dtypeR = str(conf_file['dtypeR'])
+                self.dtypeC = 'c'+ self.dtypeR
+                self.r_cut = self.conf.cutoff = conf_file['cutoff']
+                self.conf.nl = conf_file['nl']
+                self.sparse_flag = self.conf.sparse_flag = conf_file['sparse_flag']
+                self.conf.xy = conf_file['xy']
+                self.conf.xlen = conf_file['xlen']
+                self.conf.ylen = conf_file['ylen']
+                self.conf.zlen = conf_file['zlen']
+                self.conf.tot_number = conf_file['tot_number']
+                self.conf.xlen_half = conf_file['xlen_half']
+                self.conf.ylen_half = conf_file['ylen_half']
+                self.conf.coords = conf_file['coords']
+                self.conf.atomsAllinfo = conf_file['atomsAllinfo']
+                self.conf.fnn_id = conf_file['fnn_id']
+                self.conf.B_flag = conf_file['B_flag']
+                self.conf.dist_matrix = conf_file['dist_matrix']
+                self.conf.fnn_vec = conf_file['fnn_vec']
+                self.conf.ez = conf_file['ez']
+                self.conf.local_flag = conf_file['local_flag']
+                self.conf.file_name = self.file_name = conf_file['file_name']
+                    
+    
+    def load(self, folder_='', ver_ ='', HH=''):
         if self.rank ==0 :
             data_name_dos = None
             data_name_band = None
@@ -1728,28 +1830,25 @@ class TB:
             data_name_HH = None
             data_name_operation = None
             #data_name_phaseSigns = None
-            data_name_conf = None
+            #data_name_conf = None
             self.folder_name = folder_  if folder_[-1] == '/' else folder_+'/'
             for lis in os.listdir(self.folder_name):
                 if lis[-(4+len(ver_)):] == ver_+'.npz':
                     try:
-                        if float(lis[:-4].split('_cut_')[1].split('_')[0]) == self.cut_fac:
-                            if  float(lis[:-4].split('_d0_')[1].split('_')[0]) == self.d0:
-                                #print(lis)
-                                if 'bands_' in lis:
-                                    data_name_band = lis
-                                elif 'DOS_' in lis:
-                                    data_name_dos = lis
-                                elif '3Dband_' in lis:
-                                    data_name_3Dbands = lis
-                                elif 'HH_' in lis and HH in lis and HH != '':
-                                    data_name_HH = lis
-                                elif 'Operations_' in lis:
-                                    data_name_operation = lis
-                                #elif 'phaseSigns_' in lis:
-                                    #data_name_phaseSigns = lis
-                                elif 'conf_' in lis:
-                                    data_name_conf = lis
+                        if 'bands_' in lis:
+                            data_name_band = lis
+                        elif 'DOS_' in lis:
+                            data_name_dos = lis
+                        elif '3Dband_' in lis:
+                            data_name_3Dbands = lis
+                        elif 'HH_' in lis and HH in lis and HH != '':
+                            data_name_HH = lis
+                        elif 'Operations_' in lis:
+                            data_name_operation = lis
+                        #elif 'phaseSigns_' in lis:
+                            #data_name_phaseSigns = lis
+                        elif 'conf_' in lis:
+                            data_name_conf = lis
                                     
                     except IndexError: pass
                     
@@ -1767,7 +1866,8 @@ class TB:
                 self.K_path_discrete = data_band['K_path_discrete']
                 self.g1 = data_band['g1']
                 self.g2 = data_band['g2']
-                self.orientation = data_band['orientation']
+                self.file_name = data_band['file_name']
+
                 
                 try:
                     self.bandsVector = data_band['bandsVector']
@@ -1778,10 +1878,10 @@ class TB:
                 except KeyError: 
                     self.bandsVector = None
                     self.bandsVector_exist = False
-                try:
-                    self.conf_.sub_type = data_band['sub_type']
-                except KeyError: 
-                    self.conf_.sub_type = None
+                #try:
+                    #self.conf.sub_type = data_band['sub_type']
+                #except KeyError: 
+                    #self.conf.sub_type = None
                                 
             else:
                 raise FileNotFoundError('cannot find bands file')
@@ -1799,12 +1899,6 @@ class TB:
             #if data_name_phaseSigns != None:
                 #print('loading phaseSigns_')
                 #self.phaseSigns = np.load(self.folder_name + data_name_phaseSigns, allow_pickle=True)['phaseSigns']
-            
-            if data_name_conf != None:
-                print('loading conf_')
-                conf_shit = np.load(self.folder_name + data_name_conf, allow_pickle=True)
-                self.nl = conf_shit['nl']
-                self.B_flag = conf_shit['B_flag']
             
             if data_name_dos != None :
                 print('loading density of states')
@@ -1830,7 +1924,7 @@ class TB:
 
 
 
-    def T_bone_sp(self, H_style, flag_ez):
+    def T_bone_sp(self, H_style):
         """
             Build the sparse skeleton of Hamiltonian matrix. Please turn to private!
             
@@ -1839,62 +1933,65 @@ class TB:
                     Pairwise Hamiltonina formula in use. It should get the following arguments in order:
                     H_ij(vector_ij, normal_i, normal_j)
                     Where vector_ij is the vector connecing cite "i" to cite "j". normal_i (normal_j) is the normal vector to surface at cite "i" ("j").
-                flag_ez: boolean
-                    If to use calculated vertical normals
             Returns:
                 T00 matrix
         """
         
-        vc_mat = self.conf_.dist_matrix
-        T00 = sp.lil_matrix((self.conf_.tot_number, self.conf_.tot_number), dtype=self.dtypeR)
+        T00 = sp.lil_matrix((self.conf.tot_number, self.conf.tot_number), dtype=self.dtypeR)
 
-        
-        if flag_ez:
-            ez = self.conf_.ez_lc
-        else:
-            ez = np.full((self.conf_.tot_number,3), [0,0,1])
-
-        for ii in range(self.conf_.tot_number):
-            neighs = self.conf_.nl[ii][~(np.isnan(self.conf_.nl[ii]))].astype('int')
+        for ii in range(self.conf.tot_number):
+            neighs = self.conf.nl[ii][~(np.isnan(self.conf.nl[ii]))].astype('int')
             for jj in neighs:
                 
                 # calculate the hoping
-                v_ij = np.array([ vc_mat[0][ii,jj],  vc_mat[1][ii,jj],  vc_mat[2][ii,jj] ])
+                v_ij = np.array([ self.conf.dist_matrix[0][ii,jj],  self.conf.dist_matrix[1][ii,jj],  self.conf.dist_matrix[2][ii,jj] ])
                 
-                T00[ii, jj] = H_style(v_ij, ez[ii], ez[jj]) *0.5 # *0.5  because of H.C.
+                T00[ii, jj] = H_style(v_ij, self.conf.ez[ii], self.conf.ez[jj]) 
 
         T00_copy = T00.copy()
         T00_trans = sp.lil_matrix.transpose(T00, copy=True)
         T00_dagger  = sp.lil_matrix.conjugate(T00_trans, copy=True)
         T00 = sp.lil_matrix(T00_dagger + T00_copy)
-        print('T00 ishermitian ',ishermitian(T00.todense(), rtol=0.0))
+
+        self.print0('T_bone ishermitian ',ishermitian(T00.todense(), rtol=0.0))
         return T00
 
-    def T_meat_sp(self, K_, T_0):
+    def T_meat_sp1(self, K_, T_0):
         """
             Adds the sparse modulation phase at each K_ to T_0. Turn to private.
+            Tight binding type 1, with a phase
         """
 
-        modulation_matrix = sp.lil_matrix(( self.conf_.tot_number, self.conf_.tot_number), dtype=self.dtypeC)
+        modulation_matrix = sp.lil_matrix(( self.conf.tot_number, self.conf.tot_number), dtype=self.dtypeC)
         #print('making modulation_matrix..')
-        for ii in range(self.conf_.tot_number):
-            neighs = self.conf_.nl[ii][~(np.isnan(self.conf_.nl[ii]))].astype('int')
+        for ii in range(self.conf.tot_number):
+            neighs = self.conf.nl[ii][~(np.isnan(self.conf.nl[ii]))].astype('int')
             for jj in neighs:
                 ## tight binding type 1, with a phase
-                #v_c = np.array([ self.conf_.dist_matrix[0][ii,jj],  self.conf_.dist_matrix[1][ii,jj],  self.conf_.dist_matrix[2][ii,jj] ])
-                #modulation_matrix[ii,jj] = np.exp(-1j * np.dot(v_c, K_))#*2
-                ###
-                
+                v_c = np.array([ self.conf.dist_matrix[0][ii,jj],  self.conf.dist_matrix[1][ii,jj],  self.conf.dist_matrix[2][ii,jj] ])
+                modulation_matrix[ii,jj] = np.exp(-1j * np.dot(v_c, K_))
+        
+        #print('modulation_matrix ishermitian ',ishermitian(T_0.multiply(modulation_matrix).todense()))
+        
+        return T_0.multiply(modulation_matrix)
+
+
+    def T_meat_sp2(self, K_, T_0):
+        """
+            Adds the sparse modulation phase at each K_ to T_0. Turn to private.
+            Tight binding type 2, no extra phase
+        """
+
+        modulation_matrix = sp.lil_matrix(( self.conf.tot_number, self.conf.tot_number), dtype=self.dtypeC)
+        #print('making modulation_matrix..')
+        for ii in range(self.conf.tot_number):
+            neighs = self.conf.nl[ii][~(np.isnan(self.conf.nl[ii]))].astype('int')
+            for jj in neighs:
                 ## tight binding type 2, no extra phase
-                thing = [1*self.conf_.B_flag[0][ii,jj] * self.conf_.xlen, 1*self.conf_.B_flag[1][ii,jj] * self.conf_.ylen, 0]
+                thing = [1*self.conf.B_flag[0][ii,jj] * self.conf.xlen, 1*self.conf.B_flag[1][ii,jj] * self.conf.ylen, 0]
                 modulation_matrix[ii,jj] = np.exp(+1j * np.dot(thing, K_ )) 
         
-        # for 9X it makes more sense to do it here...
-        #M1 = modulation_matrix.copy()
-        #MT = sp.lil_matrix.transpose(modulation_matrix, copy=True)
-        #MD  = sp.lil_matrix.conjugate(MT, copy=True)
-        #modulation_matrix = sp.lil_matrix(MD + M1)
-        print('modulation_matrix ishermitian ',ishermitian(T_0.multiply(modulation_matrix).todense()))
+        #print('modulation_matrix ishermitian ',ishermitian(T_0.multiply(modulation_matrix).todense()))
         
         return T_0.multiply(modulation_matrix)
 
@@ -1906,7 +2003,7 @@ class TB:
 
         ## at the moment implemented only for tight binding type 1
         ## maybe I should change this
-        modulation_matrix = np.exp(-1j * np.dot(self.conf_.dist_matrix, K_))
+        modulation_matrix = np.exp(-1j * np.dot(self.conf.dist_matrix, K_))
         return_ = T_0 * modulation_matrix
         del modulation_matrix
 
@@ -1925,16 +2022,16 @@ class TB:
         """
         raise NotImplementedError('update the Hamiltonian!!')
 
-        vc_mat = self.conf_.dist_matrix
-        ez = self.conf_.ez
+        vc_mat = self.conf.dist_matrix
+        ez = self.conf.ez
 
         dd_mat = np.linalg.norm(vc_mat, axis=2)
 
         if ez.shape == (3,):
             tilt_mat = np.power(np.dot(vc_mat, ez)/ dd_mat, 2)
-        elif ez.shape == (self.conf_.tot_number, 3):
-            tilt_mat = np.zeros((self.conf_.tot_number, self.conf_.tot_number))
-            for ii in range(self.conf_.tot_number):
+        elif ez.shape == (self.conf.tot_number, 3):
+            tilt_mat = np.zeros((self.conf.tot_number, self.conf.tot_number))
+            for ii in range(self.conf.tot_number):
                 tilt_mat[ii] = np.power(np.dot(vc_mat[ii], ez[ii])/ dd_mat[ii], 2)
         else:
             raise RuntimeError('Wrong ez!! there is a bug, please report code: bone_full')
@@ -2078,7 +2175,6 @@ class TB:
             Returns:
                 ax: matplotlib object
         """
-
         if self.rank == 0:
             
             if ax==None:
@@ -2089,20 +2185,32 @@ class TB:
                 fontsize_ =20
                 plt.rcParams['font.family'] = 'Helvetica'
 
+            n_eigns = self.bandsEigns.shape[1]
+            n_k_points = self.bandsEigns.shape[0]
             
-            # plot far-bands
-            for k_ in range(self.n_k_points):
-                yy = self.bandsEigns[k_, :]*1000
-                xx = np.full(n_eigns ,k_)
+            
+            if hasattr(self, 'n_flat'):
+                # plot far-bands
+                for k_ in range(n_k_points):
+                    yy = self.bandsEigns[k_, :]*1000
+                    xx = np.full(n_eigns ,k_)
 
-                ax.plot(xx[self.n_flat:], yy[self.n_flat:], '.', color=color_, linewidth=5, markersize=1)
+                    ax.plot(xx[self.n_flat:], yy[self.n_flat:], '.', color=color_, linewidth=5, markersize=1)
 
-            # plot flat-bands
-            for flt in range(self.n_flat):
-                xx = np.arange(self.n_k_points)
-                yy = self.bandsEigns[:, flt]*1000
-                ax.plot(xx, yy, '.', linewidth=3, markersize=5,color=color_)
-                #ax.plot(xx, yy, '-o', linewidth=3, markersize=6, color='C{0}'.format(flt))
+                # plot flat-bands
+                for flt in range(self.n_flat):
+                    xx = np.arange(n_k_points)
+                    yy = self.bandsEigns[:, flt]*1000
+                    ax.plot(xx, yy, '.', linewidth=3, markersize=5,color=color_)
+                    #ax.plot(xx, yy, '-o', linewidth=3, markersize=6, color='C{0}'.format(flt))
+            else:
+                # plot all bands
+                for k_ in range(n_k_points):
+                    yy = self.bandsEigns[k_, :]*1000
+                    xx = np.full(n_eigns ,k_)
+                    
+                    ax.plot(xx, yy, '.', color=color_, linewidth=5, markersize=5)
+
 
             ## plot vertical lines
             #for jj in range(self.n_Hsym_points):
@@ -2118,8 +2226,9 @@ class TB:
             if xpos_.shape[0] >1:
                 ax.set_xlim([xpos_[0],xpos_[-1]])
             ax.set_ylabel("E (meV)",fontsize=fontsize_)
-            title_ = ''#save_name
-            ax.set_title(title_+ 'Total number of flat bands= '+str(self.n_flat))#,fontsize=fontsize_)
+            title_ = ''
+            if hasattr(self, 'n_flat'):
+                ax.set_title(title_+ 'Total number of flat bands= '+str(self.n_flat))#,fontsize=fontsize_)
             ax.grid(axis='y', c='gray',alpha=0.5)
             ax.grid(axis='x', c='gray',alpha=0.5)
             plt.gcf().subplots_adjust(left=0.15)
@@ -2265,11 +2374,15 @@ class TB:
         self.nKgrid_uniq = np.unique(self.K_mapping).shape[0]
 
 
-    def calculate_bands(self, n_eigns, sigma, solver, return_eigenvectors=False):    
+    def calculate_bands(self, H_style, n_eigns, sigma, solver, tbt='type1' , return_eigenvectors=False):    
         """
             Calculates band structure and vectors if requested.
             
-            Args:             
+            Args:
+                H_style: function
+                    Pairwise Hamiltonina formula in use. It should get the following arguments in order:
+                    H_ij(vector_ij, normal_i, normal_j)
+                    Where vector_ij is the vector connecing cite "i" to cite "j". normal_i (normal_j) is the normal vector to surface at cite "i" ("j").
                 n_eigns: 
                     Number of eigen values desired out of Lanczos solver. 
                 
@@ -2278,6 +2391,12 @@ class TB:
                     For symmetry checking 'primme' is recommended. 
                     While for band structure calculation 'scipy' is recommended.
                 
+                tbt: str
+                    type of tight binding of H(K)
+                    'type1'(default) is the usual modulation t_ij(k) = t_ij * np.exp(-1j * np.dot(v_c, k))
+                    'type2' is   usual modulation t_ij(k) = t_ij * np.exp(-1j * np.dot(R, k)) where R is the lattice vector pointing to neighboring cells, only if j is in outside the cell. 
+                    'type2' is useful for symmetry operation, but at the moment it is only implemented for rectangular lattice.
+                
                 return_eigenvectors: boolean
                     False (default)
                     
@@ -2285,13 +2404,35 @@ class TB:
                     Find the n_eigns eigenvalues around this value
         """
         
+        # Check args
+        try:
+            assert tbt=='type1' or tbt=='type2'
+        except AssertionError:
+            raise ValueError("Wrong tbt! Available options: 'type1' or 'type2' ")
+        if tbt=='type2' and self.conf.xy !=0:
+             raise NotImplementedError("tbt='type2' is not implemented for non orthogonal lattice.")
+        
+        
         self.sigma_shift = sigma
         
+        # build the 'Bone' matrix
+        if self.sparse_flag:
+            self.T0 = self.T_bone_sp(H_style)
+            if tbt=='type1':
+                T_M = self.T_meat_sp1
+            if tbt=='type2':
+                T_M = self.T_meat_sp2
+        else:
+            self.T0 = self.T_bone(H_style)
+
+        self.print0('T_bone is constructed..')
+        
+        # calculate levels
         if return_eigenvectors:
-            self.bandsEigns, self.bandsVector = self.engine_mpi(self.K_path, n_eigns, solver, return_eigenvectors=True)
+            self.bandsEigns, self.bandsVector = self.engine_mpi(T_M, self.K_path, n_eigns, solver, return_eigenvectors=True)
             self.bandsVector_exist = True
         else:
-            self.bandsEigns = self.engine_mpi(self.K_path, n_eigns, solver)
+            self.bandsEigns = self.engine_mpi(T_M, self.K_path, n_eigns, solver)
             self.bandsVector = None
             self.bandsVector_exist = False
 

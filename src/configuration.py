@@ -14,17 +14,43 @@ I am sure this code is well commented! AS
 
 class pwl:
 
-    def __init__(self, folder_name, file_name, sparse_flag, dtype=None):
+    def __init__(self, folder_name, sparse_flag=True, dtype=None):
         
+        # Define the namespace, useful in case of loading
         self.dtypeR = dtype
-
         self.folder_name = folder_name
-        self.data_file_name = file_name
+        self.sparse_flag = sparse_flag
+        
+        self.xy = None
+        self.xlen = None
+        self.ylen = None
+        self.zlen = None
+        #self.xhi = None
+        #self.yhi = None
+        #self.zhi = None
+        self.tot_number= None
+        self.xlen_half = None
+        self.ylen_half = None
+        self.coords = None
+        self.atomsAllinfo = None
+        self.fnn_id = None
+        self.B_flag = None
+        self.dist_matrix = None
+        self.fnn_vec = None
+        self.ez = None
+        self.cutoff = None
+        self.local_flag = None
+        self.file_name = ''
+        
+        
+        
+    def read_coords(self, file_name):
+        
+        self.file_name = file_name
         file_ = open(file_name)
         l_ = file_.readlines()
-        self.sparse_flag = sparse_flag
         self.xy = 0
-        self.header_ = ''
+        header_ = ''
         
         ii = 0
         end_flag = False
@@ -50,9 +76,9 @@ class pwl:
             elif 'Atoms' in l_[ii]:
                 skiplines = ii + 1 +1
                 end_flag = True
-                self.header_ += l_[ii] 
+                header_ += l_[ii] 
 
-            self.header_ +=l_[ii] if not end_flag else ''
+            header_ +=l_[ii] if not end_flag else ''
 
             ii += 1
 
@@ -186,40 +212,39 @@ class pwl:
                 raise RuntimeError("there is an error in finding first nearest neighbors:  please tune *fnn_cutoff*")
 
     
-    def normal_vec(self):
+    def normal_vec(self, local = False):
         """
             To create local normal vector.
             Note: On the choice of axis, it is assumed that the two main dimension of structure is on average perpendicular to Z axis.
-            
             Warning!! chirality is not computed. Always the positive normal_vec (pointing upward) is returned.
-            
-            Creates:
-                self.ez
-                
+        
+            Args:
+                local: boolean
+                    If to calculated vertical normals:
+
             Returns: None
         """
+        self.local_flag = local
+        self.ez = np.full((self.tot_number,3), np.nan)
+        
+        if local:
+            print("calculating local normal vectors ...")
+            for ii in range(self.tot_number):
+                neighs = self.fnn_vec[ii]
+                aa = np.cross(neighs[0], neighs[1])
+                bb = np.cross(neighs[1], neighs[2])
+                cc = np.cross(neighs[2], neighs[0])
 
-        #if local_flag:
-        print("calculating local normal vectors ...")
-        self.ez_lc = np.full((self.tot_number,3), np.nan)
+                norm_ = aa + bb + cc
+                norm_ = norm_/np.linalg.norm(norm_)
+                
+                if norm_[2] < 0:
+                    norm_ *= -1
 
-        for ii in range(self.tot_number):
-            neighs = self.fnn_vec[ii]
-            aa = np.cross(neighs[0], neighs[1])
-            bb = np.cross(neighs[1], neighs[2])
-            cc = np.cross(neighs[2], neighs[0])
-
-            norm_ = aa + bb + cc
-            norm_ = norm_/np.linalg.norm(norm_)
-            
-            if norm_[2] < 0:
-                norm_ *= -1
-
-            self.ez_lc[ii] = norm_
-        #else:
-            #print("using **global** ez=[0,0,1] assuming vertical ...")
-            ##self.ez = np.array([0,0,1])
-            #self.ez_gl = np.full((10,3), [0,0,1])
+                self.ez[ii] = norm_
+        else:
+            print("ez=[0,0,1] for all orbitals ...")
+            self.ez = np.full((self.tot_number,3), [0,0,1])
 
     def neigh_list(self, cutoff, nl_method='RS', l_width = 500, load_=True, version_=''):
         """
