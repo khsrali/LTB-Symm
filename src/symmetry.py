@@ -25,54 +25,143 @@ class Symm:
         self.rank = self.comm.Get_rank()
         self.size = self.comm.Get_size()
         
-        print('sym object created')
+        self.conf = tb.conf
+        self.tb = tb
+        self.new_orders = {}
+        self.Cmat = {}
+        print('Symm object created')
         
-    
-    def make_Cmat(self, K, verify_check=False, tol_ = 0.1):
+      
+    def build_map(self, name, operation, atol=0.2):
         """
-            Creates symmetry operations
+            Map the indecis transformation under a given symmetry operation.
+            Origin always considered at (0,0,0)
+                        
+            Args:
+                name: str
+                    A name for this operation
+                    e.g.: 'C2x', 'C2y', 'Inv', 'C3z', ..
+                    
+                operation: A list of three string
+                    Defining the the operation in the following order: [operation for X, operation for Y, operation for Z]
+                    These arithmetics and namespace are acceptable:
+                    +, -, /, *, X, Y, Z, Rx, Ry, and Rz. 
+                    Rx, Ry, and Rz are lattice vectors along their directions.
+                    X, Y, and Z are coordinates of cites inside unitcell.
+                    Examples: 
+                    ['X','Y','Z']   is identity
+                    ['-X','-Y','Z'] is C2z
+                    ['X+1/2*Rx','-Y','-Z'] is C2x with a non-symmorphic translation.
+                atol: float
+                    absolute tolerance to find the matching id.
+        """
+        
+        print("Operation "+name+ " is defined as "+', '.join(operation))
+        wave_info_trs = np.copy(self.conf.coords)
+        dicval = {"X": wave_info_trs[:, 0], "Y": wave_info_trs[:, 1], "Z": wave_info_trs[:, 2],
+                  "Rx": self.conf.xlen, "Ry": self.conf.ylen, "Rz": self.conf.zlen} 
+        wave_info_trs[:,0] = eval(operation[0], {}, dicval)
+        wave_info_trs[:,1] = eval(operation[1], {}, dicval)
+        wave_info_trs[:,2] = eval(operation[2], {}, dicval)
+                                  
+
+        ## translate back to cell(0,0) 
+        x_back = (wave_info_trs[:, 0]//self.conf.xlen)
+        y_back = (wave_info_trs[:, 1]//self.conf.ylen)
+        wave_info_trs[:, 0] -=  x_back*self.conf.xlen
+        wave_info_trs[:, 1] -=  y_back*self.conf.ylen
+        
+        ## get the right indices after transformation 
+        new_order = np.zeros(self.conf.tot_number, dtype='int')
+        
+        border_items = 0
+        for nn in range(self.conf.tot_number):
+            
+            cond_all = np.isclose( np.linalg.norm(wave_info_trs - self.conf.coords[nn], axis=1) , 0, rtol=0, atol=atol) 
+    
+            idx = np.where(cond_all)[0]
+            
+            if idx.shape[0] == 0:
+                # pbc thing
+                possible = [0,-1,+1]
+                #print('I have to do PBC on nn=',nn)
+                border_items += 1
+                for pX in possible:
+                    if idx.shape[0] == 0:
+                        for pY in possible:
+                            desire_coord = np.copy(self.conf.coords[nn])
+                            #print('doing ',pX,pY, desire_coord)
+                            desire_coord[0] += pX * self.conf.xlen 
+                            desire_coord[1] += pY * self.conf.ylen 
+                    
+                            cond_all = np.isclose( np.linalg.norm(wave_info_trs - desire_coord, axis=1) , 0, rtol=0, atol=atol) 
+                            idx = np.where(cond_all)[0]
+                            
+                            if idx.shape[0] >0 :
+                                #print('yup!, fixed!')
+                                break
+            
+            if idx.shape[0] != 1:
+                print('idx=',idx,'    pos',self.conf.coords[nn])
+                #plt.show()
+                raise RuntimeError("Couldn't match the patterns... Are you sure your lattice has "+name+" symmetry in the real space with origin (0,0,0)? If so try to increase tolerance, structure is not perfect.")
+            new_order[nn] = idx[0]
+            
+        print("Symmetry map for "+name+" has built successfully. ", border_items, " where marginal at boundaries.")
+        self.new_orders[name] = new_order
+        #np.savez(self.conf.folder_name + 'Operations_' +self.conf.save_name, new_orders=self.new_orders)
+        
+        
+    def make_Cmat(self, name, k_label, symmorphicity = False, verify_check=False, tol_ = 0.1):
+        """
+            Makes operation matrix.
+            
             Arg:
-                K: str OR numpy array in shape(3,)
+                name: str
+                    name of this matrix operation. must be same as those in build_map like:
+                    'C2x'
+                
+                k_label: str 
+                    The high symmetry point to make Cmat for. Must be an element of K_label
                     Str like, e.g. 'Gamma' or 'K1'
+                
+                symmorphicity: boolean
+                    If the group is symmorphic. False(default)
+                    **Notice in the case of non-symmorphic groups: Cmat is only implemented for C2 symmetries, at the moment. **
                 
                 verify_check: boolean
                     False(default)
+                    
                 tol_: float between 0-1
                     Relative tolerance. tol_=0.1(default)
         """
+        print('**Making {0} matrix for point {1} **'.format(name, k_label))
+        self.Cmat[name] = Cop
         
-        if self.rank != 0:
-            return 0
         
-        if np.array(K).shape == (3,) :
-            K = np.array(K)
-        elif type(K) == str :
-            K = self.label_translator(K)
-        else:
-            raise KeyError('make_Cmat: Please provide either str or [kx,ky,kz]')
+        xpos_ = self.tb.K_path_Highsymm_indices
+            
+        try:
+            idx = np.where(self.tb.K_label==k_label)[0][0]
+            K = self.tb.K_path[int(xpos_[idx])]
+        except IndexError:
+            message = "High symmetry point " + k_label " not defined"
+            raise ValueError(message)
         
-        #self.K_path[0]
-        #assert K.shape[0] == 3
         
-        self.Cop_x = sp.lil_matrix((self.conf_.tot_number, self.conf_.tot_number), dtype='int')
-        self.Cop_y = sp.lil_matrix((self.conf_.tot_number, self.conf_.tot_number), dtype='int')
-        self.Cop_z = sp.lil_matrix((self.conf_.tot_number, self.conf_.tot_number), dtype='int')
-        print('**I am making C2 matrix for this K point:**', K )
-        for sh in range(self.conf_.tot_number):
+        Cop = sp.lil_matrix((self.conf.tot_number, self.conf.tot_number), dtype='int')
+        
+        for sh in range(self.conf.tot_number):
             i = sh
-            j = self.new_orders[0][sh]
-            k = self.new_orders[1][sh]
-            l = self.new_orders[2][sh]
-            convention_x = 1 if (self.conf_.atomsAllinfo[ i , 4] //self.conf_.xlen_half) %2 == 0 else  np.exp(+1j *  self.conf_.xlen * K[0] )
-            convention_y = 1 if (self.conf_.atomsAllinfo[ i , 5] //self.conf_.ylen_half) %2 == 0 else  np.exp(+1j *  self.conf_.ylen * K[1] )
+            j = self.new_orders[name][sh]
+            convention_x = 1 if (self.conf.coords[ i , 0] //self.conf.xlen_half) %2 == 0 else  np.exp(+1j *  self.conf.xlen * K[0] )
+            convention_y = 1 if (self.conf.coords[ i , 1] //self.conf.ylen_half) %2 == 0 else  np.exp(+1j *  self.conf.ylen * K[1] )
             #convention_y = 1
             self.Cop_x[i, j] = convention_x#*convention_y
             self.Cop_y[i, k] = convention_y#-1 if i<k else +1
             self.Cop_z[i, l] = convention_x*convention_y
         
         if pls_check:
-            
-            
             def check_commute(A,B):
                 AB = A @ B
                 BA = B @ A
@@ -120,10 +209,10 @@ class Symm:
                 nonz = A2.nonzero()
                 nonz_tot = nonz[0].shape[0]
                 
-                if self.conf_.tot_number < nonz_tot:
+                if self.conf.tot_number < nonz_tot:
                     print('square has more non-zero elements that identity')
                     return 1
-                elif self.conf_.tot_number > nonz_tot:
+                elif self.conf.tot_number > nonz_tot:
                     print('square has less non-zero elements that identity')
                     return 1
                 
@@ -242,7 +331,7 @@ class Symm:
         if self.rank != 0:
             raise RuntimeError('Please plot using **if rank==0** in mpi mode')
         #Operations:: 'C2x', 'C2y', 'C2z'
-        oper_mat = sp.lil_matrix((self.conf_.tot_number, self.conf_.tot_number), dtype='int')
+        oper_mat = sp.lil_matrix((self.conf.tot_number, self.conf.tot_number), dtype='int')
         
         whos =  {'C2x':0, 'C2y':1, 'C2z':2}
         op_ = self.new_orders[whos[operation]]
@@ -255,9 +344,9 @@ class Symm:
         nonZ_tot = nonZ[0].shape[0]
         ##Make the M matrix
         #version_ = self.file_name[:-5] +'_cut_' + str(self.cut_fac) + '_Pf'
-        #self.conf_.neigh_list_me_smart(cutoff=self.r_cut, l_width=300, load_ = True, version_ = version_ )
-        M = sp.lil_matrix((self.conf_.tot_number, self.conf_.tot_number), dtype='int')
-        for ii in range(self.conf_.tot_number):
+        #self.conf.neigh_list_me_smart(cutoff=self.r_cut, l_width=300, load_ = True, version_ = version_ )
+        M = sp.lil_matrix((self.conf.tot_number, self.conf.tot_number), dtype='int')
+        for ii in range(self.conf.tot_number):
             neighs = self.nl[ii][~(np.isnan(self.nl[ii]))].astype('int')
             for jj in neighs:
                 sign_before_X = 1 if self.B_flag[0][ii,jj]==0 else -1
@@ -358,102 +447,7 @@ class Symm:
         print('Under',operation,', Hamiltoninan invariance is:',case_, 'and senario is',senario)
         #print('complex count is ',count)
         
-    
-    def build_sym_operation(self, tol_=0.1):
-        if self.rank != 0:
-            raise RuntimeError('Please plot using **if rank==0** in mpi mode')
-    
-        all_X = np.copy(self.conf_.atomsAllinfo[ : , 4])
-        all_Y = np.copy(self.conf_.atomsAllinfo[ : , 5])
-        all_Z = np.copy(self.conf_.atomsAllinfo[ : , 6])
-        wave_info = np.zeros((self.conf_.tot_number, 3), dtype= self.dtypeR)
-
-        wave_info[:, 0] = all_X
-        wave_info[:, 1] = all_Y
-        wave_info[:, 2] = all_Z
-        
-        new_orders = np.zeros((3, self.conf_.tot_number), dtype='int') # 'C2x', 'C2y', 'C2z'
-        who =0
-        for which_operation in ['C2x', 'C2y', 'C2z']:
-            print('making the operation for ', which_operation)
-            wave_info_trs = np.copy(wave_info)
-            if which_operation == 'C2x':
-                #x+1/2,-y,-z
-                print('doing c2x')
-                wave_info_trs[:, 0] += 1/2 * self.conf_.xlen
-                wave_info_trs[:, 1] *= -1
-                wave_info_trs[:, 2] *= -1
-                
-                
-            elif which_operation == 'C2y':
-                #-x,y+1/2,-z
-                print('doing c2y')
-                wave_info_trs[:, 0] *= -1
-                wave_info_trs[:, 1] += 1/2 * self.conf_.ylen
-                wave_info_trs[:, 2] *= -1
-                
-                if '_zxact' not in self.file_name and 'noa0_relaxed' not in self.file_name and '1.08_0fold_no18' not in self.file_name:
-                    print('I am doing a0 shit')
-                    wave_info_trs[:, 0] -= self.a0 ## # for 1 fold i don't know why it is this way!
-                    #wave_info_trs[:, :, :, 0] -= 2*self.a0 ## # for 0 fold i don't know why it is this way!
-        
-            elif which_operation == 'C2z':     
-                #-x+1/2,-y+1/2,z
-                print('doing c2z')
-                wave_info_trs[:, 0] = -1*wave_info_trs[:, 0] + 1/2 * self.conf_.xlen
-                wave_info_trs[:, 1] = -1*wave_info_trs[:, 1] + 1/2 * self.conf_.ylen
-                
-                if '_zxact' not in self.file_name and 'noa0_relaxed' not in self.file_name and '1.08_0fold_no18' not in self.file_name:
-                    wave_info_trs[:, 0] -= self.a0 ## for 1 fold #i don't know why it is this way!
-                    #wave_info_trs[:, :, :, 0] -= 2*self.a0 ### for 0 fold #i don't know why it is this way!
-            
-                            
-            ## translate to cell(0,0) 
-            x_back = (wave_info_trs[:, 0]//self.conf_.xlen)
-            y_back = (wave_info_trs[:, 1]//self.conf_.ylen)
-            wave_info_trs[:, 0] -=  x_back*self.conf_.xlen
-            wave_info_trs[:, 1] -=  y_back*self.conf_.ylen
-            
-            ## get the right indices to compare 
-            new_order = np.zeros(self.conf_.tot_number, dtype='int')
-            
-            for nn in range(self.conf_.tot_number):
-                
-                cond_all = np.isclose( np.linalg.norm(wave_info_trs - wave_info[nn], axis=1) , 0, rtol=0, atol=0.2) 
-        
-                idx = np.where(cond_all)[0]
-                
-                if idx.shape[0] == 0:
-                    # pbc thing
-                    possible = [0,-1,+1]
-                    print('I have to do PBC on nn=',nn)
-                    for pX in possible:
-                        if idx.shape[0] == 0:
-                            for pY in possible:
-                                desire_coord = np.copy(wave_info[nn])
-                                #print('doing ',pX,pY, desire_coord)
-                                desire_coord[0] += pX * self.conf_.xlen 
-                                desire_coord[1] += pY * self.conf_.ylen 
-                        
-                                cond_all = np.isclose( np.linalg.norm(wave_info_trs - desire_coord, axis=1) , 0, rtol=0, atol=0.2) 
-                                idx = np.where(cond_all)[0]
-                                
-                                if idx.shape[0] >0 :
-                                    print('yup!, fixed!')
-                                    break
-                    
-                
-                if idx.shape[0] != 1:
-                    print('idx=',idx,'    pos',wave_info[nn,0:3])
-                    plt.show()
-                    raise RuntimeError('Cannot match the patterns... ')
-                new_order[nn] = idx[0]
-                
-            new_orders[who] = new_order
-            who += 1
-        self.new_orders = new_orders
-        np.savez(self.folder_name + 'Operations_' +self.save_name, new_orders=self.new_orders)
-        
+  
     
     def point_symmetry_check(self, which_K, diagno, mix_pairs = 2, block=False, tol_=0.1 ,skip_diag = False):
         """
@@ -473,13 +467,13 @@ class Symm:
             print('id_={0}'.format(id_))
             
             
-            all_X = np.copy(self.conf_.atomsAllinfo[ : , 4])
-            all_Y = np.copy(self.conf_.atomsAllinfo[ : , 5])
-            all_Z = np.copy(self.conf_.atomsAllinfo[ : , 6])
-            all_xyz = np.copy(self.conf_.atomsAllinfo[ : , 4:7])
+            all_X = np.copy(self.conf.atomsAllinfo[ : , 4])
+            all_Y = np.copy(self.conf.atomsAllinfo[ : , 5])
+            all_Z = np.copy(self.conf.atomsAllinfo[ : , 6])
+            all_xyz = np.copy(self.conf.atomsAllinfo[ : , 4:7])
             
             flat_range= 8 #self.N_flat
-            wave_info = np.zeros((flat_range, self.conf_.tot_number, 7), self.dtypeR)
+            wave_info = np.zeros((flat_range, self.conf.tot_number, 7), self.dtypeR)
 
             for ii in range(flat_range):
                 wave_info[ii, :, 0] = all_X
@@ -521,10 +515,10 @@ class Symm:
             #phase_2 = np.exp(1j*np.dot((all_xyz[self.new_orders[who]]), self.K_path[0]) ) ## fix the id of self.K_path
             ###
             
-            new_bases = np.zeros((flat_range, self.conf_.tot_number), dtype=self.dtypeC)
-            old_vecs = np.zeros((flat_range, self.conf_.tot_number), dtype=self.dtypeC)
-            old_vecs_op = np.zeros((flat_range, self.conf_.tot_number), dtype=self.dtypeC)
-            very_new_bases = np.zeros((flat_range, self.conf_.tot_number), dtype=self.dtypeC)
+            new_bases = np.zeros((flat_range, self.conf.tot_number), dtype=self.dtypeC)
+            old_vecs = np.zeros((flat_range, self.conf.tot_number), dtype=self.dtypeC)
+            old_vecs_op = np.zeros((flat_range, self.conf.tot_number), dtype=self.dtypeC)
+            very_new_bases = np.zeros((flat_range, self.conf.tot_number), dtype=self.dtypeC)
             #eignvals_neu = np.zeros(flat_range, dtype='f' if self.dtype==None else self.dtype)
             for ii in range(0, flat_range, mix_pairs):
                 S = np.zeros((mix_pairs,mix_pairs), dtype=self.dtypeC)
@@ -558,7 +552,7 @@ class Symm:
                 print('sum (w**2)=', np.sum(np.power(w,2)),'\n')
                 #print(eignvals_neu[ii:ii+mix_pairs].shape)
                 #print(w.shape)
-                #new_bases = np.zeros((mix_pairs, self.conf_.tot_number), dtype='complex' if self.dtype==None else 'c'+self.dtype)
+                #new_bases = np.zeros((mix_pairs, self.conf.tot_number), dtype='complex' if self.dtype==None else 'c'+self.dtype)
                 
                 #continue
                 
@@ -695,12 +689,12 @@ class Symm:
                     for qq in range(kk, flat_range):
                         #check_ = np.isclose(np.absolute(new_bases[qq]), np.absolute(new_bases[kk][self.new_orders[wihh]] ), rtol=0.2, atol=0.0)
                         check_ = np.isclose(np.absolute(new_bases[qq]), np.absolute(transed), rtol=0.2,  atol=0.0)
-                        flag_  = np.isclose( np.count_nonzero(check_), self.conf_.tot_number, rtol=tol_, atol=0) 
+                        flag_  = np.isclose( np.count_nonzero(check_), self.conf.tot_number, rtol=tol_, atol=0) 
                         #print('{0} dot {1} is '.format(ii+qq,ii+kk), np.dot(np.conjugate(new_bases[qq].T), new_bases[kk][new_orders[wihh]]))
                         #print(np.count_nonzero(check_))
                         condintion = (kk==qq) if only_itself else True
                         if flag_ and condintion:
-                            print('{0} to {1} **symmetry Holds!** '.format(qq,kk), np.count_nonzero(check_), ' of ', self.conf_.tot_number)
+                            print('{0} to {1} **symmetry Holds!** '.format(qq,kk), np.count_nonzero(check_), ' of ', self.conf.tot_number)
                             #print('instance: ',np.angle(new_bases[qq][10], deg=True), np.angle(new_bases[kk][new_orders[wihh]][10], deg=True))
                             #print('instance: ',np.angle(new_bases[qq][1356], deg=True), np.angle(new_bases[kk][new_orders[wihh]][1356], deg=True))
                             #print('dot product is ', np.dot(np.conjugate(new_bases[qq].T), new_bases[kk][new_orders[wihh]]))
@@ -734,7 +728,7 @@ class Symm:
                                     #vec_b *= vec_b*phase_2
                                     check_m = np.isclose(np.absolute(vec_a), np.absolute(vec_b), rtol=0.2, atol=0.0)
                                     
-                                    if  np.isclose( np.count_nonzero(check_m), self.conf_.tot_number, rtol=tol_, atol=0):
+                                    if  np.isclose( np.count_nonzero(check_m), self.conf.tot_number, rtol=tol_, atol=0):
                                         delta_phase=np.rad2deg(np.arccos((np.real(vec_a)*np.real(vec_b) + np.imag(vec_a)*np.imag(vec_b) )/(np.absolute(vec_a)*np.absolute(vec_b))))
                                         print('\tmagnetic #{0} check: '.format(case_n), np.count_nonzero(check_m),'   phase is ', np.mean(delta_phase), np.std(delta_phase))
                                     case_n += 1
@@ -747,8 +741,8 @@ class Symm:
                                     #axs[(kk)].set_ylim([0,1])
                             
                         elif flag_:
-                            #print('   Only in amplitude {0} to {1} '.format(qq,kk), np.count_nonzero(check_), ' of ', self.conf_.tot_number)
-                            only_amp_str += '   Only in amplitude {0} to {1}  {2} of {3} \n'.format(qq,kk, np.count_nonzero(check_), self.conf_.tot_number)
+                            #print('   Only in amplitude {0} to {1} '.format(qq,kk), np.count_nonzero(check_), ' of ', self.conf.tot_number)
+                            only_amp_str += '   Only in amplitude {0} to {1}  {2} of {3} \n'.format(qq,kk, np.count_nonzero(check_), self.conf.tot_number)
                 print(only_amp_str)
             print('\n')
             #who += 1
@@ -805,14 +799,14 @@ class Symm:
             if self.rank ==0:
                 #if orientation != '1_fold' :
                     #raise RuntimeError('Non rectangular boxes are not supported yet, for checking symmetry')
-                if self.conf_.xy !=0:
+                if self.conf.xy !=0:
                     #raise RuntimeError('Non rectangular boxes are not supported yet, for checking symmetry')
-                    all_X = np.copy(self.conf_.atomsAllinfo[ : , 4]) 
-                    all_Y = np.copy(self.conf_.atomsAllinfo[ : , 5])
-                    all_X -= (all_X//self.conf_.xhi)*self.conf_.xlen
+                    all_X = np.copy(self.conf.atomsAllinfo[ : , 4]) 
+                    all_Y = np.copy(self.conf.atomsAllinfo[ : , 5])
+                    all_X -= (all_X//self.conf.xhi)*self.conf.xlen
                 else:
-                    all_X = np.copy(self.conf_.atomsAllinfo[ : , 4])
-                    all_Y = np.copy(self.conf_.atomsAllinfo[ : , 5])
+                    all_X = np.copy(self.conf.atomsAllinfo[ : , 4])
+                    all_Y = np.copy(self.conf.atomsAllinfo[ : , 5])
 
                 
                 xpos_ = np.cumsum(self.K_path_Highsymm_indices)
@@ -826,14 +820,14 @@ class Symm:
                 ref_tp = 0
                 flat_range= 8 #self.N_flat
                 #type_range = 4
-                wave_info = np.zeros((flat_range, 4, self.conf_.tot_number//4, 6), dtype=self.dtypeR)
+                wave_info = np.zeros((flat_range, 4, self.conf.tot_number//4, 6), dtype=self.dtypeR)
                 ##wave_info ITEM:  x y  real img  amp angle
 
                 
                 for ii in range(flat_range):
                     for type_ in range(4):
-                        abcd = self.conf_.sub_type==10*(type_+1)
-                        #print(self.conf_.sub_type)
+                        abcd = self.conf.sub_type==10*(type_+1)
+                        #print(self.conf.sub_type)
                         wave_info[ii, type_, :, 0] = all_X[abcd]
                         wave_info[ii, type_, :, 1] = all_Y[abcd]
                         
@@ -844,18 +838,18 @@ class Symm:
                 
                 # Set Fabrizio's cell to (0,xlen) and (0,ylen)
                 # and put everything in the box 
-                #wave_info[:, :, :, 0] -= (self.conf_.xlo - 1/4 * self.conf_.xlen) # for 1 fold
-                #wave_info[:, :, :, 1] -= (self.conf_.ylo - 1/4 * self.conf_.ylen) # for 1 fold
+                #wave_info[:, :, :, 0] -= (self.conf.xlo - 1/4 * self.conf.xlen) # for 1 fold
+                #wave_info[:, :, :, 1] -= (self.conf.ylo - 1/4 * self.conf.ylen) # for 1 fold
                 
-                #wave_info[:, :, :, 0] -=  (wave_info[:, :, :, 0]//self.conf_.xlen)*self.conf_.xlen
-                #wave_info[:, :, :, 1] -=  (wave_info[:, :, :, 1]//self.conf_.ylen)*self.conf_.ylen
+                #wave_info[:, :, :, 0] -=  (wave_info[:, :, :, 0]//self.conf.xlen)*self.conf.xlen
+                #wave_info[:, :, :, 1] -=  (wave_info[:, :, :, 1]//self.conf.ylen)*self.conf.ylen
                 
                 # apply transformation
                 wave_info_trs = np.copy(wave_info)
                 if which_operation == 'C2x':
                     #x+1/2,-y,-z
                     print('doing c2x')
-                    wave_info_trs[:, :, :, 0] += 1/2 * self.conf_.xlen
+                    wave_info_trs[:, :, :, 0] += 1/2 * self.conf.xlen
                     wave_info_trs[:, :, :, 1] *= -1
                     
                     # type is the same, layer changes :: 0,3 (a,c) and (1,2) b,d have the same type! ...
@@ -867,7 +861,7 @@ class Symm:
                     #-x,y+1/2,-z
                     print('doing c2y')
                     wave_info_trs[:, :, :, 0] *= -1
-                    wave_info_trs[:, :, :, 1] += 1/2 * self.conf_.ylen
+                    wave_info_trs[:, :, :, 1] += 1/2 * self.conf.ylen
                     
                     if '_zxact' not in self.file_name and 'noa0_relaxed' not in self.file_name and '1.08_0fold_no18' not in self.file_name:
                         wave_info_trs[:, :, :, 0] -= self.a0 ## # for 1 fold i don't know why it is this way!
@@ -880,8 +874,8 @@ class Symm:
                 elif which_operation == 'C2z':     
                     #-x+1/2,-y+1/2,z
                     print('doing c2z')
-                    wave_info_trs[:, :, :, 0] = -1*wave_info_trs[:, :, :, 0] + 1/2 * self.conf_.xlen
-                    wave_info_trs[:, :, :, 1] = -1*wave_info_trs[:, :, :, 1] + 1/2 * self.conf_.ylen
+                    wave_info_trs[:, :, :, 0] = -1*wave_info_trs[:, :, :, 0] + 1/2 * self.conf.xlen
+                    wave_info_trs[:, :, :, 1] = -1*wave_info_trs[:, :, :, 1] + 1/2 * self.conf.ylen
                     
                     if '_zxact' not in self.file_name and 'noa0_relaxed' not in self.file_name  and '1.08_0fold_no18' not in self.file_name:
                         wave_info_trs[:, :, :, 0] -= self.a0 ## for 1 fold #i don't know why it is this way!
@@ -891,24 +885,24 @@ class Symm:
                     partner_tp = 1
                 
                 elif which_operation == 'sigma_yz' :
-                    wave_info_trs[:, :, :, 0] = -1*wave_info_trs[:, :, :, 0] + 1/2 * self.conf_.xlen
+                    wave_info_trs[:, :, :, 0] = -1*wave_info_trs[:, :, :, 0] + 1/2 * self.conf.xlen
                     partner_tp = 2
                 
                 elif which_operation == 'sigma_xz' :
-                    wave_info_trs[:, :, :, 1] = -1*wave_info_trs[:, :, :, 1] + 1/2 * self.conf_.ylen
+                    wave_info_trs[:, :, :, 1] = -1*wave_info_trs[:, :, :, 1] + 1/2 * self.conf.ylen
                     partner_tp = 0
                     
                 #elif which_operation == 'mz' :
-                    #wave_info_trs[:, :, :, 0] += 1/2 * self.conf_.xlen
-                    #wave_info_trs[:, :, :, 1] -= 1/2 * self.conf_.ylen
+                    #wave_info_trs[:, :, :, 0] += 1/2 * self.conf.xlen
+                    #wave_info_trs[:, :, :, 1] -= 1/2 * self.conf.ylen
                 
                 
                 ## translate to cell(0,0) 
-                wave_info_trs[:, :, :, 0] -=  (wave_info_trs[:, :, :, 0]//self.conf_.xlen)*self.conf_.xlen
-                wave_info_trs[:, :, :, 1] -=  (wave_info_trs[:, :, :, 1]//self.conf_.ylen)*self.conf_.ylen
+                wave_info_trs[:, :, :, 0] -=  (wave_info_trs[:, :, :, 0]//self.conf.xlen)*self.conf.xlen
+                wave_info_trs[:, :, :, 1] -=  (wave_info_trs[:, :, :, 1]//self.conf.ylen)*self.conf.ylen
                 
                 ## get the right indices to compare 
-                new_order = np.zeros(self.conf_.tot_number//4, dtype='int')
+                new_order = np.zeros(self.conf.tot_number//4, dtype='int')
 
                 
                 #plt.figure()
@@ -937,7 +931,7 @@ class Symm:
                 #plt.show()
                 #exit()
                 
-                for nn in range(self.conf_.tot_number//4):
+                for nn in range(self.conf.tot_number//4):
                     
                     cond_all = np.isclose( np.linalg.norm(wave_info_trs[0, partner_tp, :, 0:2] - wave_info[0, ref_tp, nn, 0:2], axis=1) , 0, rtol=0, atol=0.9) 
                     
@@ -953,8 +947,8 @@ class Symm:
                                 for pY in possible:
                                     desire_coord = np.copy(wave_info[0, ref_tp, nn, 0:2])
                                     #print('doing ',pX,pY, desire_coord)
-                                    desire_coord[0] += pX * self.conf_.xlen 
-                                    desire_coord[1] += pY * self.conf_.ylen 
+                                    desire_coord[0] += pX * self.conf.xlen 
+                                    desire_coord[1] += pY * self.conf.ylen 
                             
                                     cond_all = np.isclose( np.linalg.norm(wave_info_trs[0, partner_tp, :, 0:2] - desire_coord, axis=1) , 0, rtol=0, atol=0.5) 
                                     idx = np.where(cond_all)[0]
@@ -987,10 +981,10 @@ class Symm:
                         for jj in range(flat_range):
                             check_ = np.isclose(wave_info[ii, ref_tp, :, aml], wave_info_trs[jj, partner_tp, new_order, aml], rtol=0.3, atol=0.0)
                             the_ratio = wave_info[ii, ref_tp, :, aml] / wave_info_trs[jj, partner_tp, new_order, aml]
-                            flag_ = np.isclose( np.count_nonzero(check_), self.conf_.tot_number//4, rtol=tol_, atol=0) 
+                            flag_ = np.isclose( np.count_nonzero(check_), self.conf.tot_number//4, rtol=tol_, atol=0) 
                             
                             ## approach dot product:
-                            vec2 = vec1 = np.zeros(self.conf_.tot_number//4 , dtype=self.dtypeC)
+                            vec2 = vec1 = np.zeros(self.conf.tot_number//4 , dtype=self.dtypeC)
                             vec1 = wave_info[ii, ref_tp, :, 2] + 1j*wave_info[ii, ref_tp, :, 3]
                             vec2 = wave_info_trs[jj, partner_tp, new_order, 2] + 1j*wave_info_trs[jj, partner_tp, new_order, 3]
                             Dot = np.append(Dot, np.dot(np.conjugate(vec1.T), vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2) ) )
@@ -1046,10 +1040,10 @@ class Symm:
                                 
                                 #print('delta_phase=',delta_phase)
                                 #print('symmetry Holds!')
-                                print('symmetry Holds! ',np.count_nonzero(check_), ' of ', self.conf_.tot_number//4)
+                                print('symmetry Holds! ',np.count_nonzero(check_), ' of ', self.conf.tot_number//4)
                                 print('level {0} -> {1}. phase_shift is '.format(ii, jj), np.round(phase_shift,3),' with std=', np.round(std,3))
                                 print('energy of level {0} is {1}'.format(ii, self.bandsEigns[id_, ii]-self.shift_tozero) )
-                                #print(np.count_nonzero(check_), ' of ', self.conf_.tot_number//4)
+                                #print(np.count_nonzero(check_), ' of ', self.conf.tot_number//4)
                                 print('the_ratio, mean, std:',the_ratio, np.mean(the_ratio), np.std(the_ratio) )
                                 #print('magnetic check', np.count_nonzero(check_m1),  np.count_nonzero(check_m2), np.count_nonzero(check_m3), np.count_nonzero(check_m4) )
                                 #print('Dot',Dot)
@@ -1066,7 +1060,7 @@ class Symm:
                                 print('symmetry sucks!')
                                 print('the_ratio, mean, std:',the_ratio, np.mean(the_ratio), np.std(the_ratio) )
                                 np.set_printoptions(precision=1)
-                                likelihood=100* likelihood/ (self.conf_.tot_number//4)
+                                likelihood=100* likelihood/ (self.conf.tot_number//4)
                                 print("'level {0} looks ".format(ii), likelihood, " % like levels",  likelevels, 'total of {:.2f} \n'.format(np.sum(likelihood)))
                             if jj == flat_range-1:# and found == True:
                                 print('Dot',Dot)
@@ -1110,7 +1104,7 @@ class Symm:
                         #check_ = np.isclose(wave_info[ii, ref_tp, :, aml], zz, rtol=0.2, atol=0.0)
                         print(np.count_nonzero(check_))
                         
-                        flag_ = np.isclose( np.count_nonzero(check_), self.conf_.tot_number//4, rtol=tol_, atol=0) 
+                        flag_ = np.isclose( np.count_nonzero(check_), self.conf.tot_number//4, rtol=tol_, atol=0) 
                         
                         
                         #sc = axs[0].scatter(wave_info[ii, ref_tp, :, 0],
@@ -1138,16 +1132,16 @@ class Symm:
                             
                             ##print('delta_phase=',delta_phase)
                             ##print('symmetry Holds!')
-                            print('symmetry Holds! ',np.count_nonzero(check_), ' of ', self.conf_.tot_number//4)
+                            print('symmetry Holds! ',np.count_nonzero(check_), ' of ', self.conf.tot_number//4)
                             #print('level {0} -> {1}. phase_shift is '.format(ii, jj), np.round(phase_shift,3),' with std=', np.round(std,3))
-                            #print(np.count_nonzero(check_), ' of ', self.conf_.tot_number//4)
+                            #print(np.count_nonzero(check_), ' of ', self.conf.tot_number//4)
                             print('\n')
                             #break
                         else:
 
                             print('symmetry sucks!')
                             #np.set_printoptions(precision=1)
-                            likelihood=100* np.count_nonzero(check_)/ (self.conf_.tot_number//4)
+                            likelihood=100* np.count_nonzero(check_)/ (self.conf.tot_number//4)
                             print("level {:.0f} has {:.2f} symmetry \n".format(ii, likelihood))
                     
 
@@ -1177,17 +1171,17 @@ class Symm:
             header_ = ''
                         
             
-            if self.conf_.xy ==0:
-                header_ += "ITEM: TIMESTEP \n{0} \nITEM: NUMBER OF ATOMS \n"+"{0} \nITEM: BOX BOUNDS pp pp ss \n".format(self.conf_.tot_number)
-                header_ +="{0} {1} \n{2} {3} \n{4} {5} \n".format(                                                                                                                                                                            self.conf_.xlo, self.conf_.xhi, 
-                self.conf_.ylo, self.conf_.yhi,
-                self.conf_.zlo, self.conf_.zhi)
+            if self.conf.xy ==0:
+                header_ += "ITEM: TIMESTEP \n{0} \nITEM: NUMBER OF ATOMS \n"+"{0} \nITEM: BOX BOUNDS pp pp ss \n".format(self.conf.tot_number)
+                header_ +="{0} {1} \n{2} {3} \n{4} {5} \n".format(                                                                                                                                                                            self.conf.xlo, self.conf.xhi, 
+                self.conf.ylo, self.conf.yhi,
+                self.conf.zlo, self.conf.zhi)
             else:
-                header_ += "ITEM: TIMESTEP \n{0} \nITEM: NUMBER OF ATOMS \n"+"{0} \nITEM: BOX BOUNDS xy xz yz pp pp ss \n".format(self.conf_.tot_number)
-                header_ +="{0} {1} {6} \n{2} {3} 0 \n{4} {5} 0 \n".format(                                                                                                                                                                            self.conf_.xlo, self.conf_.xhi+self.conf_.xy, 
-                self.conf_.ylo, self.conf_.yhi,
-                self.conf_.zlo, self.conf_.zhi,
-                self.conf_.xy)
+                header_ += "ITEM: TIMESTEP \n{0} \nITEM: NUMBER OF ATOMS \n"+"{0} \nITEM: BOX BOUNDS xy xz yz pp pp ss \n".format(self.conf.tot_number)
+                header_ +="{0} {1} {6} \n{2} {3} 0 \n{4} {5} 0 \n".format(                                                                                                                                                                            self.conf.xlo, self.conf.xhi+self.conf.xy, 
+                self.conf.ylo, self.conf.yhi,
+                self.conf.zlo, self.conf.zhi,
+                self.conf.xy)
                 
                 
             header_ += "ITEM: ATOMS id type x y z  "
@@ -1209,7 +1203,7 @@ class Symm:
                 vecs = self.new_bases.T
             #elif vec_ ==  'phasesign':
                 #vecs = self.new_bases.T
-                ##for shit in range(self.conf_.tot_number):
+                ##for shit in range(self.conf.tot_number):
                     ##assert self.phaseSigns[2][self.new_orders[2]][shit] == self.phaseSigns[2][shit]
                 #for ii in range(out_range):
                     #vecs[:, ii] =  vecs[self.new_orders[2], ii] * self.phaseSigns[2]
@@ -1228,8 +1222,8 @@ class Symm:
                     angle_ = delta_phase
                 
                 
-                XX = np.concatenate((self.conf_.atomsAllinfo[:,np.r_[0]],  np.expand_dims(self.conf_.sub_type, axis=1), 
-                self.conf_.atomsAllinfo[:,np.r_[4:7]],
+                XX = np.concatenate((self.conf.atomsAllinfo[:,np.r_[0]],  np.expand_dims(self.conf.sub_type, axis=1), 
+                self.conf.atomsAllinfo[:,np.r_[4:7]],
                 np.expand_dims(np.absolute(vecs[:, ii]), axis=1), 
                 np.expand_dims(angle_, axis=1),
                 ), axis = 1)
@@ -1240,7 +1234,7 @@ class Symm:
             np.savetxt(fname+'__eign_values__', self.bandsEigns[id_, :out_range]-self.shift_tozero) 
 
             #for ii in range(self.N_flat):
-                #XX = np.concatenate((self.conf_.atomsAllinfo[:,np.r_[0]],  np.expand_dims(self.conf_.sub_type, axis=1), self.conf_.atomsAllinfo[:,np.r_[4:7]],
+                #XX = np.concatenate((self.conf.atomsAllinfo[:,np.r_[0]],  np.expand_dims(self.conf.sub_type, axis=1), self.conf.atomsAllinfo[:,np.r_[4:7]],
                                     #np.absolute(self.bandsVector[id_, :, :self.N_flat]), 
                                     #np.angle(self.bandsVector[id_, :, :self.N_flat]),
                                     #), axis = 1) #
@@ -1251,8 +1245,8 @@ class Symm:
             
             #file_ = open(fname, 'w')
             #file_.write(header_)
-            #for ii in range(self.conf_.tot_number):
-                #file_.write(('{:.0f} '*4 + '{:.12f} '*3 + ' 0 0 0 ' + '{:.2e} '*self.N_flat +'  \n').format(*self.conf_.atomsAllinfo[ii], *self.bandsVector[id_, ii, :self.N_flat] ))
+            #for ii in range(self.conf.tot_number):
+                #file_.write(('{:.0f} '*4 + '{:.12f} '*3 + ' 0 0 0 ' + '{:.2e} '*self.N_flat +'  \n').format(*self.conf.atomsAllinfo[ii], *self.bandsVector[id_, ii, :self.N_flat] ))
                 
             #file_.close()
      

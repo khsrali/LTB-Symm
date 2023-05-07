@@ -142,11 +142,12 @@ class TB:
             
         slice_size = kk_range.shape[0]
 
-        print('Start loop on %i K-points' % npoints)
+        #print('Start loop on %i K-points' % npoints)
         t_start = time.time()
         
-        if self.rank ==0 or True:
-            pbar = tqdm(total=slice_size, unit=' K-point', desc='rank {}'.format(self.rank)) # Initialise
+        if self.rank ==0:# or True:
+            #pbar = tqdm(total=slice_size, unit=' K-point', desc='rank {}'.format(self.rank)) # Initialise
+            pbar = tqdm(total=npoints, unit=' K-point', desc='Estimated') # Initialise
         
         for kk in kk_range:
             t_loop = time.time()
@@ -175,13 +176,13 @@ class TB:
                 except IndexError:
                     pass
                 
-            if self.rank ==0 or True:
-                pbar.update()
+            if self.rank ==0:# or True:
+                pbar.update(self.size)
                 
-        if self.rank ==0 or True:
+        if self.rank ==0:# or True:
             pbar.close()
             
-        print("Total time: {:.2f} seconds".format(time.time() - t_start))
+        print("Total time: {:.2f} seconds ".format(time.time() - t_start) + "on rank {0}".format(self.rank))
         
         
         ## collect from all cpus
@@ -1725,7 +1726,6 @@ class TB:
     
 
     def save(self, str_='', H = None):
-        
         self.save_name =  str_
         if H!= None:
             #np.savez(self.folder_name + 'HH_' +self.save_name, H=self.H)
@@ -1779,10 +1779,10 @@ class TB:
             if hasattr(self, 'eigns_3D'):
                 np.savez(self.folder_name + '3Dband_'+self.save_name, gsize_v=self.gsize_v, gsize_h=self.gsize_h, flat_grid=self.flat_grid, eigns_3D=self.eigns_3D, eigns_3D_reduced=self.eigns_3D_reduced)
 
-    def load_configuration(self, folder_, ver_ =''):
 
+
+    def load_configuration(self, folder_, ver_ =''):
         self.folder_name = folder_  if folder_[-1] == '/' else folder_+'/'
-        
         self.conf = pwl(self.folder_name)
         data_name_conf = None
         for lis in os.listdir(self.folder_name):
@@ -2138,11 +2138,11 @@ class TB:
             try:
                 idx = np.where(self.K_label==k_label)[0][0]
                 shift_tozero = np.average( self.bandsEigns[int(xpos_[idx]), idx_s])
-                print("I'm shifting to zero")
+                #print("I'm shifting to zero")
             except IndexError:
                 raise ValueError("Wrong idx_s of flat bands")
                 
-            print("shift_tozero={0}".format(shift_tozero))
+            print("shifting to zero by {0}".format(shift_tozero))
             
             self.bandsEigns -= shift_tozero
             # I am not sure why below is useful:
@@ -2330,10 +2330,6 @@ class TB:
         
         return  ax
 
-
-
-
-### DOS staff
 
 
     def MP_grid(self, Na, Nb):
