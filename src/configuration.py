@@ -90,14 +90,14 @@ class pwl:
         self.atomsAllinfo = np.loadtxt(file_name, skiprows =skiplines, max_rows= self.tot_number, dtype=self.dtypeR)
         self.coords = self.atomsAllinfo[:,4:7]
     
-        self.coords[:,0] -= self.xlo
-        self.coords[:,1] -= self.ylo
-        self.xlo = self.ylo =0.0
+        #self.coords[:,0] -= self.xlo
+        #self.coords[:,1] -= self.ylo
+        #self.xlo = self.ylo =0.0
         
-        self.xhi = self.xlen
-        self.yhi = self.ylen
+        #self.xhi = self.xlen
+        #self.yhi = self.ylen
         
-        self.atomsAllinfo[:,4:7] = self.coords
+        #self.atomsAllinfo[:,4:7] = self.coords
     
     ##def set_59_cell(self, ):
         #if '_exact' not in file_name and '2y_rectangular' not in file_name and '_zxact' not in file_name:
@@ -278,9 +278,9 @@ class pwl:
                 self.nl     = data_['np_nl']
                 tot_neigh = data_['tot_neigh']
                 ave_neigh = data_['ave_neigh']
-                print('neigh_list is loaded from the existing file: neigh_list_{0}.npz'.format(version_))
+                #print('neigh_list is loaded from the existing file: neigh_list_{0}.npz'.format(version_))
                 print('ave_neigh={0} \ntot_neigh={1}'.format(ave_neigh, tot_neigh))
-                print("if want to rebuild the neigh_list, use: build_up(..,load_neigh=False)")
+                #print("if want to rebuild the neigh_list, use: build_up(..,load_neigh=False)")
             except FileNotFoundError:   
                 load_ = False
                 print('A neighlist file was not found, building one... ')
