@@ -1,7 +1,6 @@
-import sys, logging, time
+import time
 import numpy as np
 import scipy.sparse as sp
-import matplotlib.pyplot as plt
 from scipy.spatial import KDTree
 from tqdm import tqdm
 '''
@@ -12,7 +11,7 @@ This code is not using MPI
 I am sure this code is well commented! AS
 '''
 
-class pwl:
+class Pwl:
 
     def __init__(self, folder_name, sparse_flag=True, dtype=None):
         
@@ -89,46 +88,6 @@ class pwl:
         ### get coordinates 
         self.atomsAllinfo = np.loadtxt(file_name, skiprows =skiplines, max_rows= self.tot_number, dtype=self.dtypeR)
         self.coords = self.atomsAllinfo[:,4:7]
-    
-        #self.coords[:,0] -= self.xlo
-        #self.coords[:,1] -= self.ylo
-        #self.xlo = self.ylo =0.0
-        
-        #self.xhi = self.xlen
-        #self.yhi = self.ylen
-        
-        #self.atomsAllinfo[:,4:7] = self.coords
-    
-    ##def set_59_cell(self, ):
-        #if '_exact' not in file_name and '2y_rectangular' not in file_name and '_zxact' not in file_name:
-            #if self.xy != 0:
-                #raise RuntimeError("set_59_cell is not supported becasue xy != 0")
-            #else:
-                #print('I am shifting your cell and atoms to 59!!')
-            
-            ##a0 = 1.42039011
-            ##self.coords[:,0] -= (self.xlo - 1/4 * self.xlen + a0/2) # for 1 fold  !zxact!
-            ##self.coords[:,0] -= (self.xlo - 1/4 * self.xlen) # for 1 fold !exact! & !relaxed!
-            #if 'noa0_relaxed' in file_name:
-                ##print('Hallo Ali, I am doing this!!')
-                #a0 = 1.42039011
-                #self.coords[:,0] -= (self.xlo - 1/4 * self.xlen - a0/2) # to make C2y like C2x
-                #self.coords[:,1] -=  (self.ylo - 1/4 * self.ylen) # for 1 fold
-            #elif '_relaxed' in file_name:
-                ##print('Hallo Ali, I should not do this!!')
-                #self.coords[:,0] -= (self.xlo - 1/4 * self.xlen) # for 1 fold !exact! & !relaxed!
-                #self.coords[:,1] -=  (self.ylo - 1/4 * self.ylen) # for 1 fold
-            #elif '1.08_0fold_no18' in file_name:
-                #pass
-                
-            #else:
-                #raise RuntimeError("please chhose your convention here::")
-            
-
-            #self.coords[:,0] -=  (self.coords[:,0]//self.xlen)*self.xlen
-            #self.coords[:,1] -=  (self.coords[:,1]//self.ylen)*self.ylen
-            
-                
     
 
     def vector_connection_matrix(self, fnn_cutoff=1.55):
@@ -377,10 +336,6 @@ class pwl:
 
 
 def pbc_neigh(pos, u, d0, sskin=10):
-
-    #log_out = logging.getLogger('pbc_neigh') # Set name identifying the logger.
-    ## Adopted format: level - current function name - message. Width is fixed as visual aid.
-    #log_out.setLevel(logging.INFO)
 
     u_inv = np.linalg.inv(u) # Get matrix back to real space
     S = u_inv.T # Lattice matrix

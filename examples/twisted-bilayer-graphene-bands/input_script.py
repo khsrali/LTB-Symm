@@ -1,70 +1,76 @@
 #!/usr/bin/env python3
 import sys
 import numpy as np
+#from TightBinding_fucnSP12 import TB
 from TightBinding import TB
+from symmetry import Symm
 import matplotlib
 import matplotlib.pyplot as plt
 from mpi4py import MPI
 from matplotlib.gridspec import GridSpec
-
+from functools import partial
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
-# === TB SETUP ===
+
+#Start TB object and set/load configuration
 mytb = TB()
-mytb.set_configuration('1.08_1fold_strain_0.0.data_relaxed', sparse_flag = True, version='_nH_scipy', dtype='double') 
-mytb.set_parameters(a0 = 1.42039011, d0 = 3.344, V0_sigam = +0.48, V0_pi = -2.7, cut_fac = 4.01) 
-#
-mytb.build_up('9X' ,load_neigh=True, nl_method='Ali', ver_ = '_Pf')
+#mytb.set_configuration('1.08_1AA.data', r_cut = 5.7, local_normal=True, nl_method='RC')#'RS') 
+#mytb.save('ali')
+mytb.load_configuration('out_1.08_1AA', ver_='ali')
 
-# removed:
-#mytb.conf_.sublattice_detector()
-#mytb.conf_.build_perfect(a0 = 0)
+# Define Hamiltonian and fix the parameters of the Hamiltonian that are the same for all pairs 
+def H_ij(v_ij, ez_i, ez_j, a0 = 1.42039011, d0 = 3.344, V0_sigam = +0.48, V0_pi = -2.7, r0 = 0.184* 1.42039011 * np.sqrt(3) ):
+    """
+        Args:
+            d0: float
+                Distance between two layers. Notice d0 <= than minimum interlayer distance, otherwise you are exponentially increasing interaction!
+            a0: float
+                Equilibrium distance between two neghibouring cites.
+            V0_sigam: float
+                Slater-Koster parameters
+            V0_pi: float
+                Slater-Koster parameters
+            r0: float
+                Decay rate of the exponential
+    """
+    #print(v_ij, ez_i, ez_j)
+    dd = np.linalg.norm(v_ij)
+    V_sigam = V0_sigam * np.exp(-(dd-d0) / r0 )
+    V_pi    = V0_pi    * np.exp(-(dd-a0) / r0 )
+    
+    tilt_1 = np.power(np.dot(v_ij, ez_i)/ dd, 2)
+    tilt_2 = np.power(np.dot(v_ij, ez_j)/ dd, 2)
+    t_ij =  V_sigam * (tilt_1+tilt_2)/2 + V_pi * (1- (tilt_1 + tilt_2)/2) 
+    
+    return t_ij
 
+
+# Define MBZ and set K-points
 mytb.MBZ()
-mytb.set_Kpoints(['gamma','X'] , N=4)
-#mytb.set_symmetry_path(['gamma','m','k1','gamma'] , N=1000)
-#mytb.set_symmetry_path(['gamma'] , N=1)
-#singlePoint = 'gamma'
-#singlePoint = 'X'
-#singlePoint = 'Y'
-#singlePoint = 'W'
-#mytb.set_Kpoints([singlePoint] , N=1)
+#mytb.set_Kpoints(['Gamma','K1'] , N=8, saveH=False)
+mytb.set_Kpoints(['K1','Gamma','M2', 'K2'] , N=8)
+
+# For twisted bilayer graphene sigma=np.abs(V0_pi-V0_sigam)/2 . An approximate value that flat bands are located
+mytb.calculate_bands(H_ij, n_eigns = 4, sigma=np.abs(-2.7-0.48)/2, solver='primme' , return_eigenvectors = False) # 'scipy' 'primme'
 
 
-#mytb.calculate_bands(n_eigns = 16, solver='primme', return_eigenvectors = True)
-mytb.calculate_bands(n_eigns = 16, solver='scipy', return_eigenvectors = False)
-
-#exit()
-#mytb.save(singlePoint+'_nuBZ')
 mytb.save()
-#exit()
-#mytb.save('X')
-#mytb.save('gamma')
-#mytb.save('')
-#mytb.MP_grid(50,50)
-#mytb.calculate_DOS(20)
-#mytb.save('')
 
-#mytb.load(sys.argv[1], 'gamma')
-#mytb.load(sys.argv[1], 'W')
-#mytb.load(sys.argv[1], singlePoint+'Pf')
-#mytb.load(sys.argv[1], 'all')
+#if rank ==0:
+    #plot = mytb.plotter_bands(color_ ='C0')
+    
+exit()
 
-#d0_z  = np.absolute(mytb.conf_.dist_matrix[2].todense())
-#d0_y  = np.absolute(mytb.conf_.dist_matrix[1].todense())
-#d0_x  = np.absolute(mytb.conf_.dist_matrix[0].todense())
+mytb = TB()
+mytb.load('out_1.08_1AA')
+mytb.load_configuration('out_1.08_1AA', ver_='ali')
 
-#idx = np.all([d0_y < 0.1, d0_y > 0, d0_x < 0.1, d0_x > 0], axis=0)
-#maxx = np.max(d0_z[idx])
-#minn = np.min(d0_z[idx])
-#print('max, min', maxx, minn)
-##max, min 3.6217308 3.3916592999999997 #for 1fold
+sm = Symm(mytb)
+sm.build_map('C2z',['X','Y','Z'])
 
-#plt.hist(d0_z[idx])
-#plt.show()
-#exit()
+exit()
 
 
 if rank ==0:
@@ -74,17 +80,6 @@ if rank ==0:
             'font.size' : 20,
             'font.family' : 'Helvetica'}
     plt.rcParams.update(font)
-
-    # --- PLOT BZ ---
-    #fig, ax = plt.subplots(1,1)
-    #mytb.plot_BZ()
-    #plt.tight_layout()
-    ##if save_flag:
-        ##plt.savefig(mytb.folder_name+'BZ_'+mytb.save_name +'_all'+ ".png", dpi=300)
-    #else:
-        #plt.show()
-
-    # ---
 
     #fig = plt.figure(figsize=(10,4))
     #gs = GridSpec(1,2, width_ratios=[4,1], wspace=0.1)
@@ -107,15 +102,18 @@ if rank ==0:
     #plot = mytb.plotter(shift_tozero = -1.9318658113479614) # Unbuckled
     #plot = mytb.plotter(shift_tozero = -2.8900318, color_ ='C0') # 1fold d0 = 3.344 cutoff 4.01
     #plot = mytb.plotter(shift_tozero = -3.9582479578324783, color_ ='C0') # 1fold d0 = 3.3 cutoff 7.0
-    plot = mytb.plotter(  color_ ='C0') 
+    mytb.detect_flat_bands()
+    mytb.shift_2_zero('K1', np.array([0,1,2,3]))
+    plot = mytb.plotter_bands(color_ ='C0') 
     #plot = mytb.plotter( shift_tozero = 9.077795017749024, color_ ='C0') # 1fold cut 3.0, d0 =3.3
     #plot = mytb.plotter(color_ ='C0') # 1fold
     #plot = mytb.plotter(color_ ='C2') # 3fold
     
     #plot.set_ylim([-12,25])
     plot.set_ylim([-10,15])
-    plt.savefig(mytb.folder_name+'BandsDOS_'+mytb.save_name + ".png", dpi=300)
+    plt.savefig(mytb.folder_name+'Bands_'+mytb.save_name + ".png", dpi=300)
     #mytb.build_sym_operation(tol_=0.1)
+    plt.show()
     #mytb.embed_flatVec(singlePoint)
     #tol_ = 0.3
     #mytb.point_symmetry_check(singlePoint, 'C2x',  tol_=tol_ )
@@ -129,7 +127,6 @@ if rank ==0:
     #plot.set_ylim([-10,15])
     #plt.savefig(mytb.folder_name+'BandsDOS_'+mytb.save_name +'_all'+ ".png", dpi=300)
     
-    #plt.show()
 
 
     #=====================

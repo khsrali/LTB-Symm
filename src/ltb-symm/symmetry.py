@@ -1,29 +1,13 @@
-import time, os, sys
-from configuration import pwl
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 import numpy as np
 import scipy.sparse as sp
-#from scipy.sparse.linalg import eigsh
-from scipy.sparse.linalg import eigs
-from mpi4py import MPI
-from misc import get_brillouin_zone_2d, plot_BZ2d#, get_uc_patch2D
-import spglib
 from tqdm import tqdm
-from scipy.optimize import curve_fit
-from scipy.linalg import ishermitian
-import primme
 import warnings
-#from TightBinding import TB
 
 
 
 class Symm:
     def __init__(self, tb):
-        
-        self.comm = MPI.COMM_WORLD
-        self.rank = self.comm.Get_rank()
-        self.size = self.comm.Get_size()
         
         self.conf = tb.conf
         self.tb = tb
@@ -79,10 +63,13 @@ class Symm:
         self.symmorphicity = data['symmorphicity']
         
         self.Cmat = data['Cmat'].item()
-        #print(type(self.Cmat))
-        #print((self.Cmat))
+        
         self.new_orders = data['new_orders'].item()
-        self.new_bases =  data['new_bases'].item()
+        
+        try: 
+            self.new_bases =  data['new_bases'].item()
+        except KeyError:
+            pass
  
       
       

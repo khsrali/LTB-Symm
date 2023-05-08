@@ -1,20 +1,17 @@
 import time, os, sys
-from configuration import pwl
+from .configuration import Pwl
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
 import scipy.sparse as sp
-#from scipy.sparse.linalg import eigsh
 from scipy.sparse.linalg import eigs
 from mpi4py import MPI
-from misc import get_brillouin_zone_2d, plot_BZ2d#, get_uc_patch2D
-import spglib
 from tqdm import tqdm
-from scipy.optimize import curve_fit
 from scipy.linalg import ishermitian
 import primme
 import warnings
 
+from .misc import get_brillouin_zone_2d, plot_BZ2d#, get_uc_patch2D
 
 '''
 This code is using MPI
@@ -273,7 +270,7 @@ class TB:
         if self.rank == 0:  os.makedirs(self.folder_name, exist_ok=True)
         
         # Call on configuration.py
-        self.conf = pwl(self.folder_name, self.sparse_flag, self.dtypeR)
+        self.conf = Pwl(self.folder_name, self.sparse_flag, self.dtypeR)
         
         self.conf.read_coords(self.file_name)
 
@@ -610,7 +607,7 @@ class TB:
                 
                 self.print0('loading ', self.folder_name+ configuration)
                 conf_file = np.load(self.folder_name + configuration, allow_pickle=True)
-                self.conf = pwl(self.folder_name)
+                self.conf = Pwl(self.folder_name)
                 
                 self.dtypeR = self.conf.dtypeR = str(conf_file['dtypeR'])
                 self.dtypeC = 'c'+ self.dtypeR
@@ -1178,16 +1175,6 @@ class TB:
         
         self.dosEigns = self.engine_mpi(self.K_grid, n_eigns, solver)
 
-        #uniq_map = np.unique(self.K_mapping)
-        ##print('dfdfd=',uniq_map.shape)
-        ##print('dfdfd=',self.K_mapping.shape)
-        #ir_Eigns = self.engine_mpi(self.K_grid[uniq_map], n_eigns)
-        
-        #if self.rank == 0:
-            #self.dosEigns = np.zeros([self.nKgrid, n_eigns]) 
-            ## AS: on full grid (should actually store only needed once... more memory efficicient . 
-            #for ikk, kk in enumerate(uniq_map):
-                #self.dosEigns[self.K_mapping == kk] = ir_Eigns[ikk]
 
     
     def plotter_DOS(self, ax):
@@ -1352,40 +1339,3 @@ class TB:
         ax.set_ylabel(r'$k_y$ [$\AA^{-1}$]')
         return ax
         
-
-    def MP_grid(self, Na, Nb):
-        '''
-        written by Andrea, I don't know what it does
-        '''
-        if not hasattr(self, 'g1'):
-            self.MBZ()
-            
-        if Na%2 or Nb%2: print('It should be more efficient to use even divisions')
-        #iK = 0
-        #for ia in np.linspace(0,1,Na):
-        #    for ib in np.linspace(0,1,Nb):
-        #        self.K_grid[iK] = ia*self.g1+ib*self.g2
-        #        iK+=1
-        #self.nKgrid = self.K_grid.shape[0]
-        u_rec = np.array([self.g1, self.g2, [0,0,1]]).T
-        #print(u_rec)
-        lattice = np.linalg.inv(u_rec)
-        #print(lattice)
-        shift = np.array([0,0,0])
-        positions = np.array([[0,0,0]])
-        numbers = [1]
-        
-        cell = (lattice, positions, numbers)
-        sg = spglib.get_spacegroup(cell, symprec=1e-3)
-        mesh = [Na, Nb, 1]
-        print('Space group detected (spglib) %s' % str(sg))
-        self.K_mapping, grid = spglib.get_ir_reciprocal_mesh(mesh, cell, is_shift=shift)
-        #plt.scatter(grid[:,0], grid[:,1])
-        #plt.show()
-        self.K_grid = np.dot(u_rec, ((grid + shift/2) / mesh).T).T
-        #plt.scatter(self.K_grid[:,0], self.K_grid[:,1])
-        #plt.show()
-        self.nKgrid = self.K_grid.shape[0]
-        print('Created %i x %i K grid (nKgrid=%i)' % (Na, Nb, self.nKgrid))
-        print("Number of ir-kpoints: %d" % np.unique(self.K_mapping).shape[0] )
-        self.nKgrid_uniq = np.unique(self.K_mapping).shape[0]
