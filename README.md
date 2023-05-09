@@ -36,3 +36,11 @@ And possible outputs are:
 -   Ideal for 2D materials, e.g. graphene.
 -   Many routings are automated.
 -   The only open-source code that we know of which is able to investigate group symmetries in this way.
+
+## Install
+
+    pip install ltb-symm
+
+## Documentation
+
+Examples are provided at [https://ltb-symm.readthedocs.io/en/latest/](https://ltb-symm.readthedocs.io/en/latest/) 
