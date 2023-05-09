@@ -13,11 +13,12 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Overview" href="Overview.html" />
-    <link rel="prev" title="Examples" href="examples.html" /> 
+    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="prev" title="Welcome to LB-Symm’s documentation!" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,18 +43,9 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#what-is-tight-binding">What is Tight Binding</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#band-structure-a-glimps">Band structure, a glimps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#what-is-density-of-states">What is density of states</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#why-ltb-symm">Why LTB-Symm?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#what-is-symmetry-operations">What is Symmetry operations</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Tutorial.html">Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Install</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ltbsymm.html">LTB-Symm</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Citation.html">Citation</a></li>
 </ul>
@@ -83,41 +75,22 @@
              
   <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="what-is-tight-binding">
-<h2>What is Tight Binding<a class="headerlink" href="#what-is-tight-binding" title="Permalink to this headline">¶</a></h2>
-<p>blah blah</p>
-</div>
-<div class="section" id="band-structure-a-glimps">
-<h2>Band structure, a glimps<a class="headerlink" href="#band-structure-a-glimps" title="Permalink to this headline">¶</a></h2>
-<p>blah. Just a few lines</p>
-</div>
-<div class="section" id="what-is-density-of-states">
-<h2>What is density of states<a class="headerlink" href="#what-is-density-of-states" title="Permalink to this headline">¶</a></h2>
-<p>blah. Just a few lines</p>
-</div>
-<div class="section" id="why-ltb-symm">
-<h2>Why LTB-Symm?<a class="headerlink" href="#why-ltb-symm" title="Permalink to this headline">¶</a></h2>
-<p>things like:
-becase it is able to use an arbitrary range of neghbours,
-it is efficent for large sizes.
-easy to modify.
-User freindly.
-Portabaility.
-Naked input from relaxed structures out of LAMPPS, etc..
-Lack of a code able to do alll above in repositories.</p>
-</div>
-<div class="section" id="what-is-symmetry-operations">
-<h2>What is Symmetry operations<a class="headerlink" href="#what-is-symmetry-operations" title="Permalink to this headline">¶</a></h2>
-<p>blah</p>
-</div>
+<p>Tight binding is a model used to describe the behavior of electrons in a solid, particularly in metals and semiconductors. It is based on the idea that the electrons in a solid are tightly bound to the atoms, but can also move around and interact with neighboring atoms.</p>
+<p>This model model is particularly useful to study the electronic properties of large sized materials with a simple crystal structure, that could not be studied by DFT due to its expensive computation time.</p>
+<p>Solving a tight binding model, always narrows down to diagonalizing the Hamiltonian. Resulting in a eigenvalue and eigenvectors. The former produces band structure of the solid, and the later is studied for topological interest.</p>
+<p>The eigenvectors represent the probability amplitudes for the electrons to be found at each site in the crystal lattice.
+By studying topology of eigenvectors, we care how the electronic states of a crystal are distributed in momentum space.</p>
+<p>One apprach to study that, is to use systematic tools of group theory, and to analyse the symmetries of the crystal lattice and their impact on the electronic structure. Namely spatial and time-reversal symmetries.</p>
+<p>Most researchers in the field, prefer to have a framework that not only does the tight binding, but also leaves their hand open to implement and investigate more with symmetry properties of the eigenvectors.</p>
+<p><strong>LTB-Symm</strong> started as a handy tool for our own research, but now worth sharing with others!</p>
 </div>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="examples.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="Overview.html" class="btn btn-neutral float-right" title="Overview" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to LB-Symm’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

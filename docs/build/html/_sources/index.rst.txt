@@ -7,7 +7,7 @@ Welcome to LB-Symm's documentation!
 ===================================
 
 
-.. image:: logo_V_0.1.png
+.. image:: _images/logo_V_0.1.png
    :width: 1200
 
 .. note::
@@ -15,6 +15,7 @@ Welcome to LB-Symm's documentation!
    This project is under active development. Feel free to contact us directly for any question, we can give you advise if this code is suitable for your project. Email: `khsrali@gmail.com <khsrali@gmail.com>`_
    
 .. note::
+
    Possible collaboration with related packages are welcome!
 
 
@@ -25,15 +26,15 @@ Welcome to LB-Symm's documentation!
 .. toctree::
   
    Home <self>
-   examples
    Introduction
-   Overview
-   Tutorial
-   Usage
+   examples
+   Installation
    ltbsymm
    Citation
 
+..  Tutorial
 ..   
+   Overview
    modules
    Summary
    API reference <_autosummary/mytoolbox>

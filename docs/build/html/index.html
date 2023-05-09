@@ -13,10 +13,11 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Examples" href="examples.html" /> 
+    <link rel="next" title="Introduction" href="Introduction.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -41,11 +42,9 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Home</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Tutorial.html">Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Install</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ltbsymm.html">LTB-Symm</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Citation.html">Citation</a></li>
 </ul>
@@ -84,13 +83,14 @@
 <p class="admonition-title">Note</p>
 <p>Possible collaboration with related packages are welcome!</p>
 </div>
-<div class="section" id="what-is-ltb-symm">
-<h2>What is LTB-Symm?<a class="headerlink" href="#what-is-ltb-symm" title="Permalink to this headline">¶</a></h2>
-<p>LTB-Symm is a publicly available code for large scale tight-binding (TB) calculation of 2D materials. Moreover it is also able to check topological symmetries of wave functions.</p>
 </div>
-<div class="section" id="for-who-is-ltb-symm">
-<h2>For who is LTB-Symm?<a class="headerlink" href="#for-who-is-ltb-symm" title="Permalink to this headline">¶</a></h2>
-<p>LTB-Symm is an ideal choice for researchers looking for a ready-to-use, easy-to-modify, and MPI-implemented TB code for large scale structures. Up to 1 (0.1) Milions atoms for limited (vast) K-points, is easily managable.</p>
+<div class="section" id="ltb-symm">
+<h1>LTB-Symm<a class="headerlink" href="#ltb-symm" title="Permalink to this headline">¶</a></h1>
+<p>LTB-Symm is a publicly available code that does two things: <strong>large scale tight-binding</strong> (LTB) calculation of 2D materials, and checks <strong>topological symmetries</strong> (Symm) of their wave functions.</p>
+<div class="section" id="who-benefits">
+<h2>Who benefits<a class="headerlink" href="#who-benefits" title="Permalink to this headline">¶</a></h2>
+<p>LTB-Symm is an ideal choice for researchers looking for a ready-to-use, easy-to-modify, and MPI-implemented TB code for large scale 2D structures. Up to 1 (0.1) Milions atoms for limited (vast) K-points, is (easily) managable.</p>
+<p>Specially communities who deal with twisted bilayer/multilayer graphene.</p>
 <dl class="simple">
 <dt>All input needed are:</dt><dd><ol class="arabic simple">
 <li><p>Coordinate of atoms/orbitals, e.g. lammpstrj, XYZ</p></li>
@@ -106,61 +106,35 @@
 </dd>
 </dl>
 </div>
-<div class="section" id="why-ltb-symm">
-<h2>Why LTB-Symm?<a class="headerlink" href="#why-ltb-symm" title="Permalink to this headline">¶</a></h2>
-<dl>
-<dt>Because:</dt><dd><ul class="simple">
+<div class="section" id="bold-features">
+<h2>Bold features<a class="headerlink" href="#bold-features" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
 <li><p>MPI implemented, able to run on HPC clusters.</p></li>
 <li><p>Object Oriented, easy to modify for multi purpose.</p></li>
-<li><p>Efficient, only energy levels that are needed thanks to pre-developed implementtaions of <code class="docutils literal notranslate"><span class="pre">LANCZOS</span></code> algorithm.</p></li>
-<li><p>Ideal for 2D materials, e.g. graphene, MoS2</p></li>
-<li><dl class="simple">
-<dt>Many routings are automated. For instance no worries about:</dt><dd><ul>
-<li><p>Indices of atoms,</p></li>
-<li><p>Detecting neghibors withing a cutoff,</p></li>
-<li><p>Periodic boundary condition,</p></li>
-<li><p>Orientation of orbitals like local normal vercors</p></li>
+<li><p>Efficient, calculate only a few energy levels that are needed.</p></li>
+<li><p>Ideal for 2D materials, e.g. graphene.</p></li>
+<li><p>Many routings are automated.</p></li>
+<li><p>The only open-source code that we know of which is able to investigate group symmetries in this way.</p></li>
 </ul>
-</dd>
-</dl>
-</li>
-<li><p>Simply because there is no other open-source code that we know of.</p></li>
-</ul>
-<p>That is why we wrote this code!</p>
-</dd>
-</dl>
+</div></blockquote>
 <div class="toctree-wrapper compound">
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#calculating-band-structure">calculating band structure</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#investigating-symmetry-operations-and-wave-vectors-parity">Investigating symmetry operations and wave vectors parity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example1bands.html">Example 1: Band structure of TBG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example2symmetry.html">Example 2: Symmetry operations and wave vectors parity</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Introduction.html#what-is-tight-binding">What is Tight Binding</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Introduction.html#band-structure-a-glimps">Band structure, a glimps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Introduction.html#what-is-density-of-states">What is density of states</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Introduction.html#why-ltb-symm">Why LTB-Symm?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Introduction.html#what-is-symmetry-operations">What is Symmetry operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Install</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Installation.html#requirements">Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Installation.html#operating-system">Operating system</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Installation.html#through-pip">Through pip</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Installation.html#download-the-source-code">Download the source code</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Tutorial.html">Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Tutorial.html#blah">Blah</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Tutorial.html#example">Example</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Tutorial.html#how-to-run">How to run</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="Usage.html">Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Usage.html#download">Download</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Usage.html#installation-and-requirements">Installation and Requirements</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="Usage.html#operating-system">Operating system</a></li>
-<li class="toctree-l3"><a class="reference internal" href="Usage.html#through-pip">Through pip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="Usage.html#through-source-code">Through source code</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="Usage.html#how-to-run">How to run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Installation.html#how-to-run">How to run</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ltbsymm.html">LTB-Symm</a><ul>
@@ -187,7 +161,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="Introduction.html" class="btn btn-neutral float-right" title="Introduction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

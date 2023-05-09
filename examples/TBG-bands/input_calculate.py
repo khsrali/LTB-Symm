@@ -1,9 +1,5 @@
-import numpy as np
 import ltbsymm as ls
-from mpi4py import MPI
-
-comm = MPI.COMM_WORLD
-rank = comm.Get_rank()
+import numpy as np
 
 
 # Start a TB object and set/load configuration
@@ -26,7 +22,6 @@ def H_ij(v_ij, ez_i, ez_j, a0 = 1.42039011, d0 = 3.344, V0_sigam = +0.48, V0_pi 
             r0: float
                 Decay rate of the exponential
     """
-    #print(v_ij, ez_i, ez_j)
     dd = np.linalg.norm(v_ij)
     V_sigam = V0_sigam * np.exp(-(dd-d0) / r0 )
     V_pi    = V0_pi    * np.exp(-(dd-a0) / r0 )
@@ -48,4 +43,3 @@ mytb.calculate_bands(H_ij, n_eigns = 4, sigma=np.abs(-2.7-0.48)/2, solver='primm
 
 mytb.save(bands=True)
 
-MPI.Finalize()

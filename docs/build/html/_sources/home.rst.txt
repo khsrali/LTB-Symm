@@ -1,12 +1,15 @@
+LTB-Symm
+========
 
-What is LTB-Symm?
------------------
-LTB-Symm is a publicly available code for large scale tight-binding (TB) calculation of 2D materials. Moreover it is also able to check topological symmetries of wave functions.
+LTB-Symm is a publicly available code that does two things: **large scale tight-binding** (LTB) calculation of 2D materials, and checks **topological symmetries** (Symm) of their wave functions.
 
 
-For who is LTB-Symm?
---------------------
-LTB-Symm is an ideal choice for researchers looking for a ready-to-use, easy-to-modify, and MPI-implemented TB code for large scale structures. Up to 1 (0.1) Milions atoms for limited (vast) K-points, is easily managable.
+
+Who benefits
+-------------
+LTB-Symm is an ideal choice for researchers looking for a ready-to-use, easy-to-modify, and MPI-implemented TB code for large scale 2D structures. Up to 1 (0.1) Milions atoms for limited (vast) K-points, is (easily) managable.
+
+Specially communities who deal with twisted bilayer/multilayer graphene.
 
 All input needed are:
     #. Coordinate of atoms/orbitals, e.g. lammpstrj, XYZ  
@@ -20,18 +23,19 @@ And possible outputs are:
     * Shape of the wavefunction
 
     
-Why LTB-Symm?
+    
+Bold features
 -------------
-Because:
     * MPI implemented, able to run on HPC clusters.
     * Object Oriented, easy to modify for multi purpose.
-    * Efficient, only energy levels that are needed thanks to pre-developed implementtaions of ``LANCZOS`` algorithm.
-    * Ideal for 2D materials, e.g. graphene, MoS2
-    * Many routings are automated. For instance no worries about:
-        * Indices of atoms, 
+    * Efficient, calculate only a few energy levels that are needed.
+    * Ideal for 2D materials, e.g. graphene.
+    * Many routings are automated.
+    * The only open-source code that we know of which is able to investigate group symmetries in this way. 
+
+.. , thanks to pre-developed implementtaions of ``LANCZOS`` algorithm.
+.. For instance no worries about:
+        * Orientation of orbitals like local normal vercors
+        * Indexing neghiboring atoms, 
         * Detecting neghibors withing a cutoff,
         * Periodic boundary condition,
-        * Orientation of orbitals like local normal vercors
-    * Simply because there is no other open-source code that we know of. 
-    That is why we wrote this code!
- 

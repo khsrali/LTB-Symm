@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Example 1: Band structure of TBG &mdash; LB-Symm v.1.0.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Example 2: Symmetry operations and wave vectors parity" href="example2symmetry.html" />
+    <link rel="prev" title="Examples" href="examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            LB-Symm
+              <img src="_static/logo_sphinx.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Example 1: Band structure of TBG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example2symmetry.html">Example 2: Symmetry operations and wave vectors parity</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ltbsymm.html">LTB-Symm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Citation.html">Citation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">LB-Symm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Example 1: Band structure of TBG</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="example-1-band-structure-of-tbg">
+<h1>Example 1: Band structure of TBG<a class="headerlink" href="#example-1-band-structure-of-tbg" title="Permalink to this headline">¶</a></h1>
+<p>Here I demonstrate how to calculate band structre for magic angle twisted bilayer graphene.</p>
+<p>First import <code class="docutils literal notranslate"><span class="pre">ltbsymm</span></code> and other libraries if you need, in this case also <code class="docutils literal notranslate"><span class="pre">numpy</span></code>:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ltbsymm</span> <span class="k">as</span> <span class="nn">ls</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+<p>Initiate TightBinding module:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mytb</span> <span class="o">=</span> <span class="n">ls</span><span class="o">.</span><span class="n">TB</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Next, load the coordinate file. <code class="docutils literal notranslate"><span class="pre">1.08_1AA.data</span></code> is an example of relaxed structure using <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>. For detail of this relaxation you can contact its creator  <a class="reference external" href="mailto:jinwang&#37;&#52;&#48;sissa&#46;it">Dr<span>&#46;</span> Jin Wang</a> .</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mytb</span><span class="o">.</span><span class="n">set_configuration</span><span class="p">(</span><span class="s1">&#39;1.08_1AA.data&#39;</span><span class="p">,</span> <span class="n">r_cut</span> <span class="o">=</span> <span class="mf">5.7</span><span class="p">,</span> <span class="n">local_normal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>r_cut</strong> used to detect neighbors within a circular range around each individual cites.
+<strong>local_normal=True</strong> clarifies whether to calculate the local normal vector, pointing out from surface. This option is practical in case your structure is not flat, and out of plain deformations affects how orbitals interacts, Slatter-Koster. Phys. Rev., 94:1498–1524, 1954.</p>
+<p>Depending on size of your system, you may want to save this initial configuration! This will help you to save time for next runs with the same data file and setting.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mytb</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">configuration</span> <span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The heart of any band structure calculation is the Hamiltonian. Hopefully in LTB-Symm your hand are completely free! Define your Hamiltonian as you like, using features that are already developed.
+In the case of (twisted-bilayer-graphene)TBG we definde the Hamiltonian as:</p>
+<div class="math notranslate nohighlight">
+\[H_{ij}= V_{pp\sigma} \left( (\frac{\textbf{d}_{ij} \cdot \hat{n_i} }{ \mid\textbf{d}_{ij}\mid  })^2 + (\frac{\textbf{d}_{ij} \cdot \hat{n_i} }{ \mid\textbf{d}_{ij}\mid  })^2 \right)/2  +  V_{pp\pi}  \left( 1-( (\frac{\textbf{d}_{ij} \cdot \hat{n_j} }{ \mid\textbf{d}_{ij}\mid  })^2 + (\frac{\textbf{d}_{ij} \cdot \hat{n_j} }{ \mid\textbf{d}_{ij}\mid  })^2 )/2 \right)\]</div>
+<p>Where <span class="math notranslate nohighlight">\(V_{pp\sigma}\)</span> and <span class="math notranslate nohighlight">\(V_{pp\pi}\)</span> are defined</p>
+<div class="math notranslate nohighlight">
+\[V_{pp\sigma} = V_{pp\sigma}^0 \; \exp{\left(-\frac{ \mid\textbf{d}_{ij}\mid -d_0}{r_0}\right)}, \;\;\; V_{pp\pi} = V_{pp\pi}^0 \; \exp{\left(-\frac{ \mid\textbf{d}_{ij}\mid -a_0}{r_0}\right)}\]</div>
+<p>This Hamiltonian translate into the following Python function:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define Hamiltonian and fix the parameters of the Hamiltonian that are the same for all pairs</span>
+<span class="k">def</span> <span class="nf">H_ij</span><span class="p">(</span><span class="n">v_ij</span><span class="p">,</span> <span class="n">ez_i</span><span class="p">,</span> <span class="n">ez_j</span><span class="p">,</span> <span class="n">a0</span> <span class="o">=</span> <span class="mf">1.42039011</span><span class="p">,</span> <span class="n">d0</span> <span class="o">=</span> <span class="mf">3.344</span><span class="p">,</span> <span class="n">V0_sigam</span> <span class="o">=</span> <span class="o">+</span><span class="mf">0.48</span><span class="p">,</span> <span class="n">V0_pi</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.7</span><span class="p">,</span> <span class="n">r0</span> <span class="o">=</span> <span class="mf">0.184</span><span class="o">*</span> <span class="mf">1.42039011</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            d0: float</span>
+<span class="sd">                Distance between two layers. Notice d0 &lt;= than minimum interlayer distance, otherwise you are exponentially increasing interaction!</span>
+<span class="sd">            a0: float</span>
+<span class="sd">                Equilibrium distance between two neghibouring cites.</span>
+<span class="sd">            V0_sigam: float</span>
+<span class="sd">                Slater-Koster parameters</span>
+<span class="sd">            V0_pi: float</span>
+<span class="sd">                Slater-Koster parameters</span>
+<span class="sd">            r0: float</span>
+<span class="sd">                Decay rate of the exponential</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">dd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v_ij</span><span class="p">)</span>
+    <span class="n">V_sigam</span> <span class="o">=</span> <span class="n">V0_sigam</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">dd</span><span class="o">-</span><span class="n">d0</span><span class="p">)</span> <span class="o">/</span> <span class="n">r0</span> <span class="p">)</span>
+    <span class="n">V_pi</span>    <span class="o">=</span> <span class="n">V0_pi</span>    <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">dd</span><span class="o">-</span><span class="n">a0</span><span class="p">)</span> <span class="o">/</span> <span class="n">r0</span> <span class="p">)</span>
+
+    <span class="n">tilt_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v_ij</span><span class="p">,</span> <span class="n">ez_i</span><span class="p">)</span><span class="o">/</span> <span class="n">dd</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">tilt_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v_ij</span><span class="p">,</span> <span class="n">ez_j</span><span class="p">)</span><span class="o">/</span> <span class="n">dd</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">t_ij</span> <span class="o">=</span>  <span class="n">V_sigam</span> <span class="o">*</span> <span class="p">(</span><span class="n">tilt_1</span><span class="o">+</span><span class="n">tilt_2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="n">V_pi</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span> <span class="p">(</span><span class="n">tilt_1</span> <span class="o">+</span> <span class="n">tilt_2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">t_ij</span>
+</pre></div>
+</div>
+<p>Now that the Hamiltonian is defined, it is time to define reciprocal space.
+In the simple case of TBG, LTB-Symm is able to detect mini brillouin zone (MBZ) automatically.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define MBZ and set K-points</span>
+<span class="n">mytb</span><span class="o">.</span><span class="n">MBZ</span><span class="p">()</span>
+<span class="n">mytb</span><span class="o">.</span><span class="n">set_Kpoints</span><span class="p">([</span><span class="s1">&#39;K1&#39;</span><span class="p">,</span><span class="s1">&#39;Gamma&#39;</span><span class="p">,</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;K2&#39;</span><span class="p">]</span> <span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We may set a path <code class="xref py py-func docutils literal notranslate"><span class="pre">set_Kpoints()</span></code> with N=32 K-points.</p>
+<p>Now everything is basically set, electronic bands are ready to calculate</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># For twisted bilayer graphene sigma=np.abs(V0_pi-V0_sigam)/2 . An approximate value that flat bands are located</span>
+<span class="n">mytb</span><span class="o">.</span><span class="n">calculate_bands</span><span class="p">(</span><span class="n">H_ij</span><span class="p">,</span> <span class="n">n_eigns</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="o">-</span><span class="mf">2.7</span><span class="o">-</span><span class="mf">0.48</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;primme&#39;</span><span class="p">,</span> <span class="n">return_eigenvectors</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It is always a good idea to save the calculation!</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mytb</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">bands</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You could run this code in parallel, on as many cores. For example on 4 node, this calculation should take only around 200 seconds</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>mpirun<span class="w"> </span>-n<span class="w"> </span><span class="m">4</span><span class="w"> </span>python<span class="w"> </span>input_calculate.py
+</pre></div>
+</div>
+<p>Congratulation! now bands are calculated it is time for fun!</p>
+<p>Before plotting, let us see if there are any flatbands</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Detect if there are any flatbands</span>
+<span class="n">mytb</span><span class="o">.</span><span class="n">detect_flat_bands</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Then you realize there are 4 flat bands, but are not centered around zero. The reason for that is the approximate value of <strong>sigma</strong> that is used in <code class="xref py py-func docutils literal notranslate"><span class="pre">mytb.calculate_bands()</span></code> . This can be fixed simply by recentering flat bands around a given K-point:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set Fermi level by shifting E=0 to the avergage energies of flat bands at point e.g. &#39;K1&#39;</span>
+<span class="n">mytb</span><span class="o">.</span><span class="n">shift_2_zero</span><span class="p">(</span><span class="s1">&#39;K1&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>Finally, you can plot and save the band structure.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plot bands and modify figure as you like</span>
+<span class="n">plot</span> <span class="o">=</span> <span class="n">mytb</span><span class="o">.</span><span class="n">plotter_bands</span><span class="p">(</span><span class="n">color_</span> <span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">)</span>
+<span class="n">plot</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span><span class="mi">15</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;out_1.08_1AA/&#39;</span><span class="o">+</span><span class="s1">&#39;Bands_&#39;</span><span class="o">+</span> <span class="s2">&quot;.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/Bands_N32.png"><img alt="_images/Bands_N32.png" src="_images/Bands_N32.png" style="width: 400px;" /></a>
+<p>For denser a calculation we could set N=1000 in <code class="xref py py-func docutils literal notranslate"><span class="pre">set_Kpoints()</span></code> . That would certainly takes more than 200 seconds :), but it looks nicer:</p>
+<a class="reference internal image-reference" href="_images/Bands_N1000.png"><img alt="_images/Bands_N1000.png" src="_images/Bands_N1000.png" style="width: 400px;" /></a>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Alternatively you could close the seassion and load preveoiusly calculate bands:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mytb</span> <span class="o">=</span> <span class="n">ls</span><span class="o">.</span><span class="n">TB</span><span class="p">()</span>
+<span class="n">mytb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;out_1.08_1AA&#39;</span><span class="p">,</span> <span class="n">bands</span><span class="o">=</span><span class="s1">&#39;bands_.npz&#39;</span><span class="p">,</span> <span class="n">configuration</span><span class="o">=</span><span class="s1">&#39;configuration_.npz&#39;</span><span class="p">)</span>
+<span class="n">plot</span> <span class="o">=</span> <span class="n">mytb</span><span class="o">.</span><span class="n">plotter_bands</span><span class="p">(</span><span class="n">color_</span> <span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>In case of using <cite>mpirun</cite>, it is better to assign only one core for plotting functions:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">ltbsymm</span> <span class="k">as</span> <span class="nn">ls</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
+
+<span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
+<span class="n">rank</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">mytb</span> <span class="o">=</span> <span class="n">ls</span><span class="o">.</span><span class="n">TB</span><span class="p">()</span>
+    <span class="n">mytb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;out_1.08_1AA&#39;</span><span class="p">,</span> <span class="n">bands</span><span class="o">=</span><span class="s1">&#39;bands_.npz&#39;</span><span class="p">,</span> <span class="n">configuration</span><span class="o">=</span><span class="s1">&#39;configuration_.npz&#39;</span><span class="p">)</span>
+    <span class="n">plot</span> <span class="o">=</span> <span class="n">mytb</span><span class="o">.</span><span class="n">plotter_bands</span><span class="p">(</span><span class="n">color_</span> <span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">MPI</span><span class="o">.</span><span class="n">Finalize</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="examples.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="example2symmetry.html" class="btn btn-neutral float-right" title="Example 2: Symmetry operations and wave vectors parity" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright GNU under General Public License v3.0.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

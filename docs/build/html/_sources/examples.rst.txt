@@ -1,14 +1,11 @@
+.. .. bibliograpy:: my_references.bib
+
 Examples
 ========
 
-calculating band structure
---------------------------
+.. toctree::
+  
+   example1bands
+   example2symmetry
 
-Here we show how to calculate band structre for magic angle twisted bilayer graphene.
 
-
-
-Investigating symmetry operations and wave vectors parity
----------------------------------------------------------
-
-.. include:: input_symmetries.rst

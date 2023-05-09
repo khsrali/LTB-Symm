@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Usage &mdash; LB-Symm v.1.0.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>Install &mdash; LB-Symm v.1.0.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
@@ -13,11 +13,12 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="LTB-Symm" href="ltbsymm.html" />
-    <link rel="prev" title="Tutorial" href="Tutorial.html" /> 
+    <link rel="prev" title="Example 2: Symmetry operations and wave vectors parity" href="example2symmetry.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,16 +43,13 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Tutorial.html">Tutorial</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#download">Download</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#installation-and-requirements">Installation and Requirements</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Install</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#operating-system">Operating system</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#through-pip">Through pip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#through-source-code">Through source code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#download-the-source-code">Download the source code</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#how-to-run">How to run</a></li>
@@ -75,7 +73,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Usage</li>
+      <li class="breadcrumb-item active">Install</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -84,23 +82,15 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="usage">
-<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="download">
-<h2>Download<a class="headerlink" href="#download" title="Permalink to this headline">¶</a></h2>
-<p>LTB-Symm is publicly available at GitHub <code class="docutils literal notranslate"><span class="pre">GNU</span> <span class="pre">under</span> <span class="pre">General</span> <span class="pre">Public</span> <span class="pre">License</span> <span class="pre">v3.0</span></code> :
-<a class="reference external" href="https://github.com/khsrali/LTB-Symm">https://github.com/khsrali/LTB-Symm</a>
-. For any question and problem, please don’t hesitate to <a class="reference external" href="mailto:khsrali&#37;&#52;&#48;gmail&#46;com">contact</a> us.</p>
-<p>If your use of LTB-Symm leads to an academic publication, please acknowledge that fact by citing the our paper:
-<em>Bending Stiffness Collapse, Buckling, Topological Bands of Freestanding Twisted Bilayer Graphene</em>, J. Wang, A. Khosravi, A. Silva, et. al 2023</p>
-</div>
-<div class="section" id="installation-and-requirements">
-<h2>Installation and Requirements<a class="headerlink" href="#installation-and-requirements" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="install">
+<h1>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <p>LTB-Symm iw written in Python. We suggest you to install or update to the latest available version, at least Python 3.6. is required.</p>
 <div class="section" id="operating-system">
 <h3>Operating system<a class="headerlink" href="#operating-system" title="Permalink to this headline">¶</a></h3>
 <p>LTB-Symm has been developed and tested on both <strong>Linux</strong> and <strong>MacOS</strong>.
-In both of these operating systems, installation process is basically be similar. Although in <strong>MacOS</strong> there is an extra pre-step, that is only to make sure you have <code class="docutils literal notranslate"><span class="pre">pip</span></code> installed. You can make sure of that by typing command below in your terminal:</p>
+In both of these operating systems, installation process is basically be similar. Although in <strong>MacOS</strong> there is an extra pre-step, and that is only to make sure you have <code class="docutils literal notranslate"><span class="pre">pip</span></code> installed. You can make sure of that by typing command below in your terminal:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">% </span>python<span class="w"> </span>-m<span class="w"> </span>ensurepip<span class="w"> </span>or<span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>ensurepip
 </pre></div>
 </div>
@@ -113,25 +103,21 @@ In both of these operating systems, installation process is basically be similar
 </div>
 <div class="section" id="through-pip">
 <h3>Through pip<a class="headerlink" href="#through-pip" title="Permalink to this headline">¶</a></h3>
-<p>Use this option if you do not need to highly modify source code.
-In this case you simply run:</p>
+<p>You can simply install through:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>ltb-symm
 </pre></div>
 </div>
-</div>
-<div class="section" id="through-source-code">
-<h3>Through source code<a class="headerlink" href="#through-source-code" title="Permalink to this headline">¶</a></h3>
-<p>This option is suitable if you would like to customize the source code for your needs. For this purpose simply download and run like an usual python script.</p>
-<p>However make sure you have all dependencies correctly installed. That includes;
-The usual one that probebly you already have,</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>numpy<span class="w"> </span>scipy<span class="w"> </span>matplotlib<span class="w"> </span>mpi4py<span class="w"> </span>tqdm<span class="w"> </span>spglib<span class="w"> </span>primme
-</pre></div>
-</div>
-<p>and some others that necessarily to function properly:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>mpi4py<span class="w"> </span>tqdm<span class="w"> </span>spglib<span class="w"> </span>primme
+<p>Please make sure all dependencies correctly installed. That includes;</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>numpy scipy matplotlib mpi4py tqdm spglib primme
 </pre></div>
 </div>
 <p>Note you need a working MPI implementation for <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> to succesfully function.</p>
+</div>
+<div class="section" id="download-the-source-code">
+<h3>Download the source code<a class="headerlink" href="#download-the-source-code" title="Permalink to this headline">¶</a></h3>
+<p>LTB-Symm is publicly available at GitHub under <code class="docutils literal notranslate"><span class="pre">GNU</span> <span class="pre">General</span> <span class="pre">Public</span> <span class="pre">License</span> <span class="pre">v3.0</span></code> :
+<a class="reference external" href="https://github.com/khsrali/LTB-Symm">https://github.com/khsrali/LTB-Symm</a></p>
+<p>For doubt and question, feel free to directly contact us. Email: <a class="reference external" href="mailto:khsrali&#37;&#52;&#48;gmail&#46;com">khsrali<span>&#64;</span>gmail<span>&#46;</span>com</a></p>
 </div>
 </div>
 <div class="section" id="how-to-run">
@@ -141,6 +127,10 @@ The usual one that probebly you already have,</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python<span class="w"> </span>input.py
 </pre></div>
 </div>
+<p>Or alternatively if you want to use <code class="docutils literal notranslate"><span class="pre">MPI</span></code> feature, for instance on a HPC with 32 core each node:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>mpirun<span class="w"> </span>--map-by<span class="w"> </span>ppr:32:node<span class="w"> </span>python<span class="w"> </span>input.py
+</pre></div>
+</div>
 </div>
 </div>
 
@@ -148,7 +138,7 @@ The usual one that probebly you already have,</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="Tutorial.html" class="btn btn-neutral float-left" title="Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="example2symmetry.html" class="btn btn-neutral float-left" title="Example 2: Symmetry operations and wave vectors parity" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="ltbsymm.html" class="btn btn-neutral float-right" title="LTB-Symm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

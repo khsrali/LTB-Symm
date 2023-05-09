@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Example 2: Symmetry operations and wave vectors parity &mdash; LB-Symm v.1.0.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Install" href="Installation.html" />
+    <link rel="prev" title="Example 1: Band structure of TBG" href="example1bands.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            LB-Symm
+              <img src="_static/logo_sphinx.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="example1bands.html">Example 1: Band structure of TBG</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Example 2: Symmetry operations and wave vectors parity</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ltbsymm.html">LTB-Symm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Citation.html">Citation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">LB-Symm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Example 2: Symmetry operations and wave vectors parity</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="example-2-symmetry-operations-and-wave-vectors-parity">
+<h1>Example 2: Symmetry operations and wave vectors parity<a class="headerlink" href="#example-2-symmetry-operations-and-wave-vectors-parity" title="Permalink to this headline">¶</a></h1>
+<p>In this example I show how to investigate parities of wave vectors, for any symmetry operations at a any given point of Brillouin zone.
+Such tool could be usefull to understand topological properties of band structure.
+As an example, here, we consider two unitcells of twisted bilayer graphene at magic angle 1.08 degrees.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This project is under active development. <code class="docutils literal notranslate"><span class="pre">symmetry</span></code> module is fully developed for rectangular lattice. For rhombic, mimicing the spirit, implementation is in progress.</p>
+</div>
+<p>First let’s calculate eigen vectors at high symmetry points:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">ltbsymm</span> <span class="k">as</span> <span class="nn">ls</span>
+<span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
+
+<span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
+<span class="n">rank</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span>
+
+
+<span class="c1"># Start a TB object and set/load configuration</span>
+<span class="n">mytb</span> <span class="o">=</span> <span class="n">ls</span><span class="o">.</span><span class="n">TB</span><span class="p">()</span>
+<span class="n">mytb</span><span class="o">.</span><span class="n">set_configuration</span><span class="p">(</span><span class="s1">&#39;1.08_2AA.data&#39;</span><span class="p">,</span> <span class="n">r_cut</span> <span class="o">=</span> <span class="mf">5.7</span><span class="p">,</span> <span class="n">local_normal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nl_method</span><span class="o">=</span><span class="s1">&#39;RS&#39;</span><span class="p">)</span>
+<span class="n">mytb</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">configuration</span> <span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Define Hamiltonian and fix the parameters of the Hamiltonian that are the same for all pairs</span>
+<span class="k">def</span> <span class="nf">H_ij</span><span class="p">(</span><span class="n">v_ij</span><span class="p">,</span> <span class="n">ez_i</span><span class="p">,</span> <span class="n">ez_j</span><span class="p">,</span> <span class="n">a0</span> <span class="o">=</span> <span class="mf">1.42039011</span><span class="p">,</span> <span class="n">d0</span> <span class="o">=</span> <span class="mf">3.344</span><span class="p">,</span> <span class="n">V0_sigam</span> <span class="o">=</span> <span class="o">+</span><span class="mf">0.48</span><span class="p">,</span> <span class="n">V0_pi</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.7</span><span class="p">,</span> <span class="n">r0</span> <span class="o">=</span> <span class="mf">0.184</span><span class="o">*</span> <span class="mf">1.42039011</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            d0: float</span>
+<span class="sd">                Distance between two layers. Notice d0 &lt;= than minimum interlayer distance, otherwise you are exponentially increasing interaction!</span>
+<span class="sd">            a0: float</span>
+<span class="sd">                Equilibrium distance between two neghibouring cites.</span>
+<span class="sd">            V0_sigam: float</span>
+<span class="sd">                Slater-Koster parameters</span>
+<span class="sd">            V0_pi: float</span>
+<span class="sd">                Slater-Koster parameters</span>
+<span class="sd">            r0: float</span>
+<span class="sd">                Decay rate of the exponential</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#print(v_ij, ez_i, ez_j)</span>
+    <span class="n">dd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v_ij</span><span class="p">)</span>
+    <span class="n">V_sigam</span> <span class="o">=</span> <span class="n">V0_sigam</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">dd</span><span class="o">-</span><span class="n">d0</span><span class="p">)</span> <span class="o">/</span> <span class="n">r0</span> <span class="p">)</span>
+    <span class="n">V_pi</span>    <span class="o">=</span> <span class="n">V0_pi</span>    <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">dd</span><span class="o">-</span><span class="n">a0</span><span class="p">)</span> <span class="o">/</span> <span class="n">r0</span> <span class="p">)</span>
+
+    <span class="n">tilt_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v_ij</span><span class="p">,</span> <span class="n">ez_i</span><span class="p">)</span><span class="o">/</span> <span class="n">dd</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">tilt_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v_ij</span><span class="p">,</span> <span class="n">ez_j</span><span class="p">)</span><span class="o">/</span> <span class="n">dd</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">t_ij</span> <span class="o">=</span>  <span class="n">V_sigam</span> <span class="o">*</span> <span class="p">(</span><span class="n">tilt_1</span><span class="o">+</span><span class="n">tilt_2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="n">V_pi</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span> <span class="p">(</span><span class="n">tilt_1</span> <span class="o">+</span> <span class="n">tilt_2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">t_ij</span>
+
+
+
+<span class="c1"># Define MBZ and set K-points</span>
+<span class="n">mytb</span><span class="o">.</span><span class="n">MBZ</span><span class="p">()</span>
+<span class="n">mytb</span><span class="o">.</span><span class="n">set_Kpoints</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span><span class="s1">&#39;Gamma&#39;</span><span class="p">,</span><span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;W&#39;</span><span class="p">],</span> <span class="n">N</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">saveH</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<span class="c1"># For twisted bilayer graphene sigma=np.abs(V0_pi-V0_sigam)/2 . An approximate value that flat bands are located</span>
+<span class="n">mytb</span><span class="o">.</span><span class="n">calculate_bands</span><span class="p">(</span><span class="n">H_ij</span><span class="p">,</span> <span class="n">n_eigns</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="o">-</span><span class="mf">2.7</span><span class="o">-</span><span class="mf">0.48</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;primme&#39;</span><span class="p">,</span> <span class="n">tbt</span><span class="o">=</span><span class="s1">&#39;type2&#39;</span><span class="p">,</span> <span class="n">return_eigenvectors</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+
+<span class="n">mytb</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">bands</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">MPI</span><span class="o">.</span><span class="n">Finalize</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>A similar code to above is explained in details for a similar case (Example 1).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Once a band structure calculation is done, you can always save using</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mytb</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">bands</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">configuration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is very conveninet, becasue for later application or symmetry analysis you can just simply load, for example:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mytb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;out_1.08_2AA&#39;</span><span class="p">,</span> <span class="n">bands</span><span class="o">=</span><span class="s1">&#39;bands_.npz&#39;</span><span class="p">,</span> <span class="n">configuration</span><span class="o">=</span><span class="s1">&#39;configuration_.npz&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>There is no need to re-calculate from begining</p>
+</div>
+<p>Having wave vectors, we can proceed to create a Symm object.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+
+    <span class="n">sm</span> <span class="o">=</span> <span class="n">ls</span><span class="o">.</span><span class="n">Symm</span><span class="p">(</span><span class="n">mytb</span><span class="p">)</span>
+
+    <span class="n">sm</span><span class="o">.</span><span class="n">build_map</span><span class="p">(</span><span class="s1">&#39;C2z&#39;</span><span class="p">,[</span><span class="s1">&#39;-X+1/2*Rx&#39;</span><span class="p">,</span><span class="s1">&#39;-Y+1/2*Ry&#39;</span><span class="p">,</span><span class="s1">&#39;Z&#39;</span><span class="p">],</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">plot</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">sm</span><span class="o">.</span><span class="n">build_map</span><span class="p">(</span><span class="s1">&#39;C2y&#39;</span><span class="p">,[</span><span class="s1">&#39;-X&#39;</span><span class="p">,</span><span class="s1">&#39;Y+1/2*Ry&#39;</span><span class="p">,</span><span class="s1">&#39;-Z&#39;</span><span class="p">],</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+    <span class="n">sm</span><span class="o">.</span><span class="n">build_map</span><span class="p">(</span><span class="s1">&#39;C2x&#39;</span><span class="p">,[</span><span class="s1">&#39;X+1/2*Rx&#39;</span><span class="p">,</span><span class="s1">&#39;-Y&#39;</span><span class="p">,</span><span class="s1">&#39;-Z&#39;</span><span class="p">],</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You may define all symmetry operations of the space group. <code class="xref py py-func docutils literal notranslate"><span class="pre">build_map()</span></code> simply verifies if the suggest symmetry exists, and if so, and how does it map with existing orbital indices.</p>
+<p>The second argument of <code class="xref py py-func docutils literal notranslate"><span class="pre">build_map()</span></code> should be arithmetics math operations in following order: [operation for X, operation for Y, operation for Z]</p>
+<p>The Arithmetics symbols and namespaces below are acceptable:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>+, -, /, *, X, Y, Z, Rx, Ry, and Rz.
+</pre></div>
+</div>
+<p>Rx, Ry, and Rz are lattice vectors along their directions. X, Y, and Z are coordinates of cites inside unitcell.</p>
+<p>In our example 1/2*Rx does a non-symmorphic translation.</p>
+<p>Next, build (N*N) matrices for the verified symmetry operations.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make the operation Matrix at a given point of receiprocal space</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">make_Cmat</span><span class="p">(</span><span class="s1">&#39;C2x&#39;</span><span class="p">,</span> <span class="s1">&#39;Gamma&#39;</span><span class="p">)</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">make_Cmat</span><span class="p">(</span><span class="s1">&#39;C2y&#39;</span><span class="p">,</span> <span class="s1">&#39;Gamma&#39;</span><span class="p">)</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">make_Cmat</span><span class="p">(</span><span class="s1">&#39;C2z&#39;</span><span class="p">,</span> <span class="s1">&#39;Gamma&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And we can simply check if they make sense, by taking the square</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check operations square and how they commute</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">check_square</span><span class="p">(</span><span class="s1">&#39;C2x&#39;</span><span class="p">,</span> <span class="s1">&#39;Gamma&#39;</span><span class="p">,</span> <span class="n">ftol</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">check_square</span><span class="p">(</span><span class="s1">&#39;C2y&#39;</span><span class="p">,</span> <span class="s1">&#39;Gamma&#39;</span><span class="p">,</span> <span class="n">ftol</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">check_square</span><span class="p">(</span><span class="s1">&#39;C2z&#39;</span><span class="p">,</span> <span class="s1">&#39;Gamma&#39;</span><span class="p">,</span> <span class="n">ftol</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We may need to know how the symmetry operations commute, or anti-commute !</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sm</span><span class="o">.</span><span class="n">check_commute</span><span class="p">(</span><span class="s1">&#39;C2x&#39;</span><span class="p">,</span> <span class="s1">&#39;C2y&#39;</span><span class="p">,</span> <span class="s1">&#39;Gamma&#39;</span><span class="p">,</span> <span class="n">ftol</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">check_commute</span><span class="p">(</span><span class="s1">&#39;C2z&#39;</span><span class="p">,</span> <span class="s1">&#39;C2y&#39;</span><span class="p">,</span> <span class="s1">&#39;Gamma&#39;</span><span class="p">,</span> <span class="n">ftol</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">check_commute</span><span class="p">(</span><span class="s1">&#39;C2x&#39;</span><span class="p">,</span> <span class="s1">&#39;C2z&#39;</span><span class="p">,</span> <span class="s1">&#39;Gamma&#39;</span><span class="p">,</span> <span class="n">ftol</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this case results like this:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">C2x @ C2x = identity at Gamma</span>
+<span class="go">C2y @ C2y = identity at Gamma</span>
+<span class="go">C2z @ C2z = identity at Gamma</span>
+<span class="go">[C2x, C2y] do commute at Gamma</span>
+<span class="go">[C2z, C2y] do commute at Gamma</span>
+<span class="go">[C2x, C2z] do commute at Gamma</span>
+</pre></div>
+</div>
+<p>We are inerested in symmetry operation on wave vectors associated with flat bands, therefore first we detect if there are any flat bands:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mytb</span><span class="o">.</span><span class="n">detect_flat_bands</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Results in:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">8  flat bands detected</span>
+</pre></div>
+</div>
+<p>Now we can check if (flat) wave vectors respect the symmetries that we defined:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sm</span><span class="o">.</span><span class="n">vector_diag</span><span class="p">(</span><span class="s1">&#39;Gamma&#39;</span><span class="p">,</span> <span class="n">name1</span><span class="o">=</span><span class="s1">&#39;C2x&#39;</span><span class="p">,</span> <span class="n">subSize</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">skip_diag</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Which results in:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">======================</span>
+<span class="go">** vector_diag at Gamma **</span>
+<span class="go">======================</span>
+
+
+<span class="go">Subspace 1.0 with energies:</span>
+<span class="go">0.005687156959874318</span>
+<span class="go">0.005675662193339814</span>
+<span class="go">-0.0003969110247522556</span>
+<span class="go">-0.00041691802874066486</span>
+<span class="go">&lt;psi| C2z |psi&gt;</span>
+<span class="go">[[-0.8+0.j , 0.5-0.2j,-0. +0.j ,-0. +0.j ],</span>
+<span class="go"> [ 0.5+0.2j, 0.8+0.j , 0. -0.j ,-0. +0.j ],</span>
+<span class="go"> [-0. -0.j , 0. +0.j , 0.9+0.j , 0.3-0.j ],</span>
+<span class="go"> [-0. -0.j ,-0. -0.j , 0.3+0.j ,-0.9+0.j ]]</span>
+<span class="go">&lt;psi| C2y |psi&gt;</span>
+<span class="go">[[ 1.+0.j, 0.-0.j, 0.-0.j,-0.+0.j],</span>
+<span class="go"> [ 0.+0.j, 1.+0.j, 0.-0.j,-0.+0.j],</span>
+<span class="go"> [ 0.+0.j, 0.+0.j,-1.+0.j,-0.+0.j],</span>
+<span class="go"> [-0.-0.j,-0.-0.j,-0.-0.j,-1.+0.j]]</span>
+<span class="go">&lt;psi| C2x |psi&gt;</span>
+<span class="go">[[-0.8+0.j , 0.5-0.2j, 0. -0.j ,-0. +0.j ],</span>
+<span class="go"> [ 0.5+0.2j, 0.8+0.j , 0. -0.j , 0. -0.j ],</span>
+<span class="go"> [ 0. +0.j , 0. +0.j ,-0.9+0.j ,-0.3+0.j ],</span>
+<span class="go"> [-0. -0.j , 0. +0.j ,-0.3-0.j , 0.9+0.j ]]</span>
+
+<span class="go">Subspace 2.0 with energies:</span>
+<span class="go">-0.003000614802293855</span>
+<span class="go">-0.003018659755200659</span>
+<span class="go">-0.0035570670624436307</span>
+<span class="go">-0.0036018736346046243</span>
+<span class="go">&lt;psi| C2z |psi&gt;</span>
+<span class="go">[[-0.5+0.j ,-0.1+0.9j, 0. +0.j ,-0. +0.j ],</span>
+<span class="go"> [-0.1-0.9j, 0.5+0.j ,-0. +0.j ,-0. -0.j ],</span>
+<span class="go"> [ 0. -0.j ,-0. -0.j , 0.5+0.j ,-0.3+0.8j],</span>
+<span class="go"> [-0. -0.j ,-0. +0.j ,-0.3-0.8j,-0.5-0.j ]]</span>
+<span class="go">&lt;psi| C2y |psi&gt;</span>
+<span class="go">[[-1.+0.j, 0.-0.j, 0.+0.j,-0.+0.j],</span>
+<span class="go"> [ 0.+0.j,-1.+0.j,-0.+0.j,-0.-0.j],</span>
+<span class="go"> [ 0.-0.j,-0.-0.j, 1.+0.j,-0.+0.j],</span>
+<span class="go"> [-0.-0.j,-0.+0.j,-0.-0.j, 1.+0.j]]</span>
+<span class="go">&lt;psi| C2x |psi&gt;</span>
+<span class="go">[[ 0.5+0.j , 0.1-0.9j,-0. -0.j ,-0. +0.j ],</span>
+<span class="go"> [ 0.1+0.9j,-0.5+0.j , 0. -0.j ,-0. -0.j ],</span>
+<span class="go"> [-0. +0.j , 0. +0.j , 0.5+0.j ,-0.3+0.8j],</span>
+<span class="go"> [-0. -0.j ,-0. +0.j ,-0.3-0.8j,-0.5+0.j ]]</span>
+</pre></div>
+</div>
+<p>As you can see there are offdiagonal terms in <code class="code docutils literal notranslate"><span class="pre">C2x</span></code> and <code class="code docutils literal notranslate"><span class="pre">C2z</span></code> space, which don’t allow us to read parities.
+Unfortunately, there is no guarantee that <code class="docutils literal notranslate"><span class="pre">LANCZOS</span></code> wave vectors would be diagonal in this subspace.</p>
+<p>Hopefully, we can try to see if they are diagonalizable</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Diagonalize wave vectors respect to a given symmetry</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">vector_diag</span><span class="p">(</span><span class="s1">&#39;Gamma&#39;</span><span class="p">,</span> <span class="n">name1</span><span class="o">=</span><span class="s1">&#39;C2z&#39;</span><span class="p">,</span> <span class="n">name2</span><span class="o">=</span> <span class="s1">&#39;C2x&#39;</span><span class="p">,</span> <span class="n">subSize</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">skip_diag</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">======================</span>
+<span class="go">** vector_diag at Gamma **</span>
+<span class="go">======================</span>
+
+
+<span class="go">Diagonalizing flat bands subspace 1.0 with energies:</span>
+<span class="go">0.005687156959874318</span>
+<span class="go">0.005675662193339814</span>
+<span class="go">-0.0003969110247522556</span>
+<span class="go">-0.00041691802874066486</span>
+<span class="go">&lt;psi| C2z |psi&gt;</span>
+<span class="go">[[-0.8+0.j , 0.5-0.2j,-0. +0.j ,-0. +0.j ],</span>
+<span class="go"> [ 0.5+0.2j, 0.8+0.j , 0. -0.j ,-0. +0.j ],</span>
+<span class="go"> [-0. -0.j , 0. +0.j , 0.9+0.j , 0.3-0.j ],</span>
+<span class="go"> [-0. -0.j ,-0. -0.j , 0.3+0.j ,-0.9+0.j ]]</span>
+<span class="go">Diagonalizing respect to  C2z</span>
+<span class="go">eignvalues:  [-1.-0.j, 1.+0.j, 1.+0.j,-1.-0.j]</span>
+
+<span class="go"> Second off-diagonalizing respect to  C2x</span>
+<span class="go">upper_block is</span>
+<span class="go"> [[-1.+0.j, 0.-0.j],</span>
+<span class="go"> [ 0.+0.j, 1.+0.j]]</span>
+<span class="go">eignvalues:  [-1.-0.j, 1.-0.j]</span>
+<span class="go">lower_block is</span>
+<span class="go"> [[-1.+0.j,-0.+0.j],</span>
+<span class="go"> [-0.-0.j, 1.+0.j]]</span>
+<span class="go">eignvalues:  [-1.-0.j, 1.+0.j]</span>
+
+<span class="go">Final check if diagonalized respect to  C2z</span>
+<span class="go">[[-1.+0.j,-0.+0.j, 0.+0.j, 0.-0.j],</span>
+<span class="go"> [-0.-0.j, 1.+0.j,-0.+0.j, 0.+0.j],</span>
+<span class="go"> [ 0.-0.j,-0.-0.j, 1.+0.j,-0.+0.j],</span>
+<span class="go"> [ 0.+0.j,-0.-0.j,-0.-0.j,-1.+0.j]]</span>
+
+<span class="go">Final check if diagonalized respect to  C2y</span>
+<span class="go">[[ 1.+0.j, 0.-0.j, 0.-0.j,-0.+0.j],</span>
+<span class="go"> [ 0.+0.j, 1.+0.j,-0.+0.j, 0.-0.j],</span>
+<span class="go"> [ 0.+0.j,-0.-0.j,-1.+0.j,-0.+0.j],</span>
+<span class="go"> [-0.-0.j, 0.+0.j,-0.-0.j,-1.+0.j]]</span>
+
+<span class="go">Final check if diagonalized respect to  C2x</span>
+<span class="go">[[-1.+0.j, 0.+0.j,-0.+0.j, 0.-0.j],</span>
+<span class="go"> [ 0.+0.j, 1.+0.j,-0.+0.j, 0.-0.j],</span>
+<span class="go"> [-0.-0.j,-0.-0.j,-1.+0.j, 0.+0.j],</span>
+<span class="go"> [ 0.+0.j, 0.+0.j, 0.+0.j, 1.+0.j]]</span>
+
+<span class="go">Diagonalizing flat bands subspace 2.0 with energies:</span>
+<span class="go">-0.003000614802293855</span>
+<span class="go">-0.003018659755200659</span>
+<span class="go">-0.0035570670624436307</span>
+<span class="go">-0.0036018736346046243</span>
+<span class="go">&lt;psi| C2z |psi&gt;</span>
+<span class="go">[[-0.5+0.j ,-0.1+0.9j, 0. +0.j ,-0. +0.j ],</span>
+<span class="go"> [-0.1-0.9j, 0.5+0.j ,-0. +0.j ,-0. -0.j ],</span>
+<span class="go"> [ 0. -0.j ,-0. -0.j , 0.5+0.j ,-0.3+0.8j],</span>
+<span class="go"> [-0. -0.j ,-0. +0.j ,-0.3-0.8j,-0.5-0.j ]]</span>
+<span class="go">Diagonalizing respect to  C2z</span>
+<span class="go">eignvalues:  [-1.-0.j,-1.+0.j, 1.+0.j, 1.-0.j]</span>
+
+<span class="go"> Second off-diagonalizing respect to  C2x</span>
+<span class="go">upper_block is</span>
+<span class="go"> [[ 1.+0.j,-0.+0.j],</span>
+<span class="go"> [-0.-0.j,-1.+0.j]]</span>
+<span class="go">eignvalues:  [ 1.+0.j,-1.+0.j]</span>
+<span class="go">lower_block is</span>
+<span class="go"> [[-1.+0.j,-0.+0.j],</span>
+<span class="go"> [-0.-0.j, 1.+0.j]]</span>
+<span class="go">eignvalues:  [-1.+0.j, 1.-0.j]</span>
+
+<span class="go">Final check if diagonalized respect to  C2z</span>
+<span class="go">[[-1.+0.j, 0.-0.j, 0.-0.j,-0.-0.j],</span>
+<span class="go"> [ 0.+0.j,-1.+0.j,-0.+0.j,-0.+0.j],</span>
+<span class="go"> [ 0.+0.j, 0.-0.j, 1.+0.j, 0.-0.j],</span>
+<span class="go"> [-0.+0.j,-0.-0.j, 0.+0.j, 1.+0.j]]</span>
+
+<span class="go">Final check if diagonalized respect to  C2y</span>
+<span class="go">[[-1.+0.j, 0.-0.j,-0.+0.j, 0.+0.j],</span>
+<span class="go"> [ 0.+0.j, 1.+0.j, 0.-0.j, 0.+0.j],</span>
+<span class="go"> [-0.-0.j, 0.+0.j,-1.+0.j,-0.+0.j],</span>
+<span class="go"> [ 0.-0.j, 0.-0.j,-0.-0.j, 1.+0.j]]</span>
+
+<span class="go">Final check if diagonalized respect to  C2x</span>
+<span class="go">[[ 1.+0.j, 0.-0.j,-0.+0.j, 0.+0.j],</span>
+<span class="go"> [ 0.+0.j,-1.+0.j,-0.+0.j, 0.+0.j],</span>
+<span class="go"> [-0.-0.j,-0.-0.j,-1.+0.j, 0.+0.j],</span>
+<span class="go"> [ 0.-0.j, 0.-0.j, 0.-0.j, 1.+0.j]]</span>
+</pre></div>
+</div>
+<p>Now we see, they are successfully diagonalized. So we can read the parities.</p>
+<p>Below are two wave vectors with imaginary-odd parity under non-symmorphic <cite>C2x</cite> symmetry. Somethis also cool to see :)</p>
+<img alt="_images/7_a.png" src="_images/7_a.png" />
+<img alt="_images/6_c.png" src="_images/6_c.png" />
+<p>Visualized by <code class="docutils literal notranslate"><span class="pre">OVITO</span></code>.
+Colors, and size reperesenting their phase and amplitude as a function of (x,y). Unitcell has been repeated 4 times for visibility.</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="example1bands.html" class="btn btn-neutral float-left" title="Example 1: Band structure of TBG" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Installation.html" class="btn btn-neutral float-right" title="Install" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright GNU under General Public License v3.0.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
