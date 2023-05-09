@@ -30,10 +30,9 @@ And possible outputs are:
 
 ## Bold features
 
-> -   MPI implemented, able to run on HPC clusters.
-> -   Object Oriented, easy to modify for multi purpose.
-> -   Efficient, calculate only a few energy levels that are needed.
-> -   Ideal for 2D materials, e.g. graphene.
-> -   Many routings are automated.
-> -   The only open-source code that we know of which is able to
->     investigate group symmetries in this way.
+-   MPI implemented, able to run on HPC clusters.
+-   Object Oriented, easy to modify for multi purpose.
+-   Efficient, calculate only a few energy levels that are needed.
+-   Ideal for 2D materials, e.g. graphene.
+-   Many routings are automated.
+-   The only open-source code that we know of which is able to investigate group symmetries in this way.
