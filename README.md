@@ -1,5 +1,5 @@
 <img
-src="https://github.com/khsrali/LTB-Symm/blob/develop/docs/source/logo_V_0.1.png?raw=true"
+src="https://github.com/khsrali/LTB-Symm/blob/develop/docs/source/_images/logo_V_0.1.png?raw=true"
 width="1200" alt="image" />
 
 
