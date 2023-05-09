@@ -7,5 +7,5 @@ from .misc import get_brillouin_zone_2d, plot_BZ2d
 
 
 
-__version__ = "1.0"
+__version__ = "1.0.0"
 __author__ = 'Ali Khosravi'
