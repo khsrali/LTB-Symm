@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='LTB-Symm',
-    version='1.0.2',
+    version='1.0.0',
     license='GNU under General Public License v3.0',
     author="Ali Khosravi, Andrea Silva",
     author_email='khsrali@gmail.com',
@@ -10,9 +10,9 @@ setup(
     long_description=open('README.md').read(),
     packages=find_packages('src'),
     package_dir={'': 'src'},
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     url='https://github.com/khsrali/LTB-Symm',
-    keywords=' tight binding and wave function symmetries',
+    keywords=' tight-binding wave-function symmetries',
     classifiers=[
     'Development Status :: 4 - Beta',
     'Intended Audience :: Science/Research',

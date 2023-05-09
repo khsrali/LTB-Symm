@@ -1,4 +1,4 @@
-import time, os, sys
+import time, os
 from .configuration import Pwl
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -27,59 +27,6 @@ class TB:
         
         self.print0('TB object created')
                 
-
-
-    #def build_up(self, H_style, local_normal=True, load_neigh=True, nl_method='RS'):
-        #"""
-            #Build up some basic requirments: normal vectors, neighborlist, and the bone matrix
-
-            #Args:
-                #H_style: function
-                    #Pairwise Hamiltonina formula in use. It should get the following arguments in order:
-                    #H_ij(vector_ij, normal_i, normal_j)
-                    #Where vector_ij is the vector connecing cite "i" to cite "j". normal_i (normal_j) is the normal vector to surface at cite "i" ("j"). 
-                #local_normal: boolean
-                    #To use local_normal to orbital direction(True) or consider them all aligned in Z direction (False). (default = True)
-                #load_neigh: boolean
-                    #load a previously created neighborlist. (default = True)
-                #nl_method: str
-                    #which method to use for creating neighborlist. 'RS' -reduce space implementation- (faster but might have a bug in rhombic cells, to be investigated) or 'RC' -replicating coordinates- (slower, bug free) (default = 'RS')
-            #Returns: None
-        #"""
-        
-        ## check input args
-  
-        ## build neigh_list
-        #version_ = self.file_name[:-5] +'_cutoff_' + str(self.r_cut)
-        
-        #if self.rank == 0:
-            ## calculate neigh_list
-            #self.conf.neigh_list(cutoff=self.r_cut,  nl_method=nl_method, load_ = load_neigh, version_ = version_ )
-            
-            ## send to other cups
-            #signal_ = True
-            #for ii in range(1,self.size):
-                #req = self.comm.isend(signal_, dest=ii, tag=11)
-                #req.wait()
-        #else:
-            #req = self.comm.irecv(source=0, tag=11)
-            #signal_ = req.wait() 
-            #assert signal_ is True
-            #self.conf.neigh_list(cutoff=self.r_cut, load_ = True, version_ = version_ ) 
-            
-        
-        ## build distance matrix
-        #self.conf.vector_connection_matrix()
-        ## build normal vectors
-        #if local_normal:
-            #self.conf.normal_vec()
-
-        ## build the 'Bone' matrix
-        #if self.sparse_flag:
-            #self.T0 = self.T_bone_sp(H_style, flag_ez=local_normal)
-        #else:
-            #self.T0 = self.T_bone(H_style)
-        #print('T_bone is constructed..')
 
     def print0(self, *argv):
         if self.rank == 0:
@@ -298,19 +245,6 @@ class TB:
         # build normal vectors
         self.conf.normal_vec(local_normal)
 
-
-
-
-
-    #def set_parameters(self, d0, a0, V0_sigam, V0_pi, cut_fac):
-        #"""
-            #Set some parameters of the twisted-bilayer-model
-            #Args:
-                
-            #Returns: None
-        #"""
-        ## approximate guess for sigma value in the eignvalue problem.
-        #self.sigma_shift = np.abs(V0_pi-V0_sigam)/2
 
 
     def MBZ(self, g1=0, g2=0):
@@ -554,47 +488,6 @@ class TB:
                 np.savez(self.folder_name + '3Dband_'+version, gsize_v=self.gsize_v, gsize_h=self.gsize_h, flat_grid=self.flat_grid, eigns_3D=self.eigns_3D, eigns_3D_reduced=self.eigns_3D_reduced)
 
 
-
-    #def load_configuration(self, folder_, ver_ =''):
-        #data_name_conf = None
-        #self.folder_name = folder_  if folder_[-1] == '/' else folder_+'/'
-        #self.conf = pwl(self.folder_name)
-        #for lis in os.listdir(self.folder_name):
-            #if lis[-(4+len(ver_)):] == ver_+'.npz':
-                #try:
-                    ##if float(lis[:-4].split('_cut_')[1].split('_')[0]) == self.cut_fac:
-                        ##if  float(lis[:-4].split('_d0_')[1].split('_')[0]) == self.d0:
-                            ##print(lis)
-                            #if 'configuration_' in lis:
-                                #data_name_conf = lis
-                                
-                #except IndexError: pass
-        #if data_name_conf != None:
-                #self.print0('loading conf_')
-                #conf_file = np.load(self.folder_name + data_name_conf, allow_pickle=True)
-                
-                #self.dtypeR = self.conf.dtypeR = str(conf_file['dtypeR'])
-                #self.dtypeC = 'c'+ self.dtypeR
-                #self.r_cut = self.conf.cutoff = conf_file['cutoff']
-                #self.conf.nl = conf_file['nl']
-                #self.sparse_flag = self.conf.sparse_flag = conf_file['sparse_flag']
-                #self.conf.xy = conf_file['xy']
-                #self.conf.xlen = conf_file['xlen']
-                #self.conf.ylen = conf_file['ylen']
-                #self.conf.zlen = conf_file['zlen']
-                #self.conf.tot_number = conf_file['tot_number']
-                #self.conf.xlen_half = conf_file['xlen_half']
-                #self.conf.ylen_half = conf_file['ylen_half']
-                #self.conf.coords = conf_file['coords']
-                #self.conf.atomsAllinfo = conf_file['atomsAllinfo']
-                #self.conf.fnn_id = conf_file['fnn_id']
-                #self.conf.B_flag = conf_file['B_flag']
-                #self.conf.dist_matrix = conf_file['dist_matrix']
-                #self.conf.fnn_vec = conf_file['fnn_vec']
-                #self.conf.ez = conf_file['ez']
-                #self.conf.local_flag = conf_file['local_flag']
-                #self.conf.file_name = self.file_name = conf_file['file_name']
-   
    
        
     def load(self, folder_='', bands=None, HH=None, dos=None, _3Dbands=None, configuration = None):
@@ -685,106 +578,6 @@ class TB:
                 return H
 
     
-    #def load(self, folder_='', ver_ ='', HH=''):
-        #if self.rank ==0 :
-            #data_name_dos = None
-            #data_name_band = None
-            #data_name_3Dbands = None
-            #data_name_HH = None
-            #data_name_operation = None
-            ##data_name_phaseSigns = None
-            ##data_name_conf = None
-            #self.folder_name = folder_  if folder_[-1] == '/' else folder_+'/'
-            #for lis in os.listdir(self.folder_name):
-                #if lis[-(4+len(ver_)):] == ver_+'.npz':
-                    #try:
-                        #if 'bands_' in lis:
-                            #data_name_band = lis
-                        #elif 'DOS_' in lis:
-                            #data_name_dos = lis
-                        #elif '3Dband_' in lis:
-                            #data_name_3Dbands = lis
-                        #elif 'HH_' in lis and HH in lis and HH != '':
-                            #data_name_HH = lis
-                        ##elif 'Operations_' in lis:
-                            ##data_name_operation = lis
-                        ##elif 'phaseSigns_' in lis:
-                            ##data_name_phaseSigns = lis
-                        ##elif 'conf_' in lis:
-                            ##data_name_conf = lis
-                                    
-                    #except IndexError: pass
-                    
-            #if data_name_band != None :
-            
-                #print('loading band structure: '+data_name_band)
-        
-                #self.save_name =  data_name_band.split('bands_')[1].split('.npz')[0]
-
-                #data_band = np.load(self.folder_name + data_name_band, allow_pickle=True)
-                #self.bandsEigns = data_band['bandsEigns']
-                #self.K_path = data_band['K_path']
-                #self.K_path_Highsymm_indices = data_band['K_path_Highsymm_indices']
-                #self.K_label = data_band['K_label']
-                #self.K_path_discrete = data_band['K_path_discrete']
-                #self.g1 = data_band['g1']
-                #self.g2 = data_band['g2']
-                #self.file_name = data_band['file_name']
-
-                
-                #try:
-                    #self.bandsVector = data_band['bandsVector']
-                    #if self.bandsVector.all() == None:
-                        #self.bandsVector_exist = False
-                    #else:
-                        #self.bandsVector_exist = True
-                #except KeyError: 
-                    #self.bandsVector = None
-                    #self.bandsVector_exist = False
-                ##try:
-                    ##self.conf.sub_type = data_band['sub_type']
-                ##except KeyError: 
-                    ##self.conf.sub_type = None
-                                
-            #else:
-                #raise FileNotFoundError('cannot find bands file')
-            
-            #if data_name_HH != None:# and load_H:
-                #print('loading HH')
-                ##self.H = np.load(self.folder_name + data_name_HH, allow_pickle=True)['H']
-                #self.H = sp.lil_matrix(sp.load_npz(self.folder_name + data_name_HH))
-                ##print(type(self.H), self.H.shape)
-                ##exit()
-            ##if data_name_operation != None:
-                ##print('loading Operations_')
-                ##self.new_orders = np.load(self.folder_name + data_name_operation, allow_pickle=True)['new_orders']
-            
-            ##if data_name_phaseSigns != None:
-                ##print('loading phaseSigns_')
-                ##self.phaseSigns = np.load(self.folder_name + data_name_phaseSigns, allow_pickle=True)['phaseSigns']
-            
-            #if data_name_dos != None :
-                #print('loading density of states')
-                #data_dos = np.load(self.folder_name + data_name_dos)
-                #self.dosEigns = data_dos['dosEigns']
-                #self.K_grid = data_dos['K_grid']
-                #self.K_mapping = data_dos['K_mapping']
-            #else:
-                #print('DOS file not found, so not loaded.')
-                #self.dosEigns = None
-            
-            #if data_name_3Dbands != None :
-                #print('loading 3D bands')
-                #data_3Dbands = np.load(self.folder_name + data_name_3Dbands)
-                #self.gsize_v = data_3Dbands['gsize_v']
-                #self.gsize_h = data_3Dbands['gsize_h']
-                #self.flat_grid = data_3Dbands['flat_grid']
-                #self.eigns_3D = data_3Dbands['eigns_3D']
-                #self.eigns_3D_reduced = data_3Dbands['eigns_3D_reduced']
-                
-            #else:
-                #print('3D bands file not found, so not loaded.')
-
 
 
     def T_bone_sp(self, H_style):
@@ -1009,20 +802,7 @@ class TB:
             print("shifting to zero by {0}".format(shift_tozero))
             
             self.bandsEigns -= shift_tozero
-            # I am not sure why below is useful:
-            ##resort flatbands after shift
-            #for k_ in range(self.bandsEigns.shape[0]):
-                #eigs_now = self.bandsEigns[k_, :N_flat] - shift_tozero
-                
-                #arg_sort = np.argsort(eigs_now )
-                #arg_sort = np.flip(arg_sort)
-                ##self.bandsEigns[k_, :N_flat] = eigs_now[arg_sort]
-                #self.bandsEigns[k_, :N_flat] = self.bandsEigns[k_, arg_sort]
-                ##print('sorted', eigs_now[arg_sort])
-                ##print('sorted', self.bandsEigns[k_, :N_flat])
-                #if self.bandsVector_exist == True:
-                    #self.bandsVector[k_, :, :N_flat] = self.bandsVector[k_, :, arg_sort].T
-                    #print('Vectors re-sorted after shift_2_zero..')
+
         
 
     def plotter_bands(self, ax=None, color_='black',  y_shift=0):
