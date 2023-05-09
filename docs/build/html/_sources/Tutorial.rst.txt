@@ -4,7 +4,9 @@ Tutorial
 
 Blah
 --------
-fgj
+
+Notice in the case of non-symmorphic groups, Cmat is only implemented for C2 symmetries.
+
 
 Example
 ------------

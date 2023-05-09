@@ -7,12 +7,17 @@ import warnings
 
 
 class Symm:
+    
+    """
+        Defines an object usefull to investigate and diagonalize symmetry operation
+    """
+    
     def __init__(self, tb):
         
         self.conf = tb.conf
         self.tb = tb
         self.new_orders = {}
-        self.symmKey = []
+        self.symmKey = np.array([], dtype=str)
         self.Cmat = {}
         self.new_bases = {}
         
@@ -101,7 +106,7 @@ class Symm:
                     show the coordinates in case of success. plot=False (default)
                     in case of failure plot is always True
         """
-        self.symmKey.append(name)
+        self.symmKey = np.append(self.symmKey, name)
         
         txt_ = ''
         if any([('Rx' in op or 'Ry' in op or 'Rz' in op ) for op in operation]):
@@ -386,7 +391,11 @@ class Symm:
         for ii in range(0, flat_range, subSize):
             S = np.zeros((subSize,subSize), dtype=self.tb.dtypeC)
             
-            print('\nDiagonalizing flat bands subspace '+ str(ii/4+1) +' with energies:')
+            if not skip_diag:
+                print('\nDiagonalizing flat bands subspace '+ str(ii/4+1) +' with energies:')
+            else:
+                print('\nSubspace '+ str(ii/4+1) +' with energies:')
+                
             for jj in range(subSize):
                 #old_vecs[ii+jj] =    (wave_info[jj+ii, :, 3] + 1j*wave_info[jj+ii, :, 4])#*phase_1
                 old_vecs[ii+jj] =  self.tb.bandsVector[id_, :, jj+ii]
@@ -402,12 +411,12 @@ class Symm:
 
                     S[fl_i, fl_f] =  element[0,0]
             
-            #np.set_printoptions(suppress=True)
-            print('<psi| '+name1+' |psi>')
-            print(np.array2string(S, separator=",", precision=1, suppress_small=True))
-            
             
             if not skip_diag:
+                
+                print('<psi| '+name1+' |psi>')
+                print(np.array2string(S, separator=",", precision=1, suppress_small=True))
+            
                 print('Diagonalizing respect to ',name1)
                 w, v = np.linalg.eig(S)
                 #print('eignvalues: ',w, '\n')
@@ -416,56 +425,61 @@ class Symm:
                 for kk in range(subSize):
                     for qq in range(subSize):
                         new_bases[ii+kk] += old_vecs[ii+qq]*v[qq, kk]
+                
+                
+                if name2 != None:
+                    #simultaneous diagonalization
+                    #continue
+                    sdot = np.zeros((subSize,subSize), dtype=self.tb.dtypeC)
+                    print('\n Second off-diagonalizing respect to ', name2)
+                    for sei in range(subSize):
+                        for sef in range(subSize):
+                            element = (sp.lil_matrix(np.conjugate(new_bases[ii+sei])) @ self.Cmat[k_label][name2]  @  sp.lil_matrix.transpose(sp.lil_matrix(new_bases[ii+sef]),copy=True))
+                            assert element.get_shape() == (1,1)
+                            sdot[sei, sef] = element[0,0]
+                    #####
+                    #print('redigonalize\n', sdot)
+                    #w, v = np.linalg.eig(sdot)
+                    #print('eignvalues: ',w)
+                    #for kk in range(subSize):
+                        #for qq in range(subSize):
+                            #very_new_bases[ii+kk] += new_bases[ii+qq]*v[qq, kk]
+                    
+                    #####
+                    upper_block = sdot[:2, :2]
+                    w, v = np.linalg.eig(upper_block)
+                    
+                    print('upper_block is\n', np.array2string(upper_block, separator=",", precision=1, suppress_small=True))
+                    print('eignvalues: ', np.array2string(w, separator=",", precision=1, suppress_small=True))
+                    for kk in range(2):
+                        for qq in range(2):
+                            very_new_bases[ii+kk] += new_bases[ii+qq]*v[qq, kk]
+                    ###
+                    lower_block = sdot[2:, 2:]
+                    w, v = np.linalg.eig(lower_block)
+                    
+                    print('lower_block is\n', np.array2string(lower_block, separator=",", precision=1, suppress_small=True))
+                    print('eignvalues: ', np.array2string(w, separator=",", precision=1, suppress_small=True))
+                    for kk in range(2):
+                        for qq in range(2):
+                            very_new_bases[ii+kk+2] += new_bases[ii+qq+2]*v[qq, kk]       
+                    
+                    
+                    new_bases[ii:ii+subSize] = very_new_bases[ii:ii+subSize]
+                
             else:
                 for kk in range(subSize):
                     new_bases[ii+kk] = old_vecs[ii+kk]
-                
-                
-                
-            if name2 != None:
-                #simultaneous diagonalization
-                #continue
-                sdot = np.zeros((subSize,subSize), dtype=self.tb.dtypeC)
-                print('\n Second off-diagonalizing respect to ', name2)
-                for sei in range(subSize):
-                    for sef in range(subSize):
-                        element = (sp.lil_matrix(np.conjugate(new_bases[ii+sei])) @ self.Cmat[k_label][name2]  @  sp.lil_matrix.transpose(sp.lil_matrix(new_bases[ii+sef]),copy=True))
-                        assert element.get_shape() == (1,1)
-                        sdot[sei, sef] = element[0,0]
-                #####
-                #print('redigonalize\n', sdot)
-                #w, v = np.linalg.eig(sdot)
-                #print('eignvalues: ',w)
-                #for kk in range(subSize):
-                    #for qq in range(subSize):
-                        #very_new_bases[ii+kk] += new_bases[ii+qq]*v[qq, kk]
-                
-                #####
-                upper_block = sdot[:2, :2]
-                w, v = np.linalg.eig(upper_block)
-                
-                print('upper_block is\n', np.array2string(upper_block, separator=",", precision=1, suppress_small=True))
-                print('eignvalues: ', np.array2string(w, separator=",", precision=1, suppress_small=True))
-                for kk in range(2):
-                    for qq in range(2):
-                        very_new_bases[ii+kk] += new_bases[ii+qq]*v[qq, kk]
-                ###
-                lower_block = sdot[2:, 2:]
-                w, v = np.linalg.eig(lower_block)
-                
-                print('lower_block is\n', np.array2string(lower_block, separator=",", precision=1, suppress_small=True))
-                print('eignvalues: ', np.array2string(w, separator=",", precision=1, suppress_small=True))
-                for kk in range(2):
-                    for qq in range(2):
-                        very_new_bases[ii+kk+2] += new_bases[ii+qq+2]*v[qq, kk]       
-                
-                
-                new_bases[ii:ii+subSize] = very_new_bases[ii:ii+subSize]
                         
             ## Check if diagonal respect to all syymetries defined
             for se_al in self.symmKey:
                 sdot = np.zeros((subSize,subSize), dtype=self.tb.dtypeC)
-                print('\nFinal check if diagonalized respect to ', se_al)
+                
+                if not skip_diag:
+                    print('\nFinal check if diagonalized respect to ', se_al)
+                else:
+                    print('<psi| '+se_al+' |psi>')
+                
                 for sei in range(subSize):
                     for sef in range(subSize):
                             
@@ -474,7 +488,8 @@ class Symm:
                         sdot[sei, sef] = element[0,0]
                         
                 print(np.array2string(sdot, separator=",", precision=1, suppress_small=True))
-                    
+                   
+
         self.new_bases[k_label] = new_bases
         
     

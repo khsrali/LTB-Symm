@@ -4,5 +4,7 @@ LTB-Symm
 .. toctree::
    :maxdepth: 4
 
-   TightBinding
+   symmetry
+   tightbinding
    configuration
+

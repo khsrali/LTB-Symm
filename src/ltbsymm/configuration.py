@@ -15,7 +15,9 @@ class Pwl:
 
     def __init__(self, folder_name, sparse_flag=True, dtype=None):
         
-        # Define the namespace, useful in case of loading
+        """
+            Define the namespace, useful in case of loading
+        """
         self.dtypeR = dtype
         self.folder_name = folder_name
         self.sparse_flag = sparse_flag
@@ -44,6 +46,13 @@ class Pwl:
         
         
     def read_coords(self, file_name):
+        """
+            Read coordinates from files.
+            
+            Args:
+                file_name: str
+                    Correctly onlt LAMMPS format is accepted.
+        """
         
         self.file_name = file_name
         file_ = open(file_name)
@@ -92,7 +101,7 @@ class Pwl:
 
     def vector_connection_matrix(self, fnn_cutoff=1.55):
         """
-            Create geometrical vectros connecting each two neighbors
+            Create geometrical vectros connecting each two neighbors.
             Args:
                 fnn_cutoff: float 
                     Maximum cut off to detect first nearest neghbours (default =1.55)

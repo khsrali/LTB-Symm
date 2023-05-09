@@ -827,8 +827,9 @@ class TB:
                 #fig = plt.figure(figsize=(5, 10))
                 #plt.figure(figsize=(5, 10))
                 mpl.rcParams['pdf.fonttype'] = 42
-                fontsize_ =20
+                fontsize_ =16
                 plt.rcParams['font.family'] = 'Helvetica'
+                mpl.rcParams.update({'figure.autolayout': True})
 
             n_eigns = self.bandsEigns.shape[1]
             n_k_points = self.bandsEigns.shape[0]
@@ -873,11 +874,12 @@ class TB:
             ax.set_ylabel("E (meV)",fontsize=fontsize_)
             title_ = ''
             if hasattr(self, 'n_flat'):
-                ax.set_title(title_+ 'Total number of flat bands= '+str(self.n_flat))#,fontsize=fontsize_)
+                ax.set_title(title_+ 'Total number of flat bands= '+str(self.n_flat), fontsize=fontsize_)
             ax.grid(axis='y', c='gray',alpha=0.5)
             ax.grid(axis='x', c='gray',alpha=0.5)
-            plt.gcf().subplots_adjust(left=0.15)
-                        
+            plt.gcf().subplots_adjust(left=0.2)
+            #mpl.rcParams.update({'figure.autolayout': True})
+
             #fig.tight_layout()
             return  ax
 

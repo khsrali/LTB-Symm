@@ -23,22 +23,25 @@ Welcome to LB-Symm's documentation!
    
 
 .. toctree::
-
+  
    Home <self>
    examples
    Introduction
    Overview
    Tutorial
    Usage
-   TightBinding
-   configuration
+   ltbsymm
    Citation
+
+..   
+   modules
+   Summary
+   API reference <_autosummary/mytoolbox>
    
 .. .. toctree::
    :maxdepth: 3
    :caption: Contents:
 
-   modules
 
 
 Indices and tables

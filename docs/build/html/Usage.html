@@ -16,7 +16,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="TightBinding module" href="TightBinding.html" />
+    <link rel="next" title="LTB-Symm" href="ltbsymm.html" />
     <link rel="prev" title="Tutorial" href="Tutorial.html" /> 
 </head>
 
@@ -42,6 +42,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Tutorial.html">Tutorial</a></li>
@@ -56,8 +57,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#how-to-run">How to run</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="TightBinding.html">TightBinding module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="configuration.html">configuration module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ltbsymm.html">LTB-Symm</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Citation.html">Citation</a></li>
 </ul>
 
@@ -101,12 +101,12 @@
 <h3>Operating system<a class="headerlink" href="#operating-system" title="Permalink to this headline">¶</a></h3>
 <p>LTB-Symm has been developed and tested on both <strong>Linux</strong> and <strong>MacOS</strong>.
 In both of these operating systems, installation process is basically be similar. Although in <strong>MacOS</strong> there is an extra pre-step, that is only to make sure you have <code class="docutils literal notranslate"><span class="pre">pip</span></code> installed. You can make sure of that by typing command below in your terminal:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">%</span> python -m ensurepip or python3 -m ensurepip
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">% </span>python<span class="w"> </span>-m<span class="w"> </span>ensurepip<span class="w"> </span>or<span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>ensurepip
 </pre></div>
 </div>
 <p>In <strong>Windows</strong> in principle it should be possible to install the code, but we have not tested, yet. Again you can install <code class="docutils literal notranslate"><span class="pre">pip</span></code> by executing the following command in <code class="docutils literal notranslate"><span class="pre">cmd</span></code>:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;</span> curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-<span class="gp">&gt;</span> python get-pip.py
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">&gt; curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py</span>
+<span class="go">&gt; python get-pip.py</span>
 </pre></div>
 </div>
 <p>After having <code class="docutils literal notranslate"><span class="pre">pip</span></code> installed on your machine, install the package with one of the two following ways. Choose depending on your needs and preferences.</p>
@@ -115,7 +115,7 @@ In both of these operating systems, installation process is basically be similar
 <h3>Through pip<a class="headerlink" href="#through-pip" title="Permalink to this headline">¶</a></h3>
 <p>Use this option if you do not need to highly modify source code.
 In this case you simply run:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> pip install ltb-symm
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>ltb-symm
 </pre></div>
 </div>
 </div>
@@ -124,11 +124,11 @@ In this case you simply run:</p>
 <p>This option is suitable if you would like to customize the source code for your needs. For this purpose simply download and run like an usual python script.</p>
 <p>However make sure you have all dependencies correctly installed. That includes;
 The usual one that probebly you already have,</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> pip install numpy scipy matplotlib mpi4py tqdm spglib primme
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>numpy<span class="w"> </span>scipy<span class="w"> </span>matplotlib<span class="w"> </span>mpi4py<span class="w"> </span>tqdm<span class="w"> </span>spglib<span class="w"> </span>primme
 </pre></div>
 </div>
 <p>and some others that necessarily to function properly:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> pip install mpi4py tqdm spglib primme
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>mpi4py<span class="w"> </span>tqdm<span class="w"> </span>spglib<span class="w"> </span>primme
 </pre></div>
 </div>
 <p>Note you need a working MPI implementation for <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> to succesfully function.</p>
@@ -138,7 +138,7 @@ The usual one that probebly you already have,</p>
 <h2>How to run<a class="headerlink" href="#how-to-run" title="Permalink to this headline">¶</a></h2>
 <p>Simply write an <em>input</em> file and run using you python interpreter:</p>
 <p>For example:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$</span> python input.py
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python<span class="w"> </span>input.py
 </pre></div>
 </div>
 </div>
@@ -149,13 +149,13 @@ The usual one that probebly you already have,</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="Tutorial.html" class="btn btn-neutral float-left" title="Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="TightBinding.html" class="btn btn-neutral float-right" title="TightBinding module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="ltbsymm.html" class="btn btn-neutral float-right" title="LTB-Symm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Ali Khosravi, Andrea Silva.</p>
+    <p>&#169; Copyright GNU under General Public License v3.0.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
