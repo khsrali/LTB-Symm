@@ -33,6 +33,22 @@ class TB:
             print(*argv)
 
     def engine_mpi(self, T_M, kpoints, n_eigns, solver='primme', return_eigenvectors=False):
+        """Engine is mpi parallel, the beating heart calculation
+
+        :param T_M: sparse matrix to modulate the bone matrix
+        :type T_M: python function 
+        :param kpoints: K points
+        :type kpoints: numpy array in the shape of (n,3)
+        :param n_eigns: Number of eigen values desired out of Lanczos solver. 
+        :type n_eigns: int
+        :param solver: 'primme' (default) or 'scipy'. Caution!  scipy is faster sometimes but it has a error propagation bug in eigenvectros. sometimes returns nonorthonormal. Perhaps a bug in their's GramSchmidt. For symmetry checking 'primme' is recommended. While for band structure calculation 'scipy' is recommended.
+        :param solver: str, optional
+        :param return_eigenvectors: default to True
+        :type return_eigenvectors: boolean, optional
+        
+        :return: Eigns, and Eignvecs
+        :rtype: numpy array
+        """
         """
             Engine is mpi parallel! 
             Soon to be a private method.

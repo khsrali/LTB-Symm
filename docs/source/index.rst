@@ -3,6 +3,25 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+
+.. raw:: html
+
+   <meta name="google-site-verification" content="HrCRMRpgWAkYt_dcm84kL7Ms86rxhfxCZS2AOuTwv2E" />
+   
+.. .. raw:: html
+
+   <!-- Google tag (gtag.js) -->
+   <script async src="https://www.googletagmanager.com/gtag/js?id=G-HR351N4Q75"></script>
+   <script>
+   window.dataLayer = window.dataLayer || [];
+   function gtag(){dataLayer.push(arguments);}
+   gtag('js', new Date());
+
+   gtag('config', 'G-HR351N4Q75');
+   </script>
+   
+
+
 Welcome to LB-Symm's documentation!
 ===================================
 

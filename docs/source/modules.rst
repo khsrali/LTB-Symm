@@ -1,10 +1,7 @@
-LTB-Symm
-========
+ltbsymm
+=======
 
 .. toctree::
    :maxdepth: 4
 
-   symmetry
-   tightbinding
-   configuration
-
+   ltbsymm
