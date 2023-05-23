@@ -43,4 +43,4 @@ And possible outputs are:
 
 ## Documentation
 
-Examples are provided at [https://ltb-symm.readthedocs.io/en/latest/](https://ltb-symm.readthedocs.io/en/latest/) 
+Examples are provided at [https://ltb-symm.readthedocs.io](https://ltb-symm.readthedocs.io) 
