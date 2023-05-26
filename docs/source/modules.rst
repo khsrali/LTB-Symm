@@ -3,6 +3,6 @@ ltbsymm
 =======
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    ltbsymm

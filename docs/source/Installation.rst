@@ -6,10 +6,16 @@ Requirements
 -----------------------------
 .. LTB-Symm is written in Python. We suggest you to install or update to the latest available version, at least Python 3.6. is required.
 .. (AS: I wouldn't suggest to install the latest, just say the minimum required, that is usually enough)
-LTB-Symm is written in Python. Requirments: Python 3.8+ and NumPy 1.19.5
+LTB-Symm is written in Python3.
+Requirments:
+
+* Python 3.8+
+* NumPy 1.19.5+
+* Scipy 1.10.0+
+* Primme 3.2
 
 Operating system
-++++++++++++++++
+-----------------------------
 
 LTB-Symm has been developed and tested on both **Linux** and **MacOS**.
 In both of these operating systems, installation process is similar. Although on **MacOS** there is an extra pre-step, i.e. make sure you have ``pip`` installed by typing the command below in your terminal:
@@ -28,8 +34,9 @@ In principle it should be possible to install the code on **Windows** machines, 
 
 After having ``pip`` installed on your machine, install the package with one of the two following ways. Choose depending on your needs and preferences.
 
-Through pip
-+++++++++++
+
+From pip
+-----------------------------
 
 You can simply install through:
 
@@ -50,8 +57,8 @@ Note you need a working MPI implementation for ``mpi4py`` to succesfully functio
 (AS: to run in parallel or at all?)
 
 
-Download the source code
-++++++++++++++++++++++++
+From source code
+-----------------------------
 
 LTB-Symm is publicly available at GitHub under ``GNU General Public License v3.0`` :
 `https://github.com/khsrali/LTB-Symm <https://github.com/khsrali/LTB-Symm>`_

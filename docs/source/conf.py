@@ -56,6 +56,8 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['misc.py']
 
+autosectionlabel_prefix_document = True
+autodoc_default_options = {"autosummary": True}
 
 # -- Options for HTML output -------------------------------------------------
 
