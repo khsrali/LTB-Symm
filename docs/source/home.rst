@@ -17,9 +17,9 @@ All input needed are:
 
 
 And possible outputs are:
-    * Bands structure,
-    * Density of States,
-    * Check topological symmetries of wave functions.
+    * Bands structure
+    * Density of States
+    * Check topological symmetries of wave functions
     * Shape of the wavefunction
 
 
