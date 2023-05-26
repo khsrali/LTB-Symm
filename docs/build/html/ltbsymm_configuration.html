@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ltbsymm.configuration &mdash; LB-Symm v.1.0.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="How to cite" href="Citation.html" />
+    <link rel="prev" title="ltbsymm.tightbinding" href="ltbsymm_tightbinding.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            LB-Symm
+              <img src="_static/logo_sphinx.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Install</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="ltbsymm.html">LTB-Symm</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="ltbsymm.html#symmetry-module">Symmetry module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ltbsymm.html#tight-binding-module">Tight Binding module</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="ltbsymm.html#geometry-module">Geometry module</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">ltbsymm.configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Citation.html">How to cite</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">LB-Symm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="ltbsymm.html">LTB-Symm</a></li>
+      <li class="breadcrumb-item active">ltbsymm.configuration</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="module-ltbsymm.configuration">
+<span id="ltbsymm-configuration"></span><h1>ltbsymm.configuration<a class="headerlink" href="#module-ltbsymm.configuration" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="ltbsymm.configuration.Pwl">
+<em class="property">class </em><code class="sig-prename descclassname">ltbsymm.configuration.</code><code class="sig-name descname">Pwl</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">folder_name</span></em>, <em class="sig-param"><span class="n">sparse_flag</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">dtype</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.configuration.Pwl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="ltbsymm.configuration.Pwl.neigh_list">
+<code class="sig-name descname">neigh_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cutoff</span></em>, <em class="sig-param"><span class="n">nl_method</span><span class="o">=</span><span class="default_value">'RS'</span></em>, <em class="sig-param"><span class="n">l_width</span><span class="o">=</span><span class="default_value">500</span></em>, <em class="sig-param"><span class="n">load_</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">version_</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.configuration.Pwl.neigh_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Neighbor detect all neighbours of all cites within a cutoff range.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>cutoff: float</dt><dd><p>Used to detect neighbors within a circular range around each individual cites.</p>
+</dd>
+<dt>method: str, optional</dt><dd><p>which method to use for creating neighborlist. ‘RS’ -reduce space implementation- (faster but might have a bug in rhombic cells, to be investigated) or ‘RC’ -replicating coordinates- (slower, bug free) (default = ‘RS’)</p>
+</dd>
+<dt>l_width: int, optional</dt><dd><p>Maximum number of allowed neghbours. For memory efficency reasons it is better to keep number small (default = 500)
+In rare senarios if you use very large cutoff, you might need to increase this quantity. You get a MemoryError in this case.</p>
+</dd>
+<dt><a href="#id1"><span class="problematic" id="id2">load_</span></a>: boolean, optional</dt><dd><p>Load a previously created neighborlist. (default = True)</p>
+</dd>
+<dt><a href="#id3"><span class="problematic" id="id4">version_</span></a>: str, optional</dt><dd><p>A postfix for save name</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.configuration.Pwl.normal_vec">
+<code class="sig-name descname">normal_vec</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">local</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.configuration.Pwl.normal_vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>To create local normal vector.
+Note: On the choice of axis, it is assumed that the two main dimension of structure is on average perpendicular to Z axis.
+Warning!! chirality is not computed. Always the positive normal_vec (pointing upward) is returned.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>local: boolean</dt><dd><p>If to calculated vertical normals:</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.configuration.Pwl.read_coords">
+<code class="sig-name descname">read_coords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.configuration.Pwl.read_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read coordinates from files.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>file_name: str</dt><dd><p>Correctly onlt LAMMPS format is accepted.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.configuration.Pwl.vector_connection_matrix">
+<code class="sig-name descname">vector_connection_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fnn_cutoff</span><span class="o">=</span><span class="default_value">1.55</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.configuration.Pwl.vector_connection_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create geometrical vectros connecting each two neighbors.
+Args:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>fnn_cutoff: float </dt><dd><p>Maximum cut off to detect first nearest neghbours (default =1.55)</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Returns: None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="ltbsymm.configuration.calc_matrices_bvect">
+<code class="sig-prename descclassname">ltbsymm.configuration.</code><code class="sig-name descname">calc_matrices_bvect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">b1</span></em>, <em class="sig-param"><span class="n">b2</span></em>, <em class="sig-param"><span class="n">b3</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.configuration.calc_matrices_bvect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Metric matrices from primitive lattice vectors b1, b2.</p>
+<p>Return matrix to map to unit cell and inverse, back to real space.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ltbsymm.configuration.pbc_neigh">
+<code class="sig-prename descclassname">ltbsymm.configuration.</code><code class="sig-name descname">pbc_neigh</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pos</span></em>, <em class="sig-param"><span class="n">u</span></em>, <em class="sig-param"><span class="n">d0</span></em>, <em class="sig-param"><span class="n">sskin</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.configuration.pbc_neigh" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ltbsymm_tightbinding.html" class="btn btn-neutral float-left" title="ltbsymm.tightbinding" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Citation.html" class="btn btn-neutral float-right" title="How to cite" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright GNU under General Public License v3.0.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

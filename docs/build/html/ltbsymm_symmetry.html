@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ltbsymm.symmetry &mdash; LB-Symm v.1.0.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ltbsymm.tightbinding" href="ltbsymm_tightbinding.html" />
+    <link rel="prev" title="LTB-Symm" href="ltbsymm.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            LB-Symm
+              <img src="_static/logo_sphinx.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Install</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="ltbsymm.html">LTB-Symm</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="ltbsymm.html#symmetry-module">Symmetry module</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">ltbsymm.symmetry</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ltbsymm.html#tight-binding-module">Tight Binding module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ltbsymm.html#geometry-module">Geometry module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Citation.html">How to cite</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">LB-Symm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="ltbsymm.html">LTB-Symm</a></li>
+      <li class="breadcrumb-item active">ltbsymm.symmetry</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="module-ltbsymm.symmetry">
+<span id="ltbsymm-symmetry"></span><h1>ltbsymm.symmetry<a class="headerlink" href="#module-ltbsymm.symmetry" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="ltbsymm.symmetry.Symm">
+<em class="property">class </em><code class="sig-prename descclassname">ltbsymm.symmetry.</code><code class="sig-name descname">Symm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tb</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.symmetry.Symm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Defines an object usefull to investigate and diagonalize symmetry operation</p>
+<dl class="py method">
+<dt id="ltbsymm.symmetry.Symm.build_map">
+<code class="sig-name descname">build_map</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">operation</span></em>, <em class="sig-param"><span class="n">atol</span><span class="o">=</span><span class="default_value">0.2</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.symmetry.Symm.build_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map the indecis transformation under a given symmetry operation.
+Origin always considered at (0,0,0)</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>name: str</dt><dd><p>A name for this operation
+e.g.: ‘C2x’, ‘C2y’, ‘Inv’, ‘C3z’, ..</p>
+</dd>
+<dt>operation: A list of three string</dt><dd><p>Defining the the operation in the following order: [operation for X, operation for Y, operation for Z]
+These arithmetics and namespace are acceptable:
++, -, /, <a href="#id1"><span class="problematic" id="id2">*</span></a>, X, Y, Z, Rx, Ry, and Rz. 
+Rx, Ry, and Rz are lattice vectors along their directions.
+X, Y, and Z are coordinates of cites inside unitcell.
+Examples: 
+[‘X’,’Y’,’Z’]   is identity
+[‘-X’,’-Y’,’Z’] is C2z
+[‘X+1/2*Rx’,’-Y’,’-Z’] is C2x with a non-symmorphic translation.</p>
+</dd>
+<dt>atol: float</dt><dd><p>absolute tolerance to find the matching id.</p>
+</dd>
+<dt>plot: boolean</dt><dd><p>show the coordinates in case of success. plot=False (default)
+in case of failure plot is always True</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.symmetry.Symm.check_commute">
+<code class="sig-name descname">check_commute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name1</span></em>, <em class="sig-param"><span class="n">name2</span></em>, <em class="sig-param"><span class="n">k_label</span></em>, <em class="sig-param"><span class="n">rtol</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">ftol</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.symmetry.Symm.check_commute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if two operations commute</p>
+<dl class="simple">
+<dt>Args:     </dt><dd><dl class="simple">
+<dt>name1 &amp; name2: str</dt><dd><p>name of the operation. must be same as those in build_map like: ‘C2x’</p>
+</dd>
+<dt>rtol: float between 0-1</dt><dd><p>Relative tolerance. rtol=0.1(default)</p>
+</dd>
+<dt>ftol: integer</dt><dd><p>Fault tolerance. Number of acceptable unmached number. ftol=0(default)
+Warning: might falsly return always True. If you choose a large ftol comparable with your Hamiltonian size.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.symmetry.Symm.check_square">
+<code class="sig-name descname">check_square</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">k_label</span></em>, <em class="sig-param"><span class="n">rtol</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">ftol</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.symmetry.Symm.check_square" title="Permalink to this definition">¶</a></dt>
+<dd><dl>
+<dt>Checks if square of Cmat is identity</dt><dd><p>Args:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>name: str</dt><dd><p>name of this matrix operation. must be same as those in build_map like: ‘C2x’</p>
+</dd>
+<dt>rtol: float between 0-1</dt><dd><p>Relative tolerance. rtol=0.1(default)</p>
+</dd>
+</dl>
+<p>ftol: integer
+Fault tolerance. Number of acceptable unmached number. ftol=0(default)
+Warning: might falsly return always True. If you choose a large ftol comparable with your Hamiltonian size.</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.symmetry.Symm.load">
+<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">folder_</span></em>, <em class="sig-param"><span class="n">Symmdata</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.symmetry.Symm.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>load symm object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.symmetry.Symm.make_Cmat">
+<code class="sig-name descname">make_Cmat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">k_label</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.symmetry.Symm.make_Cmat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes operation matrix.</p>
+<dl class="simple">
+<dt>Arg:</dt><dd><dl class="simple">
+<dt>name: str</dt><dd><p>name of this matrix operation. must be same as those in build_map like:
+‘C2x’</p>
+</dd>
+<dt>k_label: str </dt><dd><p>The high symmetry point to make Cmat for. Must be an element of K_label
+Str like, e.g. ‘Gamma’ or ‘K1’</p>
+</dd>
+<dt>symmorphicity: boolean</dt><dd><p>If the group is symmorphic. True(default)
+<a href="#id3"><span class="problematic" id="id4">**</span></a>Important notice in the case of non-symmorphic groups: at the moment Cmat is only implemented for C2 symmetries, C2x, C2y, and C2z. **</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.symmetry.Symm.plotter_coords">
+<code class="sig-name descname">plotter_coords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image1</span></em>, <em class="sig-param"><span class="n">image2</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.symmetry.Symm.plotter_coords" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.symmetry.Symm.save">
+<code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">version</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.symmetry.Symm.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>save symm object</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="ltbsymm.symmetry.Symm.symmorphicity">
+<code class="sig-name descname">symmorphicity</code><a class="headerlink" href="#ltbsymm.symmetry.Symm.symmorphicity" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>symmorphicity: boolean</dt><dd><p>If the group is symmorphic. True(default)
+<a href="#id5"><span class="problematic" id="id6">**</span></a>Important notice in the case of non-symmorphic groups: at the moment Cmat is only implemented for C2 symmetries, C2x, C2y, and C2z. **</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.symmetry.Symm.vector_diag">
+<code class="sig-name descname">vector_diag</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k_label</span></em>, <em class="sig-param"><span class="n">name1</span></em>, <em class="sig-param"><span class="n">name2</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">subSize</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">rtol</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">skip_diag</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.symmetry.Symm.vector_diag" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Arg:</dt><dd><dl class="simple">
+<dt>k_label: str </dt><dd><p>The high symmetry point to make Cmat for. Must be an element of K_label
+Str like, e.g. ‘Gamma’ or ‘K1’</p>
+</dd>
+<dt>rtol: float between 0-1</dt><dd><p>Relative tolerance. rtol=0.1(default)</p>
+</dd>
+<dt>name: str</dt><dd><p>name of this matrix operation. must be same as those in build_map like:
+‘C2x’</p>
+</dd>
+<dt>subSize: int &lt; n_flat</dt><dd><p>Size of the subspace to diagonalize</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ltbsymm.html" class="btn btn-neutral float-left" title="LTB-Symm" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ltbsymm_tightbinding.html" class="btn btn-neutral float-right" title="ltbsymm.tightbinding" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright GNU under General Public License v3.0.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

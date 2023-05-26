@@ -4,10 +4,10 @@
    contain the root `toctree` directive.
 
 
-.. raw:: html
+.. .. raw:: html
 
    <meta name="google-site-verification" content="HrCRMRpgWAkYt_dcm84kL7Ms86rxhfxCZS2AOuTwv2E" />
-   
+
 .. .. raw:: html
 
    <!-- Google tag (gtag.js) -->
@@ -19,7 +19,7 @@
 
    gtag('config', 'G-HR351N4Q75');
    </script>
-   
+
 
 
 Welcome to LB-Symm's documentation!
@@ -32,7 +32,7 @@ Welcome to LB-Symm's documentation!
 .. note::
 
    This project is under active development. Feel free to contact us directly for any question, we can give you advise if this code is suitable for your project. Email: `khsrali@gmail.com <khsrali@gmail.com>`_
-   
+
 .. note::
 
    Possible collaboration with related packages are welcome!
@@ -40,10 +40,10 @@ Welcome to LB-Symm's documentation!
 
 .. include:: home.rst
 
-   
+
 
 .. toctree::
-  
+
    Home <self>
    Introduction
    examples
@@ -52,12 +52,12 @@ Welcome to LB-Symm's documentation!
    Citation
 
 ..  Tutorial
-..   
+..
    Overview
    modules
    Summary
    API reference <_autosummary/mytoolbox>
-   
+
 .. .. toctree::
    :maxdepth: 3
    :caption: Contents:

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ltbsymm.tightbinding &mdash; LB-Symm v.1.0.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ltbsymm.configuration" href="ltbsymm_configuration.html" />
+    <link rel="prev" title="ltbsymm.symmetry" href="ltbsymm_symmetry.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            LB-Symm
+              <img src="_static/logo_sphinx.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Install</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="ltbsymm.html">LTB-Symm</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="ltbsymm.html#symmetry-module">Symmetry module</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="ltbsymm.html#tight-binding-module">Tight Binding module</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">ltbsymm.tightbinding</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ltbsymm.html#geometry-module">Geometry module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Citation.html">How to cite</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">LB-Symm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="ltbsymm.html">LTB-Symm</a></li>
+      <li class="breadcrumb-item active">ltbsymm.tightbinding</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="module-ltbsymm.tightbinding">
+<span id="ltbsymm-tightbinding"></span><h1>ltbsymm.tightbinding<a class="headerlink" href="#module-ltbsymm.tightbinding" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="ltbsymm.tightbinding.TB">
+<em class="property">class </em><code class="sig-prename descclassname">ltbsymm.tightbinding.</code><code class="sig-name descname">TB</code><a class="headerlink" href="#ltbsymm.tightbinding.TB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.MBZ">
+<code class="sig-name descname">MBZ</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">g1</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">g2</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.MBZ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get mini brillouin zone or calculates or automatically based on unitcell size.
+Note: automatic method is only implemented for two cases that the angle between a and b lattice vectors is either 60 or 90 degrees.
+Args:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>g1: shape (3,) numpy array</dt><dd><p>Second vector of reciprocal space. 
+Set 0 to define automatically. (default=0)</p>
+</dd>
+<dt>g2: shape (3,) numpy array</dt><dd><p>Second vector of reciprocal space. 
+Set 0 to define automatically. (default=0)</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.T_bone">
+<code class="sig-name descname">T_bone</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.T_bone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the non-sparse skeleton of Hamiltonian matrix. Please turn to private!</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>H_style: ‘str’ !! Not available yet!!</dt><dd><p>type of Hamiltonina formula in use</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>T00 matrix</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.T_bone_sp">
+<code class="sig-name descname">T_bone_sp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">H_style</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.T_bone_sp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the sparse skeleton of Hamiltonian matrix. Please turn to private!</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>H_style: function</dt><dd><p>Pairwise Hamiltonina formula in use. It should get the following arguments in order:
+H_ij(vector_ij, normal_i, normal_j)
+Where vector_ij is the vector connecing cite “i” to cite “j”. normal_i (normal_j) is the normal vector to surface at cite “i” (“j”).</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>T00 matrix</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.T_meat">
+<code class="sig-name descname">T_meat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">K_</span></em>, <em class="sig-param"><span class="n">T_0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.T_meat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the non-sparse modulation phase at each <a href="#id1"><span class="problematic" id="id2">K_</span></a> to T_0. Turn to private.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.T_meat_sp1">
+<code class="sig-name descname">T_meat_sp1</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">K_</span></em>, <em class="sig-param"><span class="n">T_0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.T_meat_sp1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the sparse modulation phase at each <a href="#id3"><span class="problematic" id="id4">K_</span></a> to T_0. Turn to private.
+Tight binding type 1, with a phase</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.T_meat_sp2">
+<code class="sig-name descname">T_meat_sp2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">K_</span></em>, <em class="sig-param"><span class="n">T_0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.T_meat_sp2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the sparse modulation phase at each <a href="#id5"><span class="problematic" id="id6">K_</span></a> to T_0. Turn to private.
+Tight binding type 2, no extra phase</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.calculate_3Dbands">
+<code class="sig-name descname">calculate_3Dbands</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_eigns</span></em>, <em class="sig-param"><span class="n">solver</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.calculate_3Dbands" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.calculate_DOS">
+<code class="sig-name descname">calculate_DOS</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_eigns</span></em>, <em class="sig-param"><span class="n">solver</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.calculate_DOS" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n_dos</strong> (<em>int</em>) – representing density for DOS</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.calculate_bands">
+<code class="sig-name descname">calculate_bands</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">H_style</span></em>, <em class="sig-param"><span class="n">n_eigns</span></em>, <em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">solver</span></em>, <em class="sig-param"><span class="n">tbt</span><span class="o">=</span><span class="default_value">'type1'</span></em>, <em class="sig-param"><span class="n">return_eigenvectors</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.calculate_bands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates band structure and vectors if requested.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>H_style: function</dt><dd><p>Pairwise Hamiltonina formula in use. It should get the following arguments in order:
+H_ij(vector_ij, normal_i, normal_j)
+Where vector_ij is the vector connecing cite “i” to cite “j”. normal_i (normal_j) is the normal vector to surface at cite “i” (“j”).</p>
+</dd>
+<dt>n_eigns: </dt><dd><p>Number of eigen values desired out of Lanczos solver.</p>
+</dd>
+<dt>solver: str</dt><dd><p>‘primme’ (default) or ‘scipy’. Caution!  scipy is faster sometimes but it has a error propagation bug in eigenvectros. sometimes returns nonorthonormal. Perhaps a bug in their’s GramSchmidt. 
+For symmetry checking ‘primme’ is recommended. 
+While for band structure calculation ‘scipy’ is recommended.</p>
+</dd>
+<dt>tbt: str</dt><dd><p>type of tight binding of H(K)
+‘type1’(default) is the usual modulation t_ij(k) = t_ij * np.exp(-1j * np.dot(v_c, k))
+‘type2’: t_ij(k) = t_ij * np.exp(-1j * np.dot(R, k)) where R is the lattice vector pointing to neighboring cells, only if j is in outside the cell. 
+‘type2’ is useful for symmetry operation, but at the moment it is only implemented for rectangular lattice.</p>
+</dd>
+<dt>return_eigenvectors: boolean</dt><dd><p>False (default)</p>
+</dd>
+<dt>sigma: float</dt><dd><p>Find the n_eigns eigenvalues around this value</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.check_orthonormality">
+<code class="sig-name descname">check_orthonormality</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ii</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.check_orthonormality" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if Vector are correctly orthonormal. (See the notes about solver.)
+Args:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>ii: int</dt><dd><p>Index of Kpoint to check.</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.detect_flat_bands">
+<code class="sig-name descname">detect_flat_bands</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">E_range</span><span class="o">=</span><span class="default_value">0.03</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.detect_flat_bands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect flat bands, assuming they are around E=0.
+All levels are sorted respect to E=0</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>E_range: float</dt><dd><p>A positive value in unit [eV], setting a window of energy around E=0(sigma) to search for flat bands. (default = 30)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.engine_mpi">
+<code class="sig-name descname">engine_mpi</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">T_M</span></em>, <em class="sig-param"><span class="n">kpoints</span></em>, <em class="sig-param"><span class="n">n_eigns</span></em>, <em class="sig-param"><span class="n">solver</span><span class="o">=</span><span class="default_value">'primme'</span></em>, <em class="sig-param"><span class="n">return_eigenvectors</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.engine_mpi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Engine is mpi parallel, the beating heart calculation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T_M</strong> (<em>python function</em>) – sparse matrix to modulate the bone matrix</p></li>
+<li><p><strong>kpoints</strong> (<em>numpy array in the shape of</em><em> (</em><em>n</em><em>,</em><em>3</em><em>)</em>) – K points</p></li>
+<li><p><strong>n_eigns</strong> (<em>int</em>) – Number of eigen values desired out of Lanczos solver.</p></li>
+<li><p><strong>solver</strong> – ‘primme’ (default) or ‘scipy’. Caution!  scipy is faster sometimes but it has a error propagation bug in eigenvectros. sometimes returns nonorthonormal. Perhaps a bug in their’s GramSchmidt. For symmetry checking ‘primme’ is recommended. While for band structure calculation ‘scipy’ is recommended.</p></li>
+<li><p><strong>solver</strong> – str, optional</p></li>
+<li><p><strong>return_eigenvectors</strong> (<em>boolean</em><em>, </em><em>optional</em>) – default to True</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Eigns, and Eignvecs</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.label_translator">
+<code class="sig-name descname">label_translator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label_</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.label_translator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translate label to coordinate of high symmetry point in reciprocal space.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><a href="#id7"><span class="problematic" id="id8">label_</span></a>: str, </dt><dd><p>Predefined label of high symmetry point
+For orthogonal cells: ‘Gamma’, ‘X’, ‘Y’, and ‘W’
+For rhombic cells: ‘Gamma’, ‘M1’, ‘M2’, ‘K1’, ‘K2’</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns: </dt><dd><p>numpy array in shape of (3,) dtype=’float’</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.load">
+<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">folder_</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">bands</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">HH</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dos</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_3Dbands</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">configuration</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.load" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.plot_BZ">
+<code class="sig-name descname">plot_BZ</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ws_params</span><span class="o">=</span><span class="default_value">{'color': 'tab:gray', 'fill': False, 'ls': '--', 'lw': 1}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.plot_BZ" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.plotter_3D">
+<code class="sig-name descname">plotter_3D</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">color_</span><span class="o">=</span><span class="default_value">'black'</span></em>, <em class="sig-param"><span class="n">shift_tozero</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.plotter_3D" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.plotter_DOS">
+<code class="sig-name descname">plotter_DOS</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ax</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.plotter_DOS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.plotter_bands">
+<code class="sig-name descname">plotter_bands</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">color_</span><span class="o">=</span><span class="default_value">'black'</span></em>, <em class="sig-param"><span class="n">y_shift</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.plotter_bands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot band structure</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>ax: matplotlib object, optional</dt><dd><p>axis to plot, if not provided will create an ply.figure()</p>
+</dd>
+<dt><a href="#id9"><span class="problematic" id="id10">color_</span></a>: str </dt><dd><p>color of lines, passed to matplotlib</p>
+</dd>
+<dt>y_shift: float</dt><dd><p>an arbitraty vertical shift (default=0)</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>ax: matplotlib object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.print0">
+<code class="sig-name descname">print0</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">argv</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.print0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.reduced2full">
+<code class="sig-name descname">reduced2full</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.reduced2full" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.save">
+<code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">version</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">bands</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">dos</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">_3Dbands</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">configuration</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">H</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.save" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.set_Kpoints">
+<code class="sig-name descname">set_Kpoints</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">K_label</span></em>, <em class="sig-param"><span class="n">K_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">N</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">saveH</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.set_Kpoints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a set of K points to calculte bands along, either a discrete or continues.</p>
+<dl>
+<dt>Args:</dt><dd><dl>
+<dt>K_label: list of str, list(str)</dt><dd><p>Label of high symmetry points in reciprocal space.
+They most correspond to K_path respectivly.</p>
+</dd>
+<dt>K_path: numpy array in shape of (n, 3), optional</dt><dd><p>All coordinates that you would like to calculate electronics levels for.
+Note: None(default) is only acceptable, if g1 &amp; g2 are calculated automatically. In that case, high symmetry coordinates are already predifined.  
+For orthogonal cells: ‘Gamma’, ‘X’, ‘Y’, and ‘W’
+For rhombic cells: ‘Gamma’, ‘M1’, ‘M2’, ‘K1’, ‘K2’</p>
+<p>Alternatively, you can provide a list of all/high-symmetry coordinates that you give their names for K_label.</p>
+</dd>
+<dt>N: int, optional</dt><dd><p>Number of K-points in the given path. If N=0(default) then calculation is done only for the provided list. If non-zero N, calculation is done for N point, displaced uniformly along the provided path.
+If N != 0, it must be larger than number of elements in K_label.</p>
+</dd>
+<dt>saveH: boolean</dt><dd><p>whether to save Hamiltonian at high symmetry points. False(default)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.set_configuration">
+<code class="sig-name descname">set_configuration</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_and_folder</span></em>, <em class="sig-param"><span class="n">r_cut</span></em>, <em class="sig-param"><span class="n">local_normal</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">nl_method</span><span class="o">=</span><span class="default_value">'RS'</span></em>, <em class="sig-param"><span class="n">sparse_flag</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">dtype</span><span class="o">=</span><span class="default_value">'float'</span></em>, <em class="sig-param"><span class="n">version</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.set_configuration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the basic configuration. And build up some basic requirments: normal vectors, neighborlist,</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>file_and_folder: str</dt><dd><p>address to a txt file containing coordinates and cell info. 
+This file should be in one of these formats: lammpstrj, XYZ</p>
+</dd>
+<dt>sparse_flag: boolean, optional</dt><dd><p>To use sparse matrix. (default = True)
+Calculation are faster with non-sparse, but eager on ram size.</p>
+</dd>
+<dt>dtype: str, optional</dt><dd><p>precision of Calculation. float(default) or double is supported.</p>
+</dd>
+<dt>version: str, optional</dt><dd><p>Postfix to name the output folder in format of ‘<a href="#id11"><span class="problematic" id="id12">calculation_</span></a>’+filename(directory excluded)+version</p>
+</dd>
+<dt>r_cut: float</dt><dd><p>Neighboring cutoff in the same distance unit as the coordinate file. Circular based neighbor detecting method.
+Larger value includes more neighbor for each cite.</p>
+</dd>
+<dt>local_normal: boolean</dt><dd><p>To use local_normal to orbital direction(True) or consider them all aligned in Z direction (False). (default = True)</p>
+</dd>
+<dt>nl_method: str</dt><dd><p>which method to use for creating neighborlist. ‘RS’ -reduce space implementation- (faster but might have a bug in rhombic cells, to be investigated) or ‘RC’ -replicating coordinates- (slower, bug free) (default = ‘RS’)
+nl_method is ignored if load_neigh=True and a previously calculated neighborlist exist.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.set_grid">
+<code class="sig-name descname">set_grid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_points</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.set_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="ltbsymm.tightbinding.TB.shift_2_zero">
+<code class="sig-name descname">shift_2_zero</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k_label</span></em>, <em class="sig-param"><span class="n">idx_s</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ltbsymm.tightbinding.TB.shift_2_zero" title="Permalink to this definition">¶</a></dt>
+<dd><p>A precise shift of Fermi level to zero, at given K point.
+Only useful if flat bands already exist.</p>
+<p>Note: this function resorts also flatbands based on the new shift.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>k_label: str </dt><dd><p>A specific k_label point to use of shifting. Must be an element of K_label</p>
+</dd>
+<dt>idx_s: a list of indices (numpy)</dt><dd><p>Indices of flat bands to use for centering the Fermi-level. At least two Indices are required</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Hint for twisted bilayer graphene: ‘K1’ or ‘K2’</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ltbsymm_symmetry.html" class="btn btn-neutral float-left" title="ltbsymm.symmetry" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ltbsymm_configuration.html" class="btn btn-neutral float-right" title="ltbsymm.configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright GNU under General Public License v3.0.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -10,7 +10,7 @@ setup(
     long_description=open('README.md').read(),
     packages=find_packages('src'),
     package_dir={'': 'src'},
-    python_requires='>=3.7',
+    python_requires='>=3.8',
     url='https://github.com/khsrali/LTB-Symm',
     keywords=' tight-binding wave-function symmetries',
     classifiers=[
@@ -18,7 +18,6 @@ setup(
     'Intended Audience :: Science/Research',
     'Topic :: Scientific/Engineering :: Physics',
     'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-    'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     ],
     install_requires=[

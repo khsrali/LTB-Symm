@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 
-.. raw:: html
+.. .. raw:: html
 
    <meta name="google-site-verification" content="HrCRMRpgWAkYt_dcm84kL7Ms86rxhfxCZS2AOuTwv2E" />
 

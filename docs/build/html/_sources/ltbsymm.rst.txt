@@ -3,31 +3,28 @@ LTB-Symm
 
 
 
-ltbsymm.symmetry module
+Symmetry module
 -----------------------
+.. toctree::
+   :maxdepth: 3
 
-.. automodule:: ltbsymm.symmetry
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   ltbsymm_symmetry
 
-ltbsymm.tightbinding module
+Tight Binding module
 ---------------------------
+.. toctree::
+   :maxdepth: 3
 
-.. automodule:: ltbsymm.tightbinding
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   ltbsymm_tightbinding
 
-ltbsymm.configuration module
+
+Geometry module
 ----------------------------
+.. toctree::
+   :maxdepth: 3
 
-.. automodule:: ltbsymm.configuration
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   
-   
+   ltbsymm_configuration
+
 ..
    ltbsymm.misc module
    -------------------
@@ -37,8 +34,8 @@ ltbsymm.configuration module
       :undoc-members:
       :show-inheritance:
 
-   
-   
+
+
 .. automodule:: ltbsymm
    :members:
    :undoc-members:

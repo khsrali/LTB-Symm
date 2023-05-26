@@ -45,7 +45,7 @@
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Installation.html">Install</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ltbsymm.html">LTB-Symm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Citation.html">How to cite</a></li>
 </ul>
 
         </div>
@@ -73,11 +73,11 @@
              
   <div class="section" id="ltb-symm">
 <h1>LTB-Symm<a class="headerlink" href="#ltb-symm" title="Permalink to this headline">¶</a></h1>
-<p>LTB-Symm is a publicly available code that does two things: <strong>large scale tight-binding</strong> (LTB) calculation of 2D materials, and checks <strong>topological symmetries</strong> (Symm) of their wave functions.</p>
+<p>LTB-Symm does two things: <strong>large scale tight-binding</strong> (LTB) calculation of 2D materials, and checks <strong>topological symmetries</strong> (Symm) of their wave functions (the TB eigenvectors).</p>
 <div class="section" id="who-benefits">
 <h2>Who benefits<a class="headerlink" href="#who-benefits" title="Permalink to this headline">¶</a></h2>
-<p>LTB-Symm is an ideal choice for researchers looking for a ready-to-use, easy-to-modify, and MPI-implemented TB code for large scale 2D structures. Up to 1 (0.1) Milions atoms for limited (vast) K-points, is (easily) managable.</p>
-<p>Specially communities who deal with twisted bilayer/multilayer graphene.</p>
+<p>LTB-Symm is an ideal choice for researchers looking for a ready-to-use, easy-to-modify, and MPI-implemented TB code for large scale 2D structures. Up to 1 (0.1) Milions atoms for few (many) K-points, is managable.</p>
+<p>At the current state of development, this code is particualrly suited for the community studying twisted bilayer/multilayer graphene.</p>
 <dl class="simple">
 <dt>All input needed are:</dt><dd><ol class="arabic simple">
 <li><p>Coordinate of atoms/orbitals, e.g. lammpstrj, XYZ</p></li>
@@ -93,16 +93,16 @@
 </dd>
 </dl>
 </div>
-<div class="section" id="bold-features">
-<h2>Bold features<a class="headerlink" href="#bold-features" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li><p>MPI implemented, able to run on HPC clusters.</p></li>
 <li><p>Object Oriented, easy to modify for multi purpose.</p></li>
-<li><p>Efficient, calculate only a few energy levels that are needed.</p></li>
+<li><p>Efficient (calculate only the subset of energy levels that are physically relevant).</p></li>
 <li><p>Ideal for 2D materials, e.g. graphene.</p></li>
-<li><p>Many routings are automated.</p></li>
-<li><p>The only open-source code that we know of which is able to investigate group symmetries in this way.</p></li>
+<li><p>Many routines are automated.</p></li>
+<li><p>The first open-source code (to the best of our knowledge) which is able to investigate group symmetries in these systems in a systematic way.</p></li>
 </ul>
 </div></blockquote>
 </div>

@@ -47,7 +47,7 @@
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Installation.html">Install</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ltbsymm.html">LTB-Symm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Citation.html">How to cite</a></li>
 </ul>
 
         </div>
@@ -75,14 +75,21 @@
              
   <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<p>Tight binding is a model used to describe the behavior of electrons in a solid, particularly in metals and semiconductors. It is based on the idea that the electrons in a solid are tightly bound to the atoms, but can also move around and interact with neighboring atoms.</p>
-<p>This model model is particularly useful to study the electronic properties of large sized materials with a simple crystal structure, that could not be studied by DFT due to its expensive computation time.</p>
-<p>Solving a tight binding model, always narrows down to diagonalizing the Hamiltonian. Resulting in a eigenvalue and eigenvectors. The former produces band structure of the solid, and the later is studied for topological interest.</p>
+<p>Tight binding is a model used to describe the behavior of electrons in a solid, particularly in insulators and semiconductors. It is based on the that the electrons in a solid are strongly bound to the atoms but can jump between atoms with some probability. In other words, the electrons are localised on the atomic lattice site and hop between sites.</p>
+<p>This model model is particularly useful to study the electronic properties of large sized materials with a simple crystal structure, where more sophisticated Denisty Functional Theory (DFT) methods become too expensive in terms of computation time.</p>
+<p>Solving a tight binding model, always narrows down to diagonalizing the Hamiltonian. Resulting in eigenvalues and eigenvectors problem. The former produces band structure of the solid, and the latrer econdes topological properties. Explict examples of such Hamiltonians are presented in the example section.</p>
 <p>The eigenvectors represent the probability amplitudes for the electrons to be found at each site in the crystal lattice.
-By studying topology of eigenvectors, we care how the electronic states of a crystal are distributed in momentum space.</p>
-<p>One apprach to study that, is to use systematic tools of group theory, and to analyse the symmetries of the crystal lattice and their impact on the electronic structure. Namely spatial and time-reversal symmetries.</p>
-<p>Most researchers in the field, prefer to have a framework that not only does the tight binding, but also leaves their hand open to implement and investigate more with symmetry properties of the eigenvectors.</p>
-<p><strong>LTB-Symm</strong> started as a handy tool for our own research, but now worth sharing with others!</p>
+Symmetry of eigenvectors, tells us how the electronic states of a crystal are is distributed in real space. By studying topology, we analyse how symmetry evolves across momentum space.</p>
+<p>The concepts and tools of group theory, allows us to systematically analyse the symmetries of the crystal lattice and their impact on the electronic structure. Namely spatial and time-reversal symmetries.</p>
+<p>Most researchers in the field of twistronics, prefer to have a framework that not only diagonalises tight binding Hamiltonians, but also allows them to implement and investigate more topological and symmetry properties of the eigenvectors.</p>
+<p><strong>LTB-Symm</strong> started as a handy tool for our own research, but grew into a general and flexible code that worth sharing with others!</p>
+<dl class="simple">
+<dt>More references:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="https://en.wikipedia.org/wiki/Tight_binding">https://en.wikipedia.org/wiki/Tight_binding</a></p></li>
+<li><p><a class="reference external" href="https://en.wikipedia.org/wiki/Twistronics">https://en.wikipedia.org/wiki/Twistronics</a></p></li>
+</ul>
+</dd>
+</dl>
 </div>
 
 

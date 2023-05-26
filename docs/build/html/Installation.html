@@ -46,17 +46,15 @@
 <li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Install</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#operating-system">Operating system</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#through-pip">Through pip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#download-the-source-code">Download the source code</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#operating-system">Operating system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-through-pip">Install through pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#source-code">Source code</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-to-run">How to run</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ltbsymm.html">LTB-Symm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Citation.html">How to cite</a></li>
 </ul>
 
         </div>
@@ -86,43 +84,51 @@
 <h1>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
-<p>LTB-Symm iw written in Python. We suggest you to install or update to the latest available version, at least Python 3.6. is required.</p>
+<p>LTB-Symm is written in Python. To function properly <code class="docutils literal notranslate"><span class="pre">Python</span> <span class="pre">3.8+</span></code> is required.</p>
+</div>
 <div class="section" id="operating-system">
-<h3>Operating system<a class="headerlink" href="#operating-system" title="Permalink to this headline">¶</a></h3>
+<h2>Operating system<a class="headerlink" href="#operating-system" title="Permalink to this headline">¶</a></h2>
 <p>LTB-Symm has been developed and tested on both <strong>Linux</strong> and <strong>MacOS</strong>.
-In both of these operating systems, installation process is basically be similar. Although in <strong>MacOS</strong> there is an extra pre-step, and that is only to make sure you have <code class="docutils literal notranslate"><span class="pre">pip</span></code> installed. You can make sure of that by typing command below in your terminal:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">% </span>python<span class="w"> </span>-m<span class="w"> </span>ensurepip<span class="w"> </span>or<span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>ensurepip
+In both of these operating systems, installation process is similar. Although on <strong>MacOS</strong> there is an extra pre-step, i.e. make sure you have <code class="docutils literal notranslate"><span class="pre">pip</span></code> installed by typing the command below in your terminal:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">% </span>python<span class="w"> </span>-m<span class="w"> </span>ensurepip
 </pre></div>
 </div>
-<p>In <strong>Windows</strong> in principle it should be possible to install the code, but we have not tested, yet. Again you can install <code class="docutils literal notranslate"><span class="pre">pip</span></code> by executing the following command in <code class="docutils literal notranslate"><span class="pre">cmd</span></code>:</p>
+<p>In principle it should be possible to install the code on <strong>Windows</strong> machines, but we have not tested it, yet. Again you can install <code class="docutils literal notranslate"><span class="pre">pip</span></code> by executing the following command in <code class="docutils literal notranslate"><span class="pre">cmd</span></code>:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">&gt; curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py</span>
 <span class="go">&gt; python get-pip.py</span>
 </pre></div>
 </div>
-<p>After having <code class="docutils literal notranslate"><span class="pre">pip</span></code> installed on your machine, install the package with one of the two following ways. Choose depending on your needs and preferences.</p>
 </div>
-<div class="section" id="through-pip">
-<h3>Through pip<a class="headerlink" href="#through-pip" title="Permalink to this headline">¶</a></h3>
-<p>You can simply install through:</p>
+<div class="section" id="install-through-pip">
+<h2>Install through pip<a class="headerlink" href="#install-through-pip" title="Permalink to this headline">¶</a></h2>
+<p>You can simply install with:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>ltb-symm
 </pre></div>
 </div>
-<p>Please make sure all dependencies correctly installed. That includes;</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>numpy scipy matplotlib mpi4py tqdm spglib primme
+<p>If you have it already install, you may use option <code class="code docutils literal notranslate"><span class="pre">--upgrade</span></code> to have the latest version.</p>
+<p>If installation failed, please make sure all dependencies correctly installed. That includes;</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>numpy scipy matplotlib mpi4py tqdm primme
 </pre></div>
 </div>
+<p>Required versions:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>NumPy 1.19.5+</p></li>
+<li><p>Scipy 1.10.0+</p></li>
+<li><p>Primme 3.2</p></li>
+</ul>
+</div></blockquote>
 <p>Note you need a working MPI implementation for <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> to succesfully function.</p>
 </div>
-<div class="section" id="download-the-source-code">
-<h3>Download the source code<a class="headerlink" href="#download-the-source-code" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="source-code">
+<h2>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h2>
 <p>LTB-Symm is publicly available at GitHub under <code class="docutils literal notranslate"><span class="pre">GNU</span> <span class="pre">General</span> <span class="pre">Public</span> <span class="pre">License</span> <span class="pre">v3.0</span></code> :
 <a class="reference external" href="https://github.com/khsrali/LTB-Symm">https://github.com/khsrali/LTB-Symm</a></p>
 <p>For doubt and question, feel free to directly contact us. Email: <a class="reference external" href="mailto:khsrali&#37;&#52;&#48;gmail&#46;com">khsrali<span>&#64;</span>gmail<span>&#46;</span>com</a></p>
 </div>
-</div>
 <div class="section" id="how-to-run">
 <h2>How to run<a class="headerlink" href="#how-to-run" title="Permalink to this headline">¶</a></h2>
-<p>Simply write an <em>input</em> file and run using you python interpreter:</p>
+<p>Simply write an <em>input</em> file (see examples) and run using you python interpreter:</p>
 <p>For example:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python<span class="w"> </span>input.py
 </pre></div>

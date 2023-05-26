@@ -1,7 +1,7 @@
 LTB-Symm
 ========
 
-LTB-Symm is a publicly available code that does two things: **large scale tight-binding** (LTB) calculation of 2D materials, and checks **topological symmetries** (Symm) of their wave functions (the TB eigenvectors).
+LTB-Symm does two things: **large scale tight-binding** (LTB) calculation of 2D materials, and checks **topological symmetries** (Symm) of their wave functions (the TB eigenvectors).
 
 
 

@@ -51,7 +51,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Installation.html">Install</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ltbsymm.html">LTB-Symm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Citation.html">How to cite</a></li>
 </ul>
 
         </div>
@@ -80,14 +80,14 @@
              
   <div class="section" id="example-2-symmetry-operations-and-wave-vectors-parity">
 <h1>Example 2: Symmetry operations and wave vectors parity<a class="headerlink" href="#example-2-symmetry-operations-and-wave-vectors-parity" title="Permalink to this headline">¶</a></h1>
-<p>In this example I show how to investigate parities of wave vectors, for any symmetry operations at a any given point of Brillouin zone.
-Such tool could be usefull to understand topological properties of band structure.
+<p>This example shows how to investigate the parity of wave vectors under the action of different symmetry operations at any given point in the Brillouin zone.
+This tool is usefull to understand topological properties of band structure. (AS: maybe add some references? Link to wiki, maybe to the book of Michele?)
 As an example, here, we consider two unitcells of twisted bilayer graphene at magic angle 1.08 degrees.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This project is under active development. <code class="docutils literal notranslate"><span class="pre">symmetry</span></code> module is fully developed for rectangular lattice. For rhombic, mimicing the spirit, implementation is in progress.</p>
 </div>
-<p>First let’s calculate eigen vectors at high symmetry points:</p>
+<p>First let’s calculate eigenvectors at high symmetry points, like in the previous example:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">ltbsymm</span> <span class="k">as</span> <span class="nn">ls</span>
@@ -144,20 +144,19 @@ As an example, here, we consider two unitcells of twisted bilayer graphene at ma
 <span class="n">MPI</span><span class="o">.</span><span class="n">Finalize</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>A similar code to above is explained in details for a similar case (Example 1).</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Once a band structure calculation is done, you can always save using</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mytb</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">bands</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">configuration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This is very conveninet, becasue for later application or symmetry analysis you can just simply load, for example:</p>
+<p>This is very conveninet, becasue for later application or symmetry analysis you can simply load:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mytb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;out_1.08_2AA&#39;</span><span class="p">,</span> <span class="n">bands</span><span class="o">=</span><span class="s1">&#39;bands_.npz&#39;</span><span class="p">,</span> <span class="n">configuration</span><span class="o">=</span><span class="s1">&#39;configuration_.npz&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>There is no need to re-calculate from begining</p>
 </div>
-<p>Having wave vectors, we can proceed to create a Symm object.</p>
+<p>Having wave vectors, we can proceed to create a Symm object from our TB model.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
 
     <span class="n">sm</span> <span class="o">=</span> <span class="n">ls</span><span class="o">.</span><span class="n">Symm</span><span class="p">(</span><span class="n">mytb</span><span class="p">)</span>
@@ -167,14 +166,15 @@ As an example, here, we consider two unitcells of twisted bilayer graphene at ma
     <span class="n">sm</span><span class="o">.</span><span class="n">build_map</span><span class="p">(</span><span class="s1">&#39;C2x&#39;</span><span class="p">,[</span><span class="s1">&#39;X+1/2*Rx&#39;</span><span class="p">,</span><span class="s1">&#39;-Y&#39;</span><span class="p">,</span><span class="s1">&#39;-Z&#39;</span><span class="p">],</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>You may define all symmetry operations of the space group. <code class="xref py py-func docutils literal notranslate"><span class="pre">build_map()</span></code> simply verifies if the suggest symmetry exists, and if so, and how does it map with existing orbital indices.</p>
+<p>You may define all symmetry operations of the space group. Note that the Symm object can handle non-symmorphic operations. <code class="xref py py-func docutils literal notranslate"><span class="pre">build_map()</span></code> simply verifies if the suggest symmetry exists, and if so, and how does it map with existing orbital indices.
+(AS: if it exists for sites coordinates in real space, right? If so, better to be clear and say it)</p>
 <p>The second argument of <code class="xref py py-func docutils literal notranslate"><span class="pre">build_map()</span></code> should be arithmetics math operations in following order: [operation for X, operation for Y, operation for Z]</p>
 <p>The Arithmetics symbols and namespaces below are acceptable:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>+, -, /, *, X, Y, Z, Rx, Ry, and Rz.
 </pre></div>
 </div>
 <p>Rx, Ry, and Rz are lattice vectors along their directions. X, Y, and Z are coordinates of cites inside unitcell.</p>
-<p>In our example 1/2*Rx does a non-symmorphic translation.</p>
+<p>In our example 1/2*Rx does a non-symmorphic translation of half the cell length in the x direction.</p>
 <p>Next, build (N*N) matrices for the verified symmetry operations.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make the operation Matrix at a given point of receiprocal space</span>
 <span class="n">sm</span><span class="o">.</span><span class="n">make_Cmat</span><span class="p">(</span><span class="s1">&#39;C2x&#39;</span><span class="p">,</span> <span class="s1">&#39;Gamma&#39;</span><span class="p">)</span>
@@ -182,7 +182,7 @@ As an example, here, we consider two unitcells of twisted bilayer graphene at ma
 <span class="n">sm</span><span class="o">.</span><span class="n">make_Cmat</span><span class="p">(</span><span class="s1">&#39;C2z&#39;</span><span class="p">,</span> <span class="s1">&#39;Gamma&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>And we can simply check if they make sense, by taking the square</p>
+<p>And we can simply check (up to the numerical error defined by <code class="docutils literal notranslate"><span class="pre">ftol</span></code>) if they make sense, by taking the square</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check operations square and how they commute</span>
 <span class="n">sm</span><span class="o">.</span><span class="n">check_square</span><span class="p">(</span><span class="s1">&#39;C2x&#39;</span><span class="p">,</span> <span class="s1">&#39;Gamma&#39;</span><span class="p">,</span> <span class="n">ftol</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span>
 <span class="n">sm</span><span class="o">.</span><span class="n">check_square</span><span class="p">(</span><span class="s1">&#39;C2y&#39;</span><span class="p">,</span> <span class="s1">&#39;Gamma&#39;</span><span class="p">,</span> <span class="n">ftol</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span>
@@ -266,8 +266,8 @@ As an example, here, we consider two unitcells of twisted bilayer graphene at ma
 </pre></div>
 </div>
 <p>As you can see there are offdiagonal terms in <code class="code docutils literal notranslate"><span class="pre">C2x</span></code> and <code class="code docutils literal notranslate"><span class="pre">C2z</span></code> space, which don’t allow us to read parities.
-Unfortunately, there is no guarantee that <code class="docutils literal notranslate"><span class="pre">LANCZOS</span></code> wave vectors would be diagonal in this subspace.</p>
-<p>Hopefully, we can try to see if they are diagonalizable</p>
+Unfortunately, there is no guarantee that <code class="docutils literal notranslate"><span class="pre">LANCZOS</span></code> wave vectors would be diagonal in this subspace (AS: if there’s degeneracy, right?).</p>
+<p>Hopefully, we can try to see if they are diagonalizable (AS: you mean we perform successive diagonalisations to take care of subspaces of degenerate eigenvalues?)</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Diagonalize wave vectors respect to a given symmetry</span>
 <span class="n">sm</span><span class="o">.</span><span class="n">vector_diag</span><span class="p">(</span><span class="s1">&#39;Gamma&#39;</span><span class="p">,</span> <span class="n">name1</span><span class="o">=</span><span class="s1">&#39;C2z&#39;</span><span class="p">,</span> <span class="n">name2</span><span class="o">=</span> <span class="s1">&#39;C2x&#39;</span><span class="p">,</span> <span class="n">subSize</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">skip_diag</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 </pre></div>
@@ -361,7 +361,9 @@ Unfortunately, there is no guarantee that <code class="docutils literal notransl
 </pre></div>
 </div>
 <p>Now we see, they are successfully diagonalized. So we can read the parities.</p>
-<p>Below are two wave vectors with imaginary-odd parity under non-symmorphic <cite>C2x</cite> symmetry. Somethis also cool to see :)</p>
+<p>Below are two wave vectors with imaginary-odd parity under non-symmorphic <cite>C2x</cite> symmetry. Not just interesting, but beautiful as well :)
+(AS: first define what we are looking at, i.e. these are two eigenvectors that map into each other under the symmetry, right? To make it clearer, highlight the unit cell and guide the reader to a part that is easy to follow during the transformation. Maybe two word on what to look for, e.g. “see the how the trifold flower-like shape gets rotated around x by 180 and translted.)
+(AS: also, maybe show this at gamma as well. Easier to understand. Even thought this is clearly more beautiful)</p>
 <img alt="_images/7_a.png" src="_images/7_a.png" />
 <img alt="_images/6_c.png" src="_images/6_c.png" />
 <p>Visualized by <code class="docutils literal notranslate"><span class="pre">OVITO</span></code>.

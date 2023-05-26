@@ -28,7 +28,7 @@ Next, load the coordinate file. ``1.08_1AA.data`` is an example of relaxed struc
     mytb.set_configuration('1.08_1AA.data', r_cut = 5.7, local_normal=True)
 
 **r_cut** used to detect neighbors within a circular range around each individual cites.
-**local_normal=True** defined how to compute the normal vector: pointing out from surface according to the local orientation or using a fix axis. The former option is needed in case your structure is not flat, and out of plain deformations affects how orbitals interacts, see Slatter-Koster. Phys. Rev., 94:1498–1524, 1954. The latter is suitable (and faster) for flat geometries.
+**local_normal=True** clarifies whether to calculate the local normal vector, pointing out from surface locally (True) or use (0,0,1) as vertical normal to all sites (False). The former option is needed in case your structure is not flat, and out of plain deformations affects how orbitals interacts, see Slatter-Koster. Phys. Rev., 94:1498–1524, 1954. The latter is suitable (and faster) for flat geometries with negligible corrugation.
 
 
 Depending on size of your system, you may want to save this initial configuration! This will help you to save time for next runs with the same data file and setting.
@@ -38,12 +38,15 @@ Depending on size of your system, you may want to save this initial configuratio
     mytb.save(configuration =True)
 
 
-The heart of any band structure calculation is the Hamiltonian. In LTB-Symm you are completely free to define the elementary physics of your TB model! Define your Hamiltonian as you like, using features that are already developed (AS: which features, what constrains does it need to satisfy? At least in terms of coding; if these are better specified in the documentation, we need to say it).
-In the case of TBG we define the Hamiltonian as:
+The heart of any band structure calculation is the Hamiltonian. In LTB-Symm you are completely free to define the Hamiltonian of your TB model! Define your it as you like, using features that are already developed.
+In the case of TBG we define the Hamiltonian -- see our paper-- as:
+
+.. (AS: which features, what constrains does it need to satisfy? At least in terms of coding; if these are better specified in the documentation, we need to say it). Ali: sure will do later.
+
 
 .. math::
 
-    H_{ij}= \frac{V_{pp\sigma}}{2} \left[ \left(\frac{\textbf{d}_{ij} \cdot \hat{n_i} }{ \mid\textbf{d}_{ij}\mid  }\right)^2 + \left(\frac{\textbf{d}_{ij} \cdot \hat{n_i} }{ \mid\textbf{d}_{ij}\mid  }\right)^2 \right]  +  \frac{V_{pp\pi}}{2}  \left[ 1-\frac{1}{2} \left( \left(\frac{\textbf{d}_{ij} \cdot \hat{n_j} }{ \mid\textbf{d}_{ij}\mid  }\right)^2 + \left(\frac{\textbf{d}_{ij} \cdot \hat{n_j} }{ \mid\textbf{d}_{ij}\mid  }\right)^2 \right) \right],
+    H_{ij}= \frac{V_{pp\sigma}}{2} \left[ \left(\frac{\textbf{d}_{ij} \cdot \hat{n_i} }{ \mid\textbf{d}_{ij}\mid  }\right)^2 + \left(\frac{\textbf{d}_{ij} \cdot \hat{n_i} }{ \mid\textbf{d}_{ij}\mid  }\right)^2 \right]  +  V_{pp\pi}  \left[ 1-\frac{1}{2} \left( \left(\frac{\textbf{d}_{ij} \cdot \hat{n_j} }{ \mid\textbf{d}_{ij}\mid  }\right)^2 + \left(\frac{\textbf{d}_{ij} \cdot \hat{n_j} }{ \mid\textbf{d}_{ij}\mid  }\right)^2 \right) \right],
 
 
 where :math:`V_{pp\sigma}` and :math:`V_{pp\pi}` are defined as
@@ -53,7 +56,8 @@ where :math:`V_{pp\sigma}` and :math:`V_{pp\pi}` are defined as
 
     V_{pp\sigma} = V_{pp\sigma}^0 \; \exp{\left(-\frac{ \mid\textbf{d}_{ij}\mid -d_0}{r_0}\right)}, \;\;\; V_{pp\pi} = V_{pp\pi}^0 \; \exp{\left(-\frac{ \mid\textbf{d}_{ij}\mid -a_0}{r_0}\right)} .
 
-(AS: perhaps some references? E.g. "This is essentially the Hamiltonian used in Ref ...." )
+.. (AS: perhaps some references? E.g. "This is essentially the Hamiltonian used in Ref ...." ) I added see our paper
+
 This Hamiltonian translate into the following Python function:
 
 .. code:: ipython3
@@ -85,7 +89,7 @@ This Hamiltonian translate into the following Python function:
         return t_ij
 
 
-Now that the Hamiltonian is defined, it is time to define the relevan area of reciprocal space, i.e. the right Brillouin zone for our system.
+Now that the Hamiltonian is defined, it is time to define the reciprocal space, i.e. the right Brillouin zone for our system.
 In the simple case of TBG, LTB-Symm is able to detect mini brillouin zone (MBZ) automatically.
 
 .. code:: ipython3
@@ -94,8 +98,10 @@ In the simple case of TBG, LTB-Symm is able to detect mini brillouin zone (MBZ) 
     mytb.MBZ()
     mytb.set_Kpoints(['K1','Gamma','M2', 'K2'] , N=32)
 
-We may define a specific path inside the MBZ :py:func:`set_Kpoints()`, whith total desinty N=32 K-points which will be autmatically distributed along the segments.
-(AS: I would add a reference to Bilbao, e.g. "The high symmetry points in a BZ and the paths connecting them can be found at <bilbao website>)
+   
+We may define a specific path inside the MBZ :py:func:`set_Kpoints()`, with total N=32 K-points which will be autmatically distributed along the segments.
+
+.. (AS: I would add a reference to Bilbao, e.g. "The high symmetry points in a BZ and the paths connecting them can be found at <bilbao website>) Ali: I assume users of this code understand BZ
 
 Now the physics is set, and electronic bands are ready to calculate.
 
@@ -111,7 +117,7 @@ It is always a good idea to save the calculation!
     mytb.save(bands=True)
 
 
-This code in parallel using MPI. For example on 4 cores, this calculation should take only around 200 seconds
+You could run this code in parallel using MPI. For example on 4 cores, this calculation should take only around 200 seconds
 
 .. code-block:: console
 
@@ -128,9 +134,12 @@ Before plotting, let us see if there are any flatbands
     # Detect if there are any flatbands
     mytb.detect_flat_bands()
 
+    
+Then you realize there are 4 flat bands, but are not centered around zero. This could happen, simply because the approximate value of **sigma** that is used in :py:func:`mytb.calculate_bands()` has no knowledge of Fermi level. This can be easily fixed simply by recentering flat bands around a given K-point (in this case K1, where Dirac cone is centered): 
 
-Then you realize there are 4 flat bands (AS: can't you put the output of the cell as well?), but are not centered around zero.
-The reason for that is the approximate value of **sigma** that is used in :py:func:`mytb.calculate_bands()` (AS: this is the culprit but not the reason. Can we add in one sentence how this sigma is linked to the shift?). This can be fixed simply by recentering flat bands around a given K-point: (AS: is this really a random K points? Or is this where the Dirac cone are, so the point where you know the Fermi level must lie?)
+.. (AS: this is the culprit but not the reason. Can we add in one sentence how this sigma is linked to the shift?). Ali: no It's an experimental approximation, I don't know /don't care the link. 
+.. (AS: is this really a random K points? Or is this where the Dirac cone are, so the point where you know the Fermi level must lie?) Ali: dirac cone
+.. (AS: can't you put the output of the cell as well?) Ali: I don't understand
 
 .. code:: ipython3
 
@@ -157,7 +166,6 @@ Nice! Perhaps a bit spare. We could increase the density by setting N=1000 in :p
 
 .. image:: _images/Bands_N1000.png
    :width: 400px
-
 
 
 

@@ -4,8 +4,11 @@ Example 2: Symmetry operations and wave vectors parity
 ------------------------------------------------------
 
 
-This example shows how to investigate the parity of wave vectors under the action of different symmetry operations at any given point in the Brillouin zone.
-This tool is usefull to understand topological properties of band structure. (AS: maybe add some references? Link to wiki, maybe to the book of Michele?)
+This example shows how to investigate the parity of wave vectors under various symmetry operations at any given point in the Brillouin zone.
+This tool is usefull to understand topological properties of band structure. 
+
+.. (AS: maybe add some references? Link to wiki, maybe to the book of Michele?) Ali: will do
+
 As an example, here, we consider two unitcells of twisted bilayer graphene at magic angle 1.08 degrees.
 
 .. note::
@@ -73,7 +76,8 @@ First let's calculate eigenvectors at high symmetry points, like in the previous
 
     MPI.Finalize()
 
-
+For detailed explanation of the above function see Example 1.
+    
 .. note::
     Once a band structure calculation is done, you can always save using
 

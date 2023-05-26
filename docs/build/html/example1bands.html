@@ -51,7 +51,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Installation.html">Install</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ltbsymm.html">LTB-Symm</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Citation.html">How to cite</a></li>
 </ul>
 
         </div>
@@ -80,13 +80,13 @@
              
   <div class="section" id="example-1-band-structure-of-tbg">
 <h1>Example 1: Band structure of TBG<a class="headerlink" href="#example-1-band-structure-of-tbg" title="Permalink to this headline">¶</a></h1>
-<p>Here I demonstrate how to calculate band structre for magic angle twisted bilayer graphene.</p>
+<p>Here we demonstrate how to calculate band structre for magic angle twisted bilayer graphene (TBG).</p>
 <p>First import <code class="docutils literal notranslate"><span class="pre">ltbsymm</span></code> and other libraries if you need, in this case also <code class="docutils literal notranslate"><span class="pre">numpy</span></code>:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ltbsymm</span> <span class="k">as</span> <span class="nn">ls</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 </pre></div>
 </div>
-<p>Initiate TightBinding module:</p>
+<p>Create an instance of TightBinding object:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mytb</span> <span class="o">=</span> <span class="n">ls</span><span class="o">.</span><span class="n">TB</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -95,18 +95,18 @@
 </pre></div>
 </div>
 <p><strong>r_cut</strong> used to detect neighbors within a circular range around each individual cites.
-<strong>local_normal=True</strong> clarifies whether to calculate the local normal vector, pointing out from surface. This option is practical in case your structure is not flat, and out of plain deformations affects how orbitals interacts, Slatter-Koster. Phys. Rev., 94:1498–1524, 1954.</p>
+<strong>local_normal=True</strong> clarifies whether to calculate the local normal vector, pointing out from surface locally (True) or use (0,0,1) as vertical normal to all sites (False). The former option is needed in case your structure is not flat, and out of plain deformations affects how orbitals interacts, see Slatter-Koster. Phys. Rev., 94:1498–1524, 1954. The latter is suitable (and faster) for flat geometries with negligible corrugation.</p>
 <p>Depending on size of your system, you may want to save this initial configuration! This will help you to save time for next runs with the same data file and setting.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mytb</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">configuration</span> <span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The heart of any band structure calculation is the Hamiltonian. Hopefully in LTB-Symm your hand are completely free! Define your Hamiltonian as you like, using features that are already developed.
-In the case of (twisted-bilayer-graphene)TBG we definde the Hamiltonian as:</p>
+<p>The heart of any band structure calculation is the Hamiltonian. In LTB-Symm you are completely free to define the Hamiltonian of your TB model! Define your it as you like, using features that are already developed.
+In the case of TBG we define the Hamiltonian – see our paper– as:</p>
 <div class="math notranslate nohighlight">
-\[H_{ij}= V_{pp\sigma} \left( (\frac{\textbf{d}_{ij} \cdot \hat{n_i} }{ \mid\textbf{d}_{ij}\mid  })^2 + (\frac{\textbf{d}_{ij} \cdot \hat{n_i} }{ \mid\textbf{d}_{ij}\mid  })^2 \right)/2  +  V_{pp\pi}  \left( 1-( (\frac{\textbf{d}_{ij} \cdot \hat{n_j} }{ \mid\textbf{d}_{ij}\mid  })^2 + (\frac{\textbf{d}_{ij} \cdot \hat{n_j} }{ \mid\textbf{d}_{ij}\mid  })^2 )/2 \right)\]</div>
-<p>Where <span class="math notranslate nohighlight">\(V_{pp\sigma}\)</span> and <span class="math notranslate nohighlight">\(V_{pp\pi}\)</span> are defined</p>
+\[H_{ij}= \frac{V_{pp\sigma}}{2} \left[ \left(\frac{\textbf{d}_{ij} \cdot \hat{n_i} }{ \mid\textbf{d}_{ij}\mid  }\right)^2 + \left(\frac{\textbf{d}_{ij} \cdot \hat{n_i} }{ \mid\textbf{d}_{ij}\mid  }\right)^2 \right]  +  V_{pp\pi}  \left[ 1-\frac{1}{2} \left( \left(\frac{\textbf{d}_{ij} \cdot \hat{n_j} }{ \mid\textbf{d}_{ij}\mid  }\right)^2 + \left(\frac{\textbf{d}_{ij} \cdot \hat{n_j} }{ \mid\textbf{d}_{ij}\mid  }\right)^2 \right) \right],\]</div>
+<p>where <span class="math notranslate nohighlight">\(V_{pp\sigma}\)</span> and <span class="math notranslate nohighlight">\(V_{pp\pi}\)</span> are defined as</p>
 <div class="math notranslate nohighlight">
-\[V_{pp\sigma} = V_{pp\sigma}^0 \; \exp{\left(-\frac{ \mid\textbf{d}_{ij}\mid -d_0}{r_0}\right)}, \;\;\; V_{pp\pi} = V_{pp\pi}^0 \; \exp{\left(-\frac{ \mid\textbf{d}_{ij}\mid -a_0}{r_0}\right)}\]</div>
+\[V_{pp\sigma} = V_{pp\sigma}^0 \; \exp{\left(-\frac{ \mid\textbf{d}_{ij}\mid -d_0}{r_0}\right)}, \;\;\; V_{pp\pi} = V_{pp\pi}^0 \; \exp{\left(-\frac{ \mid\textbf{d}_{ij}\mid -a_0}{r_0}\right)} .\]</div>
 <p>This Hamiltonian translate into the following Python function:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define Hamiltonian and fix the parameters of the Hamiltonian that are the same for all pairs</span>
 <span class="k">def</span> <span class="nf">H_ij</span><span class="p">(</span><span class="n">v_ij</span><span class="p">,</span> <span class="n">ez_i</span><span class="p">,</span> <span class="n">ez_j</span><span class="p">,</span> <span class="n">a0</span> <span class="o">=</span> <span class="mf">1.42039011</span><span class="p">,</span> <span class="n">d0</span> <span class="o">=</span> <span class="mf">3.344</span><span class="p">,</span> <span class="n">V0_sigam</span> <span class="o">=</span> <span class="o">+</span><span class="mf">0.48</span><span class="p">,</span> <span class="n">V0_pi</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.7</span><span class="p">,</span> <span class="n">r0</span> <span class="o">=</span> <span class="mf">0.184</span><span class="o">*</span> <span class="mf">1.42039011</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="p">):</span>
@@ -135,16 +135,16 @@ In the case of (twisted-bilayer-graphene)TBG we definde the Hamiltonian as:</p>
     <span class="k">return</span> <span class="n">t_ij</span>
 </pre></div>
 </div>
-<p>Now that the Hamiltonian is defined, it is time to define reciprocal space.
+<p>Now that the Hamiltonian is defined, it is time to define the reciprocal space, i.e. the right Brillouin zone for our system.
 In the simple case of TBG, LTB-Symm is able to detect mini brillouin zone (MBZ) automatically.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define MBZ and set K-points</span>
 <span class="n">mytb</span><span class="o">.</span><span class="n">MBZ</span><span class="p">()</span>
 <span class="n">mytb</span><span class="o">.</span><span class="n">set_Kpoints</span><span class="p">([</span><span class="s1">&#39;K1&#39;</span><span class="p">,</span><span class="s1">&#39;Gamma&#39;</span><span class="p">,</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;K2&#39;</span><span class="p">]</span> <span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We may set a path <code class="xref py py-func docutils literal notranslate"><span class="pre">set_Kpoints()</span></code> with N=32 K-points.</p>
-<p>Now everything is basically set, electronic bands are ready to calculate</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># For twisted bilayer graphene sigma=np.abs(V0_pi-V0_sigam)/2 . An approximate value that flat bands are located</span>
+<p>We may define a specific path inside the MBZ <code class="xref py py-func docutils literal notranslate"><span class="pre">set_Kpoints()</span></code>, with total N=32 K-points which will be autmatically distributed along the segments.</p>
+<p>Now the physics is set, and electronic bands are ready to calculate.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># For twisted bilayer graphene sigma=np.abs(V0_pi-V0_sigam)/2 . An approximate value where flat bands are located</span>
 <span class="n">mytb</span><span class="o">.</span><span class="n">calculate_bands</span><span class="p">(</span><span class="n">H_ij</span><span class="p">,</span> <span class="n">n_eigns</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="o">-</span><span class="mf">2.7</span><span class="o">-</span><span class="mf">0.48</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;primme&#39;</span><span class="p">,</span> <span class="n">return_eigenvectors</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -152,17 +152,17 @@ In the simple case of TBG, LTB-Symm is able to detect mini brillouin zone (MBZ) 
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mytb</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">bands</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>You could run this code in parallel, on as many cores. For example on 4 node, this calculation should take only around 200 seconds</p>
+<p>You could run this code in parallel using MPI. For example on 4 cores, this calculation should take only around 200 seconds</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>mpirun<span class="w"> </span>-n<span class="w"> </span><span class="m">4</span><span class="w"> </span>python<span class="w"> </span>input_calculate.py
 </pre></div>
 </div>
-<p>Congratulation! now bands are calculated it is time for fun!</p>
+<p>Congratulation! Now that bands have been computed, it is time for fun!</p>
 <p>Before plotting, let us see if there are any flatbands</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Detect if there are any flatbands</span>
 <span class="n">mytb</span><span class="o">.</span><span class="n">detect_flat_bands</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Then you realize there are 4 flat bands, but are not centered around zero. The reason for that is the approximate value of <strong>sigma</strong> that is used in <code class="xref py py-func docutils literal notranslate"><span class="pre">mytb.calculate_bands()</span></code> . This can be fixed simply by recentering flat bands around a given K-point:</p>
+<p>Then you realize there are 4 flat bands, but are not centered around zero. This could happen, simply because the approximate value of <strong>sigma</strong> that is used in <code class="xref py py-func docutils literal notranslate"><span class="pre">mytb.calculate_bands()</span></code> has no knowledge of Fermi level. This can be easily fixed simply by recentering flat bands around a given K-point (in this case K1, where Dirac cone is centered):</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set Fermi level by shifting E=0 to the avergage energies of flat bands at point e.g. &#39;K1&#39;</span>
 <span class="n">mytb</span><span class="o">.</span><span class="n">shift_2_zero</span><span class="p">(</span><span class="s1">&#39;K1&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]))</span>
 </pre></div>
@@ -177,7 +177,7 @@ In the simple case of TBG, LTB-Symm is able to detect mini brillouin zone (MBZ) 
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="_images/Bands_N32.png"><img alt="_images/Bands_N32.png" src="_images/Bands_N32.png" style="width: 400px;" /></a>
-<p>For denser a calculation we could set N=1000 in <code class="xref py py-func docutils literal notranslate"><span class="pre">set_Kpoints()</span></code> . That would certainly takes more than 200 seconds :), but it looks nicer:</p>
+<p>Nice! Perhaps a bit spare. We could increase the density by setting N=1000 in <code class="xref py py-func docutils literal notranslate"><span class="pre">set_Kpoints()</span></code> and obtain a nicer-looking plot (that would certainly takes more than 200 seconds!):</p>
 <a class="reference internal image-reference" href="_images/Bands_N1000.png"><img alt="_images/Bands_N1000.png" src="_images/Bands_N1000.png" style="width: 400px;" /></a>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
