@@ -34,8 +34,6 @@ markupsafe==2.1.2
     # via jinja2
 matplotlib==3.6.2
     # via -r requirements.in
-mpi4py==3.1.4
-    # via -r requirements.in
 numpy==1.23.4
     # via
     #   -r requirements.in
