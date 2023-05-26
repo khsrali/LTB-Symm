@@ -12,8 +12,8 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../src/ltbsymm/'))
-
+#sys.path.insert(0, os.path.abspath('../../src/ltbsymm/'))
+sys.path.insert(0, os.path.abspath('../../src/'))
 
 # -- Project information -----------------------------------------------------
 
@@ -32,8 +32,13 @@ release = 'v.1.0.0'
 # ones.
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.duration',
+              'sphinx.ext.autosummary',
+              'sphinx.ext.intersphinx',
+              'sphinx.ext.autosectionlabel',
               'sphinx.ext.doctest',]
               #'sphinx_reredirects']
+#"nbsphinx" # to include Jupyter notebooks "raw"
+
 
 #redirects = {
     #'custom_head': '_static/custom_head.html',

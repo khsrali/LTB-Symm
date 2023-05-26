@@ -4,16 +4,16 @@ Example 2: Symmetry operations and wave vectors parity
 ------------------------------------------------------
 
 
-In this example I show how to investigate parities of wave vectors, for any symmetry operations at a any given point of Brillouin zone.
-Such tool could be usefull to understand topological properties of band structure.  
+This example shows how to investigate the parity of wave vectors under the action of different symmetry operations at any given point in the Brillouin zone.
+This tool is usefull to understand topological properties of band structure. (AS: maybe add some references? Link to wiki, maybe to the book of Michele?)
 As an example, here, we consider two unitcells of twisted bilayer graphene at magic angle 1.08 degrees.
 
 .. note::
 
-   This project is under active development. ``symmetry`` module is fully developed for rectangular lattice. For rhombic, mimicing the spirit, implementation is in progress. 
-   
-   
-First let's calculate eigen vectors at high symmetry points:
+   This project is under active development. ``symmetry`` module is fully developed for rectangular lattice. For rhombic, mimicing the spirit, implementation is in progress.
+
+
+First let's calculate eigenvectors at high symmetry points, like in the previous example:
 
 
 .. code:: ipython3
@@ -32,7 +32,7 @@ First let's calculate eigen vectors at high symmetry points:
     mytb.set_configuration('1.08_2AA.data', r_cut = 5.7, local_normal=True, nl_method='RS')
     mytb.save(configuration =True)
 
-    # Define Hamiltonian and fix the parameters of the Hamiltonian that are the same for all pairs 
+    # Define Hamiltonian and fix the parameters of the Hamiltonian that are the same for all pairs
     def H_ij(v_ij, ez_i, ez_j, a0 = 1.42039011, d0 = 3.344, V0_sigam = +0.48, V0_pi = -2.7, r0 = 0.184* 1.42039011 * np.sqrt(3) ):
         """
             Args:
@@ -51,11 +51,11 @@ First let's calculate eigen vectors at high symmetry points:
         dd = np.linalg.norm(v_ij)
         V_sigam = V0_sigam * np.exp(-(dd-d0) / r0 )
         V_pi    = V0_pi    * np.exp(-(dd-a0) / r0 )
-        
+
         tilt_1 = np.power(np.dot(v_ij, ez_i)/ dd, 2)
         tilt_2 = np.power(np.dot(v_ij, ez_j)/ dd, 2)
-        t_ij =  V_sigam * (tilt_1+tilt_2)/2 + V_pi * (1- (tilt_1 + tilt_2)/2) 
-        
+        t_ij =  V_sigam * (tilt_1+tilt_2)/2 + V_pi * (1- (tilt_1 + tilt_2)/2)
+
         return t_ij
 
 
@@ -66,7 +66,7 @@ First let's calculate eigen vectors at high symmetry points:
 
 
     # For twisted bilayer graphene sigma=np.abs(V0_pi-V0_sigam)/2 . An approximate value that flat bands are located
-    mytb.calculate_bands(H_ij, n_eigns = 8, sigma=np.abs(-2.7-0.48)/2, solver='primme', tbt='type2', return_eigenvectors = True) 
+    mytb.calculate_bands(H_ij, n_eigns = 8, sigma=np.abs(-2.7-0.48)/2, solver='primme', tbt='type2', return_eigenvectors = True)
 
 
     mytb.save(bands=True)
@@ -74,42 +74,39 @@ First let's calculate eigen vectors at high symmetry points:
     MPI.Finalize()
 
 
-A similar code to above is explained in details for a similar case (Example 1). 
-
-
-
-.. note:: 
+.. note::
     Once a band structure calculation is done, you can always save using
-    
+
     .. code:: ipython3
-    
+
         mytb.save(bands=True, configuration=True)
-        
-    This is very conveninet, becasue for later application or symmetry analysis you can just simply load, for example:    
-    
+
+    This is very conveninet, becasue for later application or symmetry analysis you can simply load:
+
     .. code:: ipython3
-    
+
         mytb.load('out_1.08_2AA', bands='bands_.npz', configuration='configuration_.npz')
-    
+
     There is no need to re-calculate from begining
-    
 
 
-Having wave vectors, we can proceed to create a Symm object. 
 
-    
+Having wave vectors, we can proceed to create a Symm object from our TB model.
+
+
 .. code:: ipython3
 
     if rank == 0:
 
         sm = ls.Symm(mytb)
-        
+
         sm.build_map('C2z',['-X+1/2*Rx','-Y+1/2*Ry','Z'], atol=0.3, plot = True)
         sm.build_map('C2y',['-X','Y+1/2*Ry','-Z'], atol=0.3)
         sm.build_map('C2x',['X+1/2*Rx','-Y','-Z'], atol=0.3)
 
 
-You may define all symmetry operations of the space group. :py:func:`build_map()` simply verifies if the suggest symmetry exists, and if so, and how does it map with existing orbital indices. 
+You may define all symmetry operations of the space group. Note that the Symm object can handle non-symmorphic operations. :py:func:`build_map()` simply verifies if the suggest symmetry exists, and if so, and how does it map with existing orbital indices.
+(AS: if it exists for sites coordinates in real space, right? If so, better to be clear and say it)
 
 .. In picture below, all the red dots(operated) are siting on green(unitcell) ones. Meaning the C2z is a symmetry operation of this unitcell. (Some atoms in the boundary might have been shift to the otherside, which is not a problem)
 
@@ -121,11 +118,11 @@ The Arithmetics symbols and namespaces below are acceptable:
 
 .. code:: none
 
-    +, -, /, *, X, Y, Z, Rx, Ry, and Rz. 
-    
+    +, -, /, *, X, Y, Z, Rx, Ry, and Rz.
+
 Rx, Ry, and Rz are lattice vectors along their directions. X, Y, and Z are coordinates of cites inside unitcell.
 
-In our example 1/2*Rx does a non-symmorphic translation.
+In our example 1/2*Rx does a non-symmorphic translation of half the cell length in the x direction.
 
 
 
@@ -141,23 +138,23 @@ Next, build (N*N) matrices for the verified symmetry operations.
 
 .. sm.load('out_1.08_2AA', 'Symm_.npz')
 
-And we can simply check if they make sense, by taking the square
+And we can simply check (up to the numerical error defined by ``ftol``) if they make sense, by taking the square
 
 .. code:: ipython3
 
-    # Check operations square and how they commute 
+    # Check operations square and how they commute
     sm.check_square('C2x', 'Gamma', ftol = 30)
     sm.check_square('C2y', 'Gamma', ftol = 30)
     sm.check_square('C2z', 'Gamma', ftol = 30)
-    
+
 
 We may need to know how the symmetry operations commute, or anti-commute !
 
 .. code:: ipython3
-    
-    sm.check_commute('C2x', 'C2y', 'Gamma', ftol=30) 
-    sm.check_commute('C2z', 'C2y', 'Gamma', ftol=30) 
-    sm.check_commute('C2x', 'C2z', 'Gamma', ftol=30) 
+
+    sm.check_commute('C2x', 'C2y', 'Gamma', ftol=30)
+    sm.check_commute('C2z', 'C2y', 'Gamma', ftol=30)
+    sm.check_commute('C2x', 'C2z', 'Gamma', ftol=30)
 
 
 In this case results like this:
@@ -173,7 +170,7 @@ In this case results like this:
 
 
 We are inerested in symmetry operation on wave vectors associated with flat bands, therefore first we detect if there are any flat bands:
-    
+
 .. code:: ipython3
 
     mytb.detect_flat_bands()
@@ -184,25 +181,25 @@ Results in:
 
     8  flat bands detected
 
-    
-Now we can check if (flat) wave vectors respect the symmetries that we defined: 
+
+Now we can check if (flat) wave vectors respect the symmetries that we defined:
 
 .. code:: ipython3
 
     sm.vector_diag('Gamma', name1='C2x', subSize = 4, skip_diag = True)
 
-    
+
 Which results in:
 
 .. code:: console
 
-    
-    
+
+
     ======================
     ** vector_diag at Gamma **
     ======================
-    
-    
+
+
     Subspace 1.0 with energies:
     0.005687156959874318
     0.005675662193339814
@@ -223,7 +220,7 @@ Which results in:
      [ 0.5+0.2j, 0.8+0.j , 0. -0.j , 0. -0.j ],
      [ 0. +0.j , 0. +0.j ,-0.9+0.j ,-0.3+0.j ],
      [-0. -0.j , 0. +0.j ,-0.3-0.j , 0.9+0.j ]]
-    
+
     Subspace 2.0 with energies:
     -0.003000614802293855
     -0.003018659755200659
@@ -245,28 +242,28 @@ Which results in:
      [-0. +0.j , 0. +0.j , 0.5+0.j ,-0.3+0.8j],
      [-0. -0.j ,-0. +0.j ,-0.3-0.8j,-0.5+0.j ]]
 
-As you can see there are offdiagonal terms in :code:`C2x` and :code:`C2z` space, which don't allow us to read parities. 
-Unfortunately, there is no guarantee that ``LANCZOS`` wave vectors would be diagonal in this subspace. 
+As you can see there are offdiagonal terms in :code:`C2x` and :code:`C2z` space, which don't allow us to read parities.
+Unfortunately, there is no guarantee that ``LANCZOS`` wave vectors would be diagonal in this subspace (AS: if there's degeneracy, right?).
 
 
-Hopefully, we can try to see if they are diagonalizable
+Hopefully, we can try to see if they are diagonalizable (AS: you mean we perform successive diagonalisations to take care of subspaces of degenerate eigenvalues?)
 
 .. code:: ipython3
 
-    # Diagonalize wave vectors respect to a given symmetry 
+    # Diagonalize wave vectors respect to a given symmetry
     sm.vector_diag('Gamma', name1='C2z', name2= 'C2x', subSize = 4, rtol=0.1, skip_diag = False)
 
 
 
 .. code:: console
 
-    
-    
+
+
     ======================
     ** vector_diag at Gamma **
     ======================
-    
-    
+
+
     Diagonalizing flat bands subspace 1.0 with energies:
     0.005687156959874318
     0.005675662193339814
@@ -279,7 +276,7 @@ Hopefully, we can try to see if they are diagonalizable
      [-0. -0.j ,-0. -0.j , 0.3+0.j ,-0.9+0.j ]]
     Diagonalizing respect to  C2z
     eignvalues:  [-1.-0.j, 1.+0.j, 1.+0.j,-1.-0.j]
-    
+
      Second off-diagonalizing respect to  C2x
     upper_block is
      [[-1.+0.j, 0.-0.j],
@@ -289,25 +286,25 @@ Hopefully, we can try to see if they are diagonalizable
      [[-1.+0.j,-0.+0.j],
      [-0.-0.j, 1.+0.j]]
     eignvalues:  [-1.-0.j, 1.+0.j]
-    
+
     Final check if diagonalized respect to  C2z
     [[-1.+0.j,-0.+0.j, 0.+0.j, 0.-0.j],
      [-0.-0.j, 1.+0.j,-0.+0.j, 0.+0.j],
      [ 0.-0.j,-0.-0.j, 1.+0.j,-0.+0.j],
      [ 0.+0.j,-0.-0.j,-0.-0.j,-1.+0.j]]
-    
+
     Final check if diagonalized respect to  C2y
     [[ 1.+0.j, 0.-0.j, 0.-0.j,-0.+0.j],
      [ 0.+0.j, 1.+0.j,-0.+0.j, 0.-0.j],
      [ 0.+0.j,-0.-0.j,-1.+0.j,-0.+0.j],
      [-0.-0.j, 0.+0.j,-0.-0.j,-1.+0.j]]
-    
+
     Final check if diagonalized respect to  C2x
     [[-1.+0.j, 0.+0.j,-0.+0.j, 0.-0.j],
      [ 0.+0.j, 1.+0.j,-0.+0.j, 0.-0.j],
      [-0.-0.j,-0.-0.j,-1.+0.j, 0.+0.j],
      [ 0.+0.j, 0.+0.j, 0.+0.j, 1.+0.j]]
-    
+
     Diagonalizing flat bands subspace 2.0 with energies:
     -0.003000614802293855
     -0.003018659755200659
@@ -320,7 +317,7 @@ Hopefully, we can try to see if they are diagonalizable
      [-0. -0.j ,-0. +0.j ,-0.3-0.8j,-0.5-0.j ]]
     Diagonalizing respect to  C2z
     eignvalues:  [-1.-0.j,-1.+0.j, 1.+0.j, 1.-0.j]
-    
+
      Second off-diagonalizing respect to  C2x
     upper_block is
      [[ 1.+0.j,-0.+0.j],
@@ -330,19 +327,19 @@ Hopefully, we can try to see if they are diagonalizable
      [[-1.+0.j,-0.+0.j],
      [-0.-0.j, 1.+0.j]]
     eignvalues:  [-1.+0.j, 1.-0.j]
-    
+
     Final check if diagonalized respect to  C2z
     [[-1.+0.j, 0.-0.j, 0.-0.j,-0.-0.j],
      [ 0.+0.j,-1.+0.j,-0.+0.j,-0.+0.j],
      [ 0.+0.j, 0.-0.j, 1.+0.j, 0.-0.j],
      [-0.+0.j,-0.-0.j, 0.+0.j, 1.+0.j]]
-    
+
     Final check if diagonalized respect to  C2y
     [[-1.+0.j, 0.-0.j,-0.+0.j, 0.+0.j],
      [ 0.+0.j, 1.+0.j, 0.-0.j, 0.+0.j],
      [-0.-0.j, 0.+0.j,-1.+0.j,-0.+0.j],
      [ 0.-0.j, 0.-0.j,-0.-0.j, 1.+0.j]]
-    
+
     Final check if diagonalized respect to  C2x
     [[ 1.+0.j, 0.-0.j,-0.+0.j, 0.+0.j],
      [ 0.+0.j,-1.+0.j,-0.+0.j, 0.+0.j],
@@ -350,21 +347,22 @@ Hopefully, we can try to see if they are diagonalizable
      [ 0.-0.j, 0.-0.j, 0.-0.j, 1.+0.j]]
 
 
-Now we see, they are successfully diagonalized. So we can read the parities. 
+Now we see, they are successfully diagonalized. So we can read the parities.
 
 
-Below are two wave vectors with imaginary-odd parity under non-symmorphic `C2x` symmetry. Somethis also cool to see :)
+Below are two wave vectors with imaginary-odd parity under non-symmorphic `C2x` symmetry. Not just interesting, but beautiful as well :)
+(AS: first define what we are looking at, i.e. these are two eigenvectors that map into each other under the symmetry, right? To make it clearer, highlight the unit cell and guide the reader to a part that is easy to follow during the transformation. Maybe two word on what to look for, e.g. "see the how the trifold flower-like shape gets rotated around x by 180 and translted.)
+(AS: also, maybe show this at gamma as well. Easier to understand. Even thought this is clearly more beautiful)
 
 .. image:: _images/7_a.png
 .. image:: _images/6_c.png
 
 
 Visualized by ``OVITO``.
-Colors, and size reperesenting their phase and amplitude as a function of (x,y). Unitcell has been repeated 4 times for visibility. 
+Colors, and size reperesenting their phase and amplitude as a function of (x,y). Unitcell has been repeated 4 times for visibility.
 
 
 .. .. code:: ipython3
 
-    # You can save sm object 
+    # You can save sm object
     sm.save()
-

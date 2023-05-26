@@ -4,19 +4,21 @@ Install
 
 Requirements
 -----------------------------
-LTB-Symm iw written in Python. We suggest you to install or update to the latest available version, at least Python 3.6. is required.
+.. LTB-Symm is written in Python. We suggest you to install or update to the latest available version, at least Python 3.6. is required.
+.. (AS: I wouldn't suggest to install the latest, just say the minimum required, that is usually enough)
+LTB-Symm is written in Python. Requirments: Python 3.8+ and NumPy 1.19.5
 
 Operating system
 ++++++++++++++++
 
-LTB-Symm has been developed and tested on both **Linux** and **MacOS**. 
-In both of these operating systems, installation process is basically be similar. Although in **MacOS** there is an extra pre-step, and that is only to make sure you have ``pip`` installed. You can make sure of that by typing command below in your terminal:
+LTB-Symm has been developed and tested on both **Linux** and **MacOS**.
+In both of these operating systems, installation process is similar. Although on **MacOS** there is an extra pre-step, i.e. make sure you have ``pip`` installed by typing the command below in your terminal:
 
 .. code-block:: console
 
     % python -m ensurepip or python3 -m ensurepip
-    
-In **Windows** in principle it should be possible to install the code, but we have not tested, yet. Again you can install ``pip`` by executing the following command in ``cmd``:
+
+In principle it should be possible to install the code on **Windows** machines, but we have not tested it, yet. Again you can install ``pip`` by executing the following command in ``cmd``:
 
 .. code-block:: console
 
@@ -42,10 +44,10 @@ Please make sure all dependencies correctly installed. That includes;
 .. code-block:: none
 
     numpy scipy matplotlib mpi4py tqdm spglib primme
-    
+
 
 Note you need a working MPI implementation for ``mpi4py`` to succesfully function.
-
+(AS: to run in parallel or at all?)
 
 
 Download the source code
@@ -65,7 +67,7 @@ How to run
 .. this makes red      ``blah``
 .. this looks like a function     :py:func:`blah`
 
-Simply write an *input* file and run using you python interpreter:
+Simply write an *input* file (see examples) and run using you python interpreter:
 
 
 For example:
@@ -79,5 +81,4 @@ Or alternatively if you want to use ``MPI`` feature, for instance on a HPC with 
 
 .. code-block:: console
 
-   $ mpirun --map-by ppr:32:node python input.py 
-
+   $ mpirun --map-by ppr:32:node python input.py
