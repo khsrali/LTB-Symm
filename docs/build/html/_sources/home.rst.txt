@@ -1,7 +1,7 @@
 LTB-Symm
 ========
 
-LTB-Symm does two things: **large scale tight-binding** (LTB) calculation of 2D materials, and checks **topological symmetries** (Symm) of their wave functions (the TB eigenvectors).
+LTB-Symm does two things: **large scale tight-binding** (LTB) calculation of 2D materials, and checks **topological symmetries** (Symm) of their wave functions.
 
 
 
@@ -25,7 +25,7 @@ And possible outputs are:
 
 
 Features
--------------
+--------
     * MPI implemented, able to run on HPC clusters.
     * Object Oriented, easy to modify for multi purpose.
     * Efficient (calculate only the subset of energy levels that are physically relevant).

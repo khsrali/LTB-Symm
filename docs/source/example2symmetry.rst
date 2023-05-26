@@ -109,8 +109,9 @@ Having wave vectors, we can proceed to create a Symm object from our TB model.
         sm.build_map('C2x',['X+1/2*Rx','-Y','-Z'], atol=0.3)
 
 
-You may define all symmetry operations of the space group. Note that the Symm object can handle non-symmorphic operations. :py:func:`build_map()` simply verifies if the suggest symmetry exists, and if so, and how does it map with existing orbital indices.
-(AS: if it exists for sites coordinates in real space, right? If so, better to be clear and say it)
+You may define all symmetry operations of the space group. Note that the Symm object can also handle non-symmorphic operations. :py:func:`build_map()` simply verifies if the suggest symmetry exists in real space, and if so, and how does it map with existing orbital indices.
+
+.. (AS: if it exists for sites coordinates in real space, right? If so, better to be clear and say it) Ali: ok said.
 
 .. In picture below, all the red dots(operated) are siting on green(unitcell) ones. Meaning the C2z is a symmetry operation of this unitcell. (Some atoms in the boundary might have been shift to the otherside, which is not a problem)
 
@@ -126,7 +127,7 @@ The Arithmetics symbols and namespaces below are acceptable:
 
 Rx, Ry, and Rz are lattice vectors along their directions. X, Y, and Z are coordinates of cites inside unitcell.
 
-In our example 1/2*Rx does a non-symmorphic translation of half the cell length in the x direction.
+In our example 1/2*Rx applies a non-symmorphic translation in the x direction.
 
 
 
@@ -142,7 +143,7 @@ Next, build (N*N) matrices for the verified symmetry operations.
 
 .. sm.load('out_1.08_2AA', 'Symm_.npz')
 
-And we can simply check (up to the numerical error defined by ``ftol``) if they make sense, by taking the square
+And we can simply check (up to the false tolerance error set by ``ftol``) if they make sense, by taking the square
 
 .. code:: ipython3
 
@@ -247,10 +248,14 @@ Which results in:
      [-0. -0.j ,-0. +0.j ,-0.3-0.8j,-0.5+0.j ]]
 
 As you can see there are offdiagonal terms in :code:`C2x` and :code:`C2z` space, which don't allow us to read parities.
-Unfortunately, there is no guarantee that ``LANCZOS`` wave vectors would be diagonal in this subspace (AS: if there's degeneracy, right?).
+Unfortunately, there is no guarantee that ``LANCZOS`` wave vectors would be diagonal in this subspace, especially in the case of degenerate vectors.
+
+.. (AS: if there's degeneracy, right?). Ali: Yes, I think so.
 
 
-Hopefully, we can try to see if they are diagonalizable (AS: you mean we perform successive diagonalisations to take care of subspaces of degenerate eigenvalues?)
+Hopefully, we can try to see if their subspaces are diagonalizable 
+
+.. (AS: you mean we perform successive diagonalisations to take care of subspaces of degenerate eigenvalues?)
 
 .. code:: ipython3
 
@@ -354,9 +359,10 @@ Hopefully, we can try to see if they are diagonalizable (AS: you mean we perform
 Now we see, they are successfully diagonalized. So we can read the parities.
 
 
-Below are two wave vectors with imaginary-odd parity under non-symmorphic `C2x` symmetry. Not just interesting, but beautiful as well :)
-(AS: first define what we are looking at, i.e. these are two eigenvectors that map into each other under the symmetry, right? To make it clearer, highlight the unit cell and guide the reader to a part that is easy to follow during the transformation. Maybe two word on what to look for, e.g. "see the how the trifold flower-like shape gets rotated around x by 180 and translted.)
-(AS: also, maybe show this at gamma as well. Easier to understand. Even thought this is clearly more beautiful)
+Below are two wave vectors with imaginary-odd parity under non-symmorphic `C2x` symmetry are visualized. Not just interesting, but beautiful as well :)
+
+.. (AS: first define what we are looking at, i.e. these are two eigenvectors that map into each other under the symmetry, right? To make it clearer, highlight the unit cell and guide the reader to a part that is easy to follow during the transformation. Maybe two word on what to look for, e.g. "see the how the trifold flower-like shape gets rotated around x by 180 and translted.)  Ali: good idea, will do!
+.. (AS: also, maybe show this at gamma as well. Easier to understand. Even thought this is clearly more beautiful) Ali: sure, we could do that as well!
 
 .. image:: _images/7_a.png
 .. image:: _images/6_c.png

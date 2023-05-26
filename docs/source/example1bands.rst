@@ -14,7 +14,7 @@ First import ``ltbsymm`` and other libraries if you need, in this case also ``nu
     import ltbsymm as ls
     import numpy as np
 
-Create an instance of TightBinding object:
+Create an object of TightBinding class:
 
 .. code:: ipython3
 
