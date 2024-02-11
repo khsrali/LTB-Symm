@@ -45,7 +45,7 @@ packaging==23.1
     # via
     #   matplotlib
     #   sphinx
-pillow==9.5.0
+Pillow>=10.2.0
     # via matplotlib
 primme==3.2.1
     # via -r requirements.in
